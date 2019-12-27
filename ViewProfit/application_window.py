@@ -187,6 +187,13 @@ class ApplicationWindow(QObject):
 
                 self.tables.remove(table_dict)
 
+                query = QSqlQuery(self.db)
+
+                query.prepare("drop table if exists " + name)
+
+                if not query.exec_():
+                    print("failed remove table " + name + ". Maybe has already been removed.")
+
                 break
 
     def add_benchmark_table(self):
