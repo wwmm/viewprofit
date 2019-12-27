@@ -1,0 +1,272 @@
+QMainWindow {
+  background: #eceff1;
+}
+
+QPushButton {
+  background-color: #00838f;
+  color: #fff;
+  font-size: 14px;
+  border: none;
+  border-radius: 2px;
+  margin: 0;
+  padding-top: 0px;
+  padding-right: 16px;
+  padding-bottom: 0px;
+  padding-left: 16px;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-indent: 0px;
+  height: 36px;
+  line-height: 36px;
+  outline: 0;
+}
+
+QPushButton:hover {
+  background-color: #0097a7;
+}
+
+QPushButton:pressed {
+  background-color: #00acc1;
+}
+
+/*
+  Button add row
+*/
+
+QPushButton#button_add_row,
+QPushButton#button_add_tab {
+  background-color: #1565c0;
+}
+
+QPushButton#button_add_row:hover,
+QPushButton#button_add_tab:hover {
+  background-color: #1976d2;
+}
+
+QPushButton#button_add_row:pressed,
+QPushButton#button_add_tab:pressed {
+  background-color: #1e88e5;
+}
+
+/*
+  QFrame
+*/
+
+QFrame {
+  background-color: #fff;
+  border-radius: 2px;
+  padding: 2px;
+}
+
+QFrame#table_cfg_frame,
+QFrame#pc_frame,
+QFrame#chart_cfg_frame {
+  background-color: #eceff1;
+}
+
+QTableView {
+  color: rgba(0, 0, 0, 0.87);
+  background-color: transparent;
+  border: none;
+  selection-background-color: transparent;
+  line-height: 1.6;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+QTableView QHeaderView {
+  background-color: transparent;
+  border: none;
+}
+
+QTableView QHeaderView::section {
+  color: rgba(0, 0, 0, 0.6);
+  background-color: transparent;
+  border: none;
+  vertical-align: middle;
+  line-height: 1.6;
+  font-weight: normal;
+  font-size: 16px;
+}
+
+QTableView QTableCornerButton::section {
+  background-color: transparent;
+  border: none;
+}
+
+QTableView::item {
+  background-color: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  margin: 3px 3px;
+  line-height: 1.6;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+QTableView::item:selected {
+  background-color: #82b1ff;
+}
+
+/*
+  Tabs
+*/
+
+QTabWidget {
+  background: #eceff1;
+  padding: 6px;
+}
+
+QTabWidget::pane {
+  background-color: #fff;
+  border-radius: 2px;
+  margin: 0;
+  margin-right: 6px;
+  color: rgba(0, 0, 0, 0.87);
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+QTabBar::tab {
+  background-color: #cfd8dc;
+  color: #ffffff;
+  /* padding: 6px; */
+  text-transform: uppercase;
+}
+
+QTabBar::tab:hover {
+  color: #eceff1;
+}
+
+QTabBar::tab:selected {
+  background-color: #ffffff;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+QTabWidget#tab_widget QTabBar::tab {
+  padding: 6px;
+  line-height: 100px;
+  height: 120px;
+}
+
+/*
+  Scrollbars
+*/
+
+QScrollBar {
+  background-color: white;
+  border: none;
+  width: 12px;
+  margin: 0px 0px 0px 0px;
+}
+
+QScrollBar:horizontal {
+  height: 12px;
+}
+
+QScrollBar::handle {
+  min-height: 0px;
+  border-radius: 4px;
+  background-color: #cfd8dc;
+}
+
+QScrollBar::handle:vertical {
+  min-height: 25px;
+}
+
+QScrollBar::add-line {
+  height: 0px;
+}
+
+QScrollBar::sub-line {
+  height: 0px;
+}
+
+/*
+  QLineEdit
+*/
+
+QLineEdit {
+  color: rgba(0, 0, 0, 0.6);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  outline: 0;
+  margin: 0;
+  margin-left: 6 px;
+  margin-right: 6 px;
+  padding: 0;
+  font-size: 16px;
+  text-transform: none;
+  text-indent: 0px;
+  text-align: start;
+}
+
+QLineEdit#legend_name {
+  margin-left: 0;
+}
+
+/*
+  QLabel. It derives from QFrame so it has to comee after it
+*/
+
+QLabel {
+  color: rgba(0, 0, 0, 0.6);
+  background-color: transparent;
+  font-weight: normal;
+}
+
+/*
+  QRadioButton
+*/
+
+QRadioButton {
+  background-color: transparent;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+QRadioButton::indicator {
+  background-color: #ffffff;
+  width: 12px;
+  height: 12px;
+}
+
+QRadioButton::indicator:checked {
+  background-color: #00838f;
+  border: 2px solid white;
+}
+
+QRadioButton::indicator::unchecked {
+  border: 2px solid #cfd8dc;
+}
+
+/*
+  QGroupBox
+*/
+
+QGroupBox {
+  border: none;
+  margin-top: 2ex;
+}
+
+QGroupBox::title {
+  color: rgba(0, 0, 0, 0.6);
+  subcontrol-origin: margin;
+  subcontrol-position: top center;
+  padding: 0 3px;
+}
+
+/*
+  QProgressBar
+*/
+
+QProgressBar {
+  background-color: #acece6;
+  border-radius: 2px;
+  margin: 0.5rem 0 1rem 0;
+  max-height: 4px;
+}
+
+QProgressBar::chunk {
+  background-color: #26a69a;
+}

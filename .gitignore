@@ -1,0 +1,7 @@
+__pycache__
+build
+dist
+node_modules
+*.mo
+*.prof
+viewprofit.spec
