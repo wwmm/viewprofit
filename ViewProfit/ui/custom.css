@@ -30,22 +30,37 @@ QPushButton:pressed {
 }
 
 /*
-  Button add row
+  Special buttons
 */
 
 QPushButton#button_add_row,
-QPushButton#button_add_tab {
+QPushButton#button_add_fund,
+QPushButton#button_save_image {
   background-color: #1565c0;
 }
 
 QPushButton#button_add_row:hover,
-QPushButton#button_add_tab:hover {
+QPushButton#button_add_fund:hover,
+QPushButton#button_save_image:hover {
   background-color: #1976d2;
 }
 
 QPushButton#button_add_row:pressed,
-QPushButton#button_add_tab:pressed {
+QPushButton#button_add_fund:pressed,
+QPushButton#button_save_image:pressed {
   background-color: #1e88e5;
+}
+
+QPushButton#button_remove_table {
+  background-color: #c62828;
+}
+
+QPushButton#button_remove_table:hover {
+  background-color: #d32f2f;
+}
+
+QPushButton#button_remove_table:pressed {
+  background-color: #e53935;
 }
 
 /*

@@ -10,6 +10,7 @@ from PySide2.QtWidgets import QGraphicsDropShadowEffect
 
 class TableBase(QObject):
     new_name = Signal(str, str)
+    remove_from_db = Signal(str,)
 
     def __init__(self, chart):
         QObject.__init__(self)

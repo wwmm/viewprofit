@@ -91,7 +91,6 @@ class ApplicationWindow(QObject):
 
         # signal connection
 
-        self.tab_widget.tabCloseRequested.connect(self.remove_tab)
         self.tab_widget.currentChanged.connect(self.on_tab_changed)
         button_add_benchmark.clicked.connect(self.add_benchmark_table)
         button_reset_zoom.clicked.connect(self.reset_zoom)
@@ -175,21 +174,18 @@ class ApplicationWindow(QObject):
         else:
             self.chart.setTitle("Total")
 
-    def remove_tab(self, index):
-        widget = self.tab_widget.widget(index)
+    def remove_table(self, name):
+        for index in range(len(self.tables)):
+            table_dict = self.tables[index]
 
-        self.tab_widget.removeTab(index)
+            if name == table_dict['name']:
+                self.tab_widget.removeTab(index + 1)  # Total tab is not in self.tables
 
-        for table_dict in self.tables:
-            t = table_dict['object']
+                t = table_dict['object']
 
-            if t.main_widget == widget:
                 self.chart.removeSeries(t.series)
-                self.chart.removeSeries(t.series_selection)
 
                 self.tables.remove(table_dict)
-
-                self.update_scale()
 
                 break
 
@@ -218,6 +214,7 @@ class ApplicationWindow(QObject):
 
         # table.model.dataChanged.connect(self.update_scale)
         table.new_name.connect(self.update_table_name)
+        table.remove_from_db.connect(self.remove_table)
 
         table.name = name
         table.lineedit_name.setText(name)
