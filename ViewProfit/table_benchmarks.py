@@ -3,11 +3,13 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtSql import QSqlTableModel, QSqlQuery
+from PySide2.QtCore import QDateTime
+from PySide2.QtSql import QSqlQuery
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit, QMessageBox,
-                               QPushButton, QTableView)
+from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit,
+                               QMessageBox, QPushButton, QTableView)
 
+from ViewProfit.model_benchmark import ModelBenchmark
 from ViewProfit.table_base import TableBase
 
 
@@ -19,9 +21,8 @@ class TableBenchmarks(TableBase):
         self.module_path = os.path.dirname(__file__)
 
         self.chart = chart
-
         self.db = db
-        self.model = QSqlTableModel(self, db)
+        self.model = ModelBenchmark(self, db)
 
         loader = QUiLoader()
 
@@ -39,20 +40,6 @@ class TableBenchmarks(TableBase):
         self.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table_view.setModel(self.model)
-
-        # chart series
-
-        self.series = QtCharts.QScatterSeries(self.table_view)
-        self.series.setName("table")
-        self.series.setMarkerSize(15)
-
-        self.chart.addSeries(self.series)
-
-        self.mapper = QtCharts.QVXYModelMapper()
-        self.mapper.setXColumn(1)
-        self.mapper.setYColumn(2)
-        self.mapper.setSeries(self.series)
-        self.mapper.setModel(self.model)
 
         # effects
 
@@ -76,9 +63,9 @@ class TableBenchmarks(TableBase):
 
         query.prepare("insert or ignore into " + self.name + " values (null,?,?,?)")
 
-        query.addBindValue("month")
-        query.addBindValue(2.2)
-        query.addBindValue(3.3)
+        query.addBindValue(QDateTime().currentMSecsSinceEpoch())
+        query.addBindValue(0.0)
+        query.addBindValue(0.0)
 
         if query.exec_():
             self.model.select()
@@ -109,3 +96,27 @@ class TableBenchmarks(TableBase):
 
         if r == QMessageBox.Yes:
             self.remove_from_db.emit(self.name)
+
+    def create_series(self):
+        self.chart.setTitle(self.name)
+
+        self.series = QtCharts.QLineSeries(self.table_view)
+
+        self.chart.addSeries(self.series)
+
+        self.mapper = QtCharts.QVXYModelMapper()
+        self.mapper.setXColumn(1)
+        self.mapper.setYColumn(2)
+        self.mapper.setSeries(self.series)
+        self.mapper.setModel(self.model)
+
+    def update_series(self):
+        query = QSqlQuery(self.db)
+
+        query.prepare("select month,value,accumulated from " + self.name)
+
+        # output = []
+
+        # if query.exec_():
+        #     while query.next():
+        #         month, value, accumulated = query.value(0), query.value(1), query.value(2)

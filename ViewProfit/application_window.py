@@ -44,17 +44,16 @@ class ApplicationWindow(QObject):
         self.chart = QtCharts.QChart()
         self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
         self.chart.setTheme(QtCharts.QChart.ChartThemeLight)
-        self.chart.setAcceptHoverEvents(True)
 
-        self.axis_x = QtCharts.QValueAxis()
-        self.axis_x.setTitleText("x")
-        self.axis_x.setRange(-10, 10)
-        self.axis_x.setLabelFormat("%.1f")
+        self.axis_x = QtCharts.QDateTimeAxis()
+        self.axis_x.setTitleText("Date")
+        self.axis_x.setFormat("dd/MM/yyyy")
+        self.axis_x.setTickCount(10)
 
         self.axis_y = QtCharts.QValueAxis()
         self.axis_y.setTitleText("y")
-        self.axis_y.setRange(-10, 10)
-        self.axis_y.setLabelFormat("%.1f")
+        # self.axis_y.setRange(-10, 10)
+        # self.axis_y.setLabelFormat("%.1f")
 
         self.chart.addAxis(self.axis_x, Qt.AlignBottom)
         self.chart.addAxis(self.axis_y, Qt.AlignLeft)
@@ -157,20 +156,24 @@ class ApplicationWindow(QObject):
                     self.add_table('benchmark', name)
 
     def on_tab_changed(self, index):
+        self.chart.removeAllSeries()
+
         if index > 0:
             index = index - 1  # do not count the Total tab
 
             table_dict = self.tables[index]
-            # table = table_dict['object']
+            table = table_dict['object']
             table_type = table_dict['type']
-            table_name = table_dict['name']
 
             if table_type == "benchmark":
                 pass
             else:
                 pass
 
-            self.chart.setTitle(table_name)
+            table.create_series()
+            table.series.attachAxis(self.axis_x)
+            table.series.attachAxis(self.axis_y)
+            table.update_series()
         else:
             self.chart.setTitle("Total")
 
@@ -201,7 +204,7 @@ class ApplicationWindow(QObject):
 
         query = QSqlQuery(self.db)
 
-        query.prepare("create table " + name + " (id integer primary key, month text, value real, accumulated real)")
+        query.prepare("create table " + name + " (id integer primary key, date int, value real, accumulated real)")
 
         if not query.exec_():
             print("failed to create table " + name + ". Maybe it already exists.")
@@ -213,6 +216,7 @@ class ApplicationWindow(QObject):
 
         # data series
 
+        table.create_series()
         table.series.attachAxis(self.axis_x)
         table.series.attachAxis(self.axis_y)
 
@@ -227,7 +231,7 @@ class ApplicationWindow(QObject):
         table.lineedit_name.setText(name)
 
         table.model.setTable(name)
-        table.model.setHeaderData(1, Qt.Horizontal, "Month")
+        table.model.setHeaderData(1, Qt.Horizontal, "Date")
         table.model.setHeaderData(2, Qt.Horizontal, "Value")
         table.model.setHeaderData(3, Qt.Horizontal, "Accumulated")
         table.model.select()
