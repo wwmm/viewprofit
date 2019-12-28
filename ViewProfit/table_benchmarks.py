@@ -54,6 +54,7 @@ class TableBenchmarks(TableBase):
         button_update_name.clicked.connect(lambda: self.new_name.emit(self.name, self.lineedit_name.displayText()))
         button_remove_table.clicked.connect(self.on_remove_table)
         button_add_row.clicked.connect(self.add_row)
+        self.model.dataChanged.connect(self.data_changed)
 
         # event filter
 
@@ -99,12 +100,22 @@ class TableBenchmarks(TableBase):
             self.remove_from_db.emit(self.name)
 
     def create_series(self):
+        self.chart.removeAllSeries()
+
+        if self.chart.axisX():
+            self.chart.removeAxis(self.chart.axisX())
+
+        if self.chart.axisY():
+            self.chart.removeAxis(self.chart.axisY())
+
         self.chart.setTitle(self.name)
 
         self.series0 = QtCharts.QLineSeries()
         self.series1 = QtCharts.QLineSeries()
 
         self.series = QtCharts.QAreaSeries(self.series0, self.series1)
+
+        self.series.setName("Value")
 
         pen = QPen()
 
@@ -120,15 +131,18 @@ class TableBenchmarks(TableBase):
 
         self.series.setBrush(gradient)
 
-        self.series1.append(1262311200000, 1)
-        self.series1.append(1293847200000, 10)
-        self.series1.append(1325383200000, 5)
-        self.series1.append(1357005600000, 20)
+        # add data
 
-        self.series0.append(1262311200000, 0)
-        self.series0.append(1293847200000, 0)
-        self.series0.append(1325383200000, 0)
-        self.series0.append(1357005600000, 0)
+        query = QSqlQuery(self.db)
+
+        query.prepare("select date,value,accumulated from " + self.name + " order by date")
+
+        if query.exec_():
+            while query.next():
+                date, value, accumulated = query.value(0), query.value(1), query.value(2)
+
+                self.series0.append(date, 0.0)
+                self.series1.append(date, value)
 
         self.chart.addSeries(self.series)
 
@@ -138,7 +152,6 @@ class TableBenchmarks(TableBase):
         axis_x.setLabelsAngle(-10)
 
         axis_y = QtCharts.QValueAxis()
-        axis_y.setTitleText("y")
         # axis_y.setLabelFormat("%.1f")
 
         self.chart.addAxis(axis_x, Qt.AlignBottom)
@@ -147,18 +160,5 @@ class TableBenchmarks(TableBase):
         self.series.attachAxis(axis_x)
         self.series.attachAxis(axis_y)
 
-        # self.chart.axisX().setRange(QDateTime.fromMSecsSinceEpoch(self.series1.at(0).x()),
-        #                             QDateTime.fromMSecsSinceEpoch(self.series1.at(self.series1.count() - 1).x()))
-
-        # self.chart.axisY().setRange(self.series1.at(0).y(), self.series1.at(self.series1.count() - 1).y())
-
-    def update_series(self):
-        query = QSqlQuery(self.db)
-
-        query.prepare("select month,value,accumulated from " + self.name)
-
-        # output = []
-
-        # if query.exec_():
-        #     while query.next():
-        #         month, value, accumulated = query.value(0), query.value(1), query.value(2)
+    def data_changed(self, top_left_index, bottom_right_index, roles):
+        self.create_series()

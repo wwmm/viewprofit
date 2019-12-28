@@ -2,7 +2,6 @@
 
 import os
 
-import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QFile, QObject, Qt
 from PySide2.QtGui import QColor, QPainter
@@ -42,7 +41,7 @@ class ApplicationWindow(QObject):
 
         # Creating QChart
         self.chart = QtCharts.QChart()
-        self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
+        # self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
         self.chart.setTheme(QtCharts.QChart.ChartThemeLight)
 
         # self.chart.addAxis(self.axis_x, Qt.AlignBottom)
@@ -159,7 +158,6 @@ class ApplicationWindow(QObject):
                 pass
 
             table.create_series()
-            table.update_series()
         else:
             self.chart.setTitle("Total")
 
@@ -206,7 +204,6 @@ class ApplicationWindow(QObject):
 
         # signals
 
-        # table.model.dataChanged.connect(self.update_scale)
         table.new_name.connect(self.update_table_name)
         table.remove_from_db.connect(self.remove_table)
 
@@ -216,8 +213,8 @@ class ApplicationWindow(QObject):
 
         table.model.setTable(name)
         table.model.setHeaderData(1, Qt.Horizontal, "Date")
-        table.model.setHeaderData(2, Qt.Horizontal, "Value")
-        table.model.setHeaderData(3, Qt.Horizontal, "Accumulated")
+        table.model.setHeaderData(2, Qt.Horizontal, "Value %")
+        table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
         table.model.select()
 
         table.table_view.setColumnHidden(0, True)
@@ -247,32 +244,6 @@ class ApplicationWindow(QObject):
                     print("failed to rename table " + old_name)
 
         self.chart.setTitle(new_name)
-
-    def update_scale(self):
-        n_tables = len(self.tables)
-
-        if n_tables > 0:
-            Xmin, Xmax, Ymin, Ymax = self.tables[0].model.get_min_max_xy()
-
-            if n_tables > 1:
-                for n in range(n_tables):
-                    xmin, xmax, ymin, ymax = self.tables[n].model.get_min_max_xy()
-
-                    if xmin < Xmin:
-                        Xmin = xmin
-
-                    if xmax > Xmax:
-                        Xmax = xmax
-
-                    if ymin < Ymin:
-                        Ymin = ymin
-
-                    if ymax > Ymax:
-                        Ymax = ymax
-
-            fraction = 0.15
-            self.axis_x.setRange(Xmin - fraction * np.fabs(Xmin), Xmax + fraction * np.fabs(Xmax))
-            self.axis_y.setRange(Ymin - fraction * np.fabs(Ymin), Ymax + fraction * np.fabs(Ymax))
 
     def on_new_mouse_coords(self, point):
         self.label_mouse_coords.setText("x = {0:.6f}, y = {1:.6f}".format(point.x(), point.y()))

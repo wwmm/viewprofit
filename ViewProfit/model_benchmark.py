@@ -49,6 +49,8 @@ class ModelBenchmark(QSqlTableModel):
 
         column = index.column()
 
+        # self.dataChanged.emit(index, index)
+
         if column == 1:
             if isinstance(value, str):
                 qdt = QDateTime()
