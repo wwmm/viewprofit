@@ -62,14 +62,6 @@ class ApplicationWindow(QObject):
         self.chart_view.setRenderHint(QPainter.Antialiasing)
         self.chart_view.setRubberBand(QtCharts.QChartView.RectangleRubberBand)
 
-        # 1 tab by default
-
-        # self.graph = Graph()
-
-        # self.tab_widget.addTab(self.graph.main_widget, "Chart")
-
-        # self.add_tab()
-
         # custom stylesheet
 
         style_file = QFile(self.module_path + "/ui/custom.css")
@@ -171,8 +163,6 @@ class ApplicationWindow(QObject):
                 pass
 
             table.create_series()
-            table.series.attachAxis(self.axis_x)
-            table.series.attachAxis(self.axis_y)
             table.update_series()
         else:
             self.chart.setTitle("Total")
@@ -217,8 +207,6 @@ class ApplicationWindow(QObject):
         # data series
 
         table.create_series()
-        table.series.attachAxis(self.axis_x)
-        table.series.attachAxis(self.axis_y)
 
         # signals
 

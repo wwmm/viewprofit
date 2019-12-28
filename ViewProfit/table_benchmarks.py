@@ -3,7 +3,8 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime
+from PySide2.QtCore import QDateTime, QPointF
+from PySide2.QtGui import QGradient, QLinearGradient, QPen
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit,
@@ -100,15 +101,46 @@ class TableBenchmarks(TableBase):
     def create_series(self):
         self.chart.setTitle(self.name)
 
-        self.series = QtCharts.QLineSeries(self.table_view)
+        self.series0 = QtCharts.QLineSeries()
+        self.series1 = QtCharts.QLineSeries()
+
+        self.series = QtCharts.QAreaSeries(self.series0, self.series1)
+
+        pen = QPen()
+
+        pen.setWidth(1)
+
+        self.series.setPen(pen)
+
+        gradient = QLinearGradient(QPointF(0, 0), QPointF(0, 1))
+
+        # gradient.setColorAt(0.0, 0x3cc63c)
+        # gradient.setColorAt(1.0, 0x26f626)
+        gradient.setCoordinateMode(QGradient.ObjectBoundingMode)
+
+        self.series.setBrush(gradient)
 
         self.chart.addSeries(self.series)
 
-        self.mapper = QtCharts.QVXYModelMapper()
-        self.mapper.setXColumn(1)
-        self.mapper.setYColumn(2)
-        self.mapper.setSeries(self.series)
-        self.mapper.setModel(self.model)
+        self.series.attachAxis(self.chart.axisX())
+        self.series.attachAxis(self.chart.axisY())
+
+        self.series1.append(1262311200000, 1)
+        self.series1.append(1293847200000, 10)
+        self.series1.append(1325383200000, 5)
+        self.series1.append(1357005600000, 20)
+
+        self.series0.append(1262311200000, 0)
+        self.series0.append(1293847200000, 0)
+        self.series0.append(1325383200000, 0)
+        self.series0.append(1357005600000, 0)
+
+        self.chart.axisX().setRange(QDateTime.fromMSecsSinceEpoch(self.series1.at(0).x()),
+                                    QDateTime.fromMSecsSinceEpoch(self.series1.at(self.series1.count() - 1).x()))
+
+        # self.chart.axisX().setRange(self.series.at(0).x(), self.series.at(self.series.count() - 1).x())
+
+        self.chart.axisY().setRange(self.series1.at(0).y(), self.series1.at(self.series1.count() - 1).y())
 
     def update_series(self):
         query = QSqlQuery(self.db)
