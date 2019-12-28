@@ -3,7 +3,7 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, QPointF
+from PySide2.QtCore import QDateTime, QPointF, Qt
 from PySide2.QtGui import QGradient, QLinearGradient, QPen
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtUiTools import QUiLoader
@@ -120,11 +120,6 @@ class TableBenchmarks(TableBase):
 
         self.series.setBrush(gradient)
 
-        self.chart.addSeries(self.series)
-
-        self.series.attachAxis(self.chart.axisX())
-        self.series.attachAxis(self.chart.axisY())
-
         self.series1.append(1262311200000, 1)
         self.series1.append(1293847200000, 10)
         self.series1.append(1325383200000, 5)
@@ -135,12 +130,27 @@ class TableBenchmarks(TableBase):
         self.series0.append(1325383200000, 0)
         self.series0.append(1357005600000, 0)
 
-        self.chart.axisX().setRange(QDateTime.fromMSecsSinceEpoch(self.series1.at(0).x()),
-                                    QDateTime.fromMSecsSinceEpoch(self.series1.at(self.series1.count() - 1).x()))
+        self.chart.addSeries(self.series)
 
-        # self.chart.axisX().setRange(self.series.at(0).x(), self.series.at(self.series.count() - 1).x())
+        axis_x = QtCharts.QDateTimeAxis()
+        axis_x.setTitleText("Date")
+        axis_x.setFormat("dd/MM/yyyy")
+        axis_x.setLabelsAngle(-10)
 
-        self.chart.axisY().setRange(self.series1.at(0).y(), self.series1.at(self.series1.count() - 1).y())
+        axis_y = QtCharts.QValueAxis()
+        axis_y.setTitleText("y")
+        # axis_y.setLabelFormat("%.1f")
+
+        self.chart.addAxis(axis_x, Qt.AlignBottom)
+        self.chart.addAxis(axis_y, Qt.AlignLeft)
+
+        self.series.attachAxis(axis_x)
+        self.series.attachAxis(axis_y)
+
+        # self.chart.axisX().setRange(QDateTime.fromMSecsSinceEpoch(self.series1.at(0).x()),
+        #                             QDateTime.fromMSecsSinceEpoch(self.series1.at(self.series1.count() - 1).x()))
+
+        # self.chart.axisY().setRange(self.series1.at(0).y(), self.series1.at(self.series1.count() - 1).y())
 
     def update_series(self):
         query = QSqlQuery(self.db)

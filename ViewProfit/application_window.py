@@ -45,18 +45,8 @@ class ApplicationWindow(QObject):
         self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
         self.chart.setTheme(QtCharts.QChart.ChartThemeLight)
 
-        self.axis_x = QtCharts.QDateTimeAxis()
-        self.axis_x.setTitleText("Date")
-        self.axis_x.setFormat("dd/MM/yyyy")
-        self.axis_x.setTickCount(10)
-
-        self.axis_y = QtCharts.QValueAxis()
-        self.axis_y.setTitleText("y")
-        # self.axis_y.setRange(-10, 10)
-        # self.axis_y.setLabelFormat("%.1f")
-
-        self.chart.addAxis(self.axis_x, Qt.AlignBottom)
-        self.chart.addAxis(self.axis_y, Qt.AlignLeft)
+        # self.chart.addAxis(self.axis_x, Qt.AlignBottom)
+        # self.chart.addAxis(self.axis_y, Qt.AlignLeft)
 
         self.chart_view.setChart(self.chart)
         self.chart_view.setRenderHint(QPainter.Antialiasing)
@@ -149,6 +139,12 @@ class ApplicationWindow(QObject):
 
     def on_tab_changed(self, index):
         self.chart.removeAllSeries()
+
+        if self.chart.axisX():
+            self.chart.removeAxis(self.chart.axisX())
+
+        if self.chart.axisY():
+            self.chart.removeAxis(self.chart.axisY())
 
         if index > 0:
             index = index - 1  # do not count the Total tab
