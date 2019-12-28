@@ -3,7 +3,7 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtSql import QSqlTableModel
+from PySide2.QtSql import QSqlTableModel, QSqlQuery
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit, QMessageBox,
                                QPushButton, QTableView)
@@ -20,6 +20,7 @@ class TableBenchmarks(TableBase):
 
         self.chart = chart
 
+        self.db = db
         self.model = QSqlTableModel(self, db)
 
         loader = QUiLoader()
@@ -35,7 +36,7 @@ class TableBenchmarks(TableBase):
         self.groupbox_axis = self.main_widget.findChild(QGroupBox, "groupbox_axis")
         self.groupbox_norm = self.main_widget.findChild(QGroupBox, "groupbox_norm")
 
-        self.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table_view.setModel(self.model)
 
@@ -64,13 +65,25 @@ class TableBenchmarks(TableBase):
 
         button_update_name.clicked.connect(lambda: self.new_name.emit(self.name, self.lineedit_name.displayText()))
         button_remove_table.clicked.connect(self.on_remove_table)
+        button_add_row.clicked.connect(self.add_row)
 
         # event filter
 
         self.table_view.installEventFilter(self)
 
     def add_row(self):
-        self.model.append_row()
+        query = QSqlQuery(self.db)
+
+        query.prepare("insert or ignore into " + self.name + " values (null,?,?,?)")
+
+        query.addBindValue("month")
+        query.addBindValue(2.2)
+        query.addBindValue(3.3)
+
+        if query.exec_():
+            self.model.select()
+        else:
+            print("failed to create table " + self.name + ". Maybe it already exists.")
 
     def remove_selected_rows(self):
         s_model = self.table_view.selectionModel()

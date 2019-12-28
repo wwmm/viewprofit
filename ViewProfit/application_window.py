@@ -201,8 +201,7 @@ class ApplicationWindow(QObject):
 
         query = QSqlQuery(self.db)
 
-        query.prepare("create table " + name +
-                      " (id integer primary key, data int, mensal int, acumulado int)")
+        query.prepare("create table " + name + " (id integer primary key, month text, value real, accumulated real)")
 
         if not query.exec_():
             print("failed to create table " + name + ". Maybe it already exists.")
@@ -224,10 +223,15 @@ class ApplicationWindow(QObject):
         table.remove_from_db.connect(self.remove_table)
 
         table.name = name
+
         table.lineedit_name.setText(name)
 
         table.model.setTable(name)
+        table.model.setHeaderData(1, Qt.Horizontal, "Month")
+        table.model.setHeaderData(2, Qt.Horizontal, "Value")
+        table.model.setHeaderData(3, Qt.Horizontal, "Accumulated")
         table.model.select()
+
         table.table_view.setColumnHidden(0, True)
 
         self.tab_widget.addTab(table.main_widget, name)

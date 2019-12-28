@@ -155,7 +155,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Update</string>
+         <string>Update Name</string>
         </property>
        </widget>
       </item>
