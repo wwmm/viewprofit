@@ -12,12 +12,12 @@ class TableBase(QObject):
     new_name = Signal(str, str)
     remove_from_db = Signal(str,)
 
-    def __init__(self, chart):
+    def __init__(self, plot):
         QObject.__init__(self)
 
         self.module_path = os.path.dirname(__file__)
 
-        self.chart = chart
+        self.plot = plot
         self.model = None
         self.table_view = None
         self.series = None

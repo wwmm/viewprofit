@@ -33,7 +33,7 @@ class ModelBenchmark(QSqlTableModel):
                 if isinstance(variant_data, int):
                     qdt = QDateTime()
 
-                    qdt.setMSecsSinceEpoch(variant_data)
+                    qdt.setSecsSinceEpoch(variant_data)
 
                     return qdt.toString(Qt.SystemLocaleDate).split(" ")[0]
                 else:
@@ -49,15 +49,13 @@ class ModelBenchmark(QSqlTableModel):
 
         column = index.column()
 
-        # self.dataChanged.emit(index, index)
-
         if column == 1:
             if isinstance(value, str):
                 qdt = QDateTime()
 
                 qdt.setDate(QDate.fromString(value, "dd/MM/yyyy"))
 
-                return QSqlTableModel.setData(self, index, qdt.toMSecsSinceEpoch(), role)
+                return QSqlTableModel.setData(self, index, qdt.toSecsSinceEpoch(), role)
             else:
                 return False
         else:

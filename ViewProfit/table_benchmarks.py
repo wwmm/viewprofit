@@ -2,9 +2,7 @@
 
 import os
 
-from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, QPointF, Qt
-from PySide2.QtGui import QGradient, QLinearGradient, QPen
+from PySide2.QtCore import QDateTime
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit,
@@ -16,12 +14,12 @@ from ViewProfit.table_base import TableBase
 
 class TableBenchmarks(TableBase):
 
-    def __init__(self, chart, db):
-        TableBase.__init__(self, chart)
+    def __init__(self, plot, db):
+        TableBase.__init__(self, plot)
 
         self.module_path = os.path.dirname(__file__)
 
-        self.chart = chart
+        self.plot = plot
         self.db = db
         self.model = ModelBenchmark(self, db)
 
@@ -99,39 +97,10 @@ class TableBenchmarks(TableBase):
         if r == QMessageBox.Yes:
             self.remove_from_db.emit(self.name)
 
-    def create_series(self):
-        self.chart.removeAllSeries()
-
-        if self.chart.axisX():
-            self.chart.removeAxis(self.chart.axisX())
-
-        if self.chart.axisY():
-            self.chart.removeAxis(self.chart.axisY())
-
-        self.chart.setTitle(self.name)
-
-        self.series0 = QtCharts.QLineSeries()
-        self.series1 = QtCharts.QLineSeries()
-
-        self.series = QtCharts.QAreaSeries(self.series0, self.series1)
-
-        self.series.setName("Value")
-
-        pen = QPen()
-
-        pen.setWidth(1)
-
-        self.series.setPen(pen)
-
-        gradient = QLinearGradient(QPointF(0, 0), QPointF(0, 1))
-
-        # gradient.setColorAt(0.0, 0x3cc63c)
-        # gradient.setColorAt(1.0, 0x26f626)
-        gradient.setCoordinateMode(QGradient.ObjectBoundingMode)
-
-        self.series.setBrush(gradient)
-
-        # add data
+    def load_data(self):
+        list_date = []
+        list_value = []
+        list_accumulated = []
 
         query = QSqlQuery(self.db)
 
@@ -141,24 +110,15 @@ class TableBenchmarks(TableBase):
             while query.next():
                 date, value, accumulated = query.value(0), query.value(1), query.value(2)
 
-                self.series0.append(date, 0.0)
-                self.series1.append(date, value)
+                list_date.append(date)
+                list_value.append(value)
+                list_accumulated.append(accumulated)
 
-        self.chart.addSeries(self.series)
+        self.plot.set_title(self.name)
+        self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
+        self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
 
-        axis_x = QtCharts.QDateTimeAxis()
-        axis_x.setTitleText("Date")
-        axis_x.setFormat("dd/MM/yyyy")
-        axis_x.setLabelsAngle(-10)
-
-        axis_y = QtCharts.QValueAxis()
-        # axis_y.setLabelFormat("%.1f")
-
-        self.chart.addAxis(axis_x, Qt.AlignBottom)
-        self.chart.addAxis(axis_y, Qt.AlignLeft)
-
-        self.series.attachAxis(axis_x)
-        self.series.attachAxis(axis_y)
+        self.plot.redraw_canvas()
 
     def data_changed(self, top_left_index, bottom_right_index, roles):
-        self.create_series()
+        self.load_data()
