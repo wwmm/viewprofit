@@ -3,7 +3,7 @@
 import os
 
 from PySide2.QtCore import QFile, QObject, Qt
-from PySide2.QtGui import QColor, QPainter
+from PySide2.QtGui import QColor
 from PySide2.QtSql import QSqlDatabase, QSqlQuery
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
@@ -194,6 +194,7 @@ class ApplicationWindow(QObject):
         table.model.setHeaderData(1, Qt.Horizontal, "Date")
         table.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
         table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
+        table.model.setSort(1, Qt.SortOrder.DescendingOrder)
         table.model.select()
 
         table.table_view.setColumnHidden(0, True)
@@ -222,7 +223,7 @@ class ApplicationWindow(QObject):
                 if not query.exec_():
                     print("failed to rename table " + old_name)
 
-        self.chart.setTitle(new_name)
+        self.plot.setTitle(new_name)
 
     def on_new_mouse_coords(self, point_x, point_y):
         if point_x > 1:

@@ -80,7 +80,7 @@
          <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
         </property>
         <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectRows</enum>
+         <enum>QAbstractItemView::SelectItems</enum>
         </property>
         <property name="textElideMode">
          <enum>Qt::ElideNone</enum>
@@ -183,7 +183,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Remove Row</string>
+           <string>Remove Rows</string>
           </property>
          </widget>
         </item>

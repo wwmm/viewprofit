@@ -2,7 +2,6 @@
 
 import os
 
-import numpy as np
 from PySide2.QtCore import QEvent, QObject, Qt, Signal
 from PySide2.QtGui import QColor, QGuiApplication, QKeySequence
 from PySide2.QtWidgets import QGraphicsDropShadowEffect
@@ -64,7 +63,7 @@ class TableBase(QObject):
                         for j in range(selection_range.left(), selection_range.right() + 1):
                             row_value.append(s_model.model().index(i, j).data())
 
-                        table_str += "\t".join(row_value) + "\n"
+                        table_str += "\t".join(map(str, row_value)) + "\n"
 
                     clipboard.setText(table_str)
 
@@ -91,11 +90,15 @@ class TableBase(QObject):
                         if model_i < self.model.rowCount():
                             row_cols = table_rows[i].split("\t")
 
+                            print(model_i, row_cols)
+
                             for j in range(len(row_cols)):
                                 model_j = first_col + j
 
                                 if model_j < self.model.columnCount():
                                     self.model.setData(self.model.index(model_i, model_j), row_cols[j], Qt.EditRole)
+
+                                    print("setData", model_i, model_j)
 
                                     if model_j > last_col_idx:
                                         last_col_idx = model_j
@@ -106,6 +109,8 @@ class TableBase(QObject):
                     first_index = self.model.index(first_row, first_col)
                     last_index = self.model.index(last_row_idx, last_col_idx)
 
+                    self.model.submitAll()
+                    self.model.select()
                     self.model.dataChanged.emit(first_index, last_index)
 
                 return True
@@ -116,51 +121,31 @@ class TableBase(QObject):
 
         return QObject.eventFilter(self, obj, event)
 
-    def add_row(self):
-        self.model.append_row()
-
     def remove_selected_rows(self):
         s_model = self.table_view.selectionModel()
 
         if s_model.hasSelection():
-            index_list = s_model.selectedRows()
-            int_index_list = []
+            index_list = s_model.selectedIndexes()
+
+            row_list, column_list = set(), set()
 
             for index in index_list:
-                int_index_list.append(index.row())
+                row_list.add(index.row())
+                column_list.add(index.column())
 
-            self.model.remove_rows(int_index_list)
+            # go ahead only if all columns above the primary key were selected
+            for idx in range(1, self.model.columnCount()):
+                if idx not in column_list:
+                    return
 
-    def selection_changed(self, selected, deselected):
-        s_model = self.table_view.selectionModel()
+            row_list = list(row_list)
 
-        if s_model.hasSelection():
-            selection_labels = []
-            selection_pc1 = []
-            selection_pc2 = []
-            indexes = s_model.selectedRows()
+            row_list.sort(reverse=True)
 
-            for index in indexes:
-                row_idx = index.row()
+            for index in row_list:
+                self.model.removeRow(index)
 
-                selection_labels.append(self.model.data_name[row_idx])
-                selection_pc1.append(self.model.data_pc1[row_idx])
-                selection_pc2.append(self.model.data_pc2[row_idx])
+    def data_changed(self, top_left_index, bottom_right_index, roles):
+        self.recalculate_columns()
 
-            # update the model used to show the selected rows
-
-            self.model_selection.beginResetModel()
-
-            self.model_selection.data_name = np.asarray(selection_labels)
-            self.model_selection.data_pc1 = np.asarray(selection_pc1)
-            self.model_selection.data_pc2 = np.asarray(selection_pc2)
-
-            self.model_selection.endResetModel()
-
-            first_index = self.model_selection.index(0, 0)
-            last_index = self.model_selection.index(self.model_selection.rowCount() - 1,
-                                                    self.model_selection.columnCount() - 1)
-
-            self.model_selection.dataChanged.emit(first_index, last_index)
-        else:
-            print("no selection")
+        self.load_data()

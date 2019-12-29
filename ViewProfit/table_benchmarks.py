@@ -35,6 +35,7 @@ class TableBenchmarks(TableBase):
         button_update_name = self.main_widget.findChild(QPushButton, "button_update_name")
         button_add_row = self.main_widget.findChild(QPushButton, "button_add_row")
         button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
+        button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
         self.groupbox_axis = self.main_widget.findChild(QGroupBox, "groupbox_axis")
         self.groupbox_norm = self.main_widget.findChild(QGroupBox, "groupbox_norm")
 
@@ -48,11 +49,13 @@ class TableBenchmarks(TableBase):
         button_update_name.setGraphicsEffect(self.button_shadow())
         button_add_row.setGraphicsEffect(self.button_shadow())
         button_remove_table.setGraphicsEffect(self.button_shadow())
+        button_remove_row.setGraphicsEffect(self.button_shadow())
 
         # signals
 
         button_update_name.clicked.connect(lambda: self.new_name.emit(self.name, self.lineedit_name.displayText()))
         button_remove_table.clicked.connect(self.on_remove_table)
+        button_remove_row.clicked.connect(self.remove_selected_rows)
         button_add_row.clicked.connect(self.add_row)
         self.model.dataChanged.connect(self.data_changed)
 
@@ -70,21 +73,11 @@ class TableBenchmarks(TableBase):
         query.addBindValue(0.0)
 
         if query.exec_():
+            self.model.submitAll()
             self.model.select()
+            self.load_data()
         else:
-            print("failed to create table " + self.name + ". Maybe it already exists.")
-
-    def remove_selected_rows(self):
-        s_model = self.table_view.selectionModel()
-
-        if s_model.hasSelection():
-            index_list = s_model.selectedRows()
-            int_index_list = []
-
-            for index in index_list:
-                int_index_list.append(index.row())
-
-            self.model.remove_rows(int_index_list)
+            print("failed to add row to table " + self.name)
 
     def on_remove_table(self):
         box = QMessageBox(self.main_widget)
@@ -153,19 +146,16 @@ class TableBenchmarks(TableBase):
                 list_value.append(100 * value)
                 list_accumulated.append(100 * accumulated)
 
-        self.plot.set_title(self.name)
+        if len(list_date) > 0:
+            self.plot.set_title(self.name)
+            self.plot.set_grid(True)
 
-        l1 = self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
-        l2 = self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
+            l1 = self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
+            l2 = self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
 
-        self.plot.set_y_to_percentage_format()
+            self.plot_lines.append(l1)
+            self.plot_lines.append(l2)
 
-        self.plot.redraw_canvas()
+            self.plot.set_y_to_percentage_format()
 
-        self.plot_lines.append(l1)
-        self.plot_lines.append(l2)
-
-    def data_changed(self, top_left_index, bottom_right_index, roles):
-        self.recalculate_columns()
-
-        self.load_data()
+            self.plot.redraw_canvas()

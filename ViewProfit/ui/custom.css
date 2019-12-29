@@ -51,15 +51,18 @@ QPushButton#button_save_image:pressed {
   background-color: #1e88e5;
 }
 
-QPushButton#button_remove_table {
+QPushButton#button_remove_table,
+QPushButton#button_remove_row {
   background-color: #c62828;
 }
 
-QPushButton#button_remove_table:hover {
+QPushButton#button_remove_table:hover,
+QPushButton#button_remove_row:hover {
   background-color: #d32f2f;
 }
 
-QPushButton#button_remove_table:pressed {
+QPushButton#button_remove_table:pressed,
+QPushButton#button_remove_row:pressed {
   background-color: #e53935;
 }
 

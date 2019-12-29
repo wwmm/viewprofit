@@ -42,7 +42,8 @@ class ModelBenchmark(QSqlTableModel):
             elif column == 2 or column == 3:
                 variant_data = QSqlTableModel.data(self, index, role)
 
-                return variant_data * 100
+                if variant_data:
+                    return variant_data * 100
 
             return QSqlTableModel.data(self, index, role)
         else:
@@ -64,6 +65,8 @@ class ModelBenchmark(QSqlTableModel):
             else:
                 return False
         elif column == 2:
+            value = float(value)
+
             return QSqlTableModel.setData(self, index, value * 0.01, role)
         else:
             return QSqlTableModel.setData(self, index, value, role)
