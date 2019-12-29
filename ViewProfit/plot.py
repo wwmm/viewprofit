@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import matplotlib.dates as mdates
+import matplotlib.ticker as mtick
 from matplotlib import rcParams
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -119,3 +120,6 @@ class Plot(FigureCanvasQTAgg):
 
     def num2date(self, value):
         return mdates.num2date(value)
+
+    def set_y_to_percentage_format(self):
+        self.axes.yaxis.set_major_formatter(mtick.PercentFormatter())

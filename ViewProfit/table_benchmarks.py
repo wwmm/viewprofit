@@ -150,13 +150,15 @@ class TableBenchmarks(TableBase):
                 date, value, accumulated = query.value(0), query.value(1), query.value(2)
 
                 list_date.append(date)
-                list_value.append(value)
-                list_accumulated.append(accumulated)
+                list_value.append(100 * value)
+                list_accumulated.append(100 * accumulated)
 
         self.plot.set_title(self.name)
 
         l1 = self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
         l2 = self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
+
+        self.plot.set_y_to_percentage_format()
 
         self.plot.redraw_canvas()
 
