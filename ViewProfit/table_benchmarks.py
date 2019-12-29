@@ -2,6 +2,7 @@
 
 import os
 
+import numpy as np
 from PySide2.QtCore import QDateTime
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtUiTools import QUiLoader
@@ -22,6 +23,7 @@ class TableBenchmarks(TableBase):
         self.plot = plot
         self.db = db
         self.model = ModelBenchmark(self, db)
+        self.plot_lines = []
 
         loader = QUiLoader()
 
@@ -63,7 +65,7 @@ class TableBenchmarks(TableBase):
 
         query.prepare("insert or ignore into " + self.name + " values (null,?,?,?)")
 
-        query.addBindValue(QDateTime().currentMSecsSinceEpoch())
+        query.addBindValue(QDateTime().currentSecsSinceEpoch())
         query.addBindValue(0.0)
         query.addBindValue(0.0)
 
@@ -97,7 +99,44 @@ class TableBenchmarks(TableBase):
         if r == QMessageBox.Yes:
             self.remove_from_db.emit(self.name)
 
+    def recalculate_columns(self):
+        query = QSqlQuery(self.db)
+
+        query.prepare("select date,value from " + self.name + " order by date")
+
+        if query.exec_():
+            list_date = []
+            list_value = []
+
+            while query.next():
+                date, value = query.value(0), query.value(1)
+
+                list_date.append(date)
+                list_value.append(value)
+
+            if len(list_value) > 0:
+                list_value = np.array(list_value)
+
+                accumulated = np.cumprod(list_value + 1.0) - 1.0
+
+                query.prepare("update " + self.name + " set accumulated=? where date=?")
+
+                query.addBindValue(accumulated.tolist())
+                query.addBindValue(list_date)
+
+                if not query.execBatch():
+                    print("failed to recalculate column values in table " + self.name)
+                else:
+                    self.model.submitAll()
+                    self.model.select()
+
     def load_data(self):
+        # remove old plots
+
+        for l in self.plot_lines:
+            if l in self.plot.axes.lines:
+                self.plot.axes.lines.remove(l)
+
         list_date = []
         list_value = []
         list_accumulated = []
@@ -115,10 +154,16 @@ class TableBenchmarks(TableBase):
                 list_accumulated.append(accumulated)
 
         self.plot.set_title(self.name)
-        self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
-        self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
+
+        l1 = self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
+        l2 = self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
 
         self.plot.redraw_canvas()
 
+        self.plot_lines.append(l1)
+        self.plot_lines.append(l2)
+
     def data_changed(self, top_left_index, bottom_right_index, roles):
+        self.recalculate_columns()
+
         self.load_data()

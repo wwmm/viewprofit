@@ -8,11 +8,11 @@ from matplotlib.widgets import RectangleSelector
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QSizePolicy
 
-rcParams["font.size"] = 14
+rcParams["font.size"] = 12
 rcParams["legend.fontsize"] = "small"
 rcParams["figure.titlesize"] = "medium"
-rcParams["xtick.labelsize"] = "medium"
-rcParams["ytick.labelsize"] = "medium"
+rcParams["xtick.labelsize"] = "small"
+rcParams["ytick.labelsize"] = "small"
 rcParams["markers.fillstyle"] = "none"
 
 
@@ -61,6 +61,8 @@ class Plot(FigureCanvasQTAgg):
         x = mdates.epoch2num(x)
 
         line_obj, = self.axes.plot(x, y, color=self.colors[marker_idx], linestyle="-", label=label)
+
+        # self.axes.fill_between(x, y, alpha=0.4)
 
         return line_obj
 
