@@ -12,7 +12,7 @@ class ModelBenchmark(QSqlTableModel):
     def flags(self, index):
         # column = index.column()
 
-        # if column < 4:
+        # if column < 3:
         #     return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         # else:
         #     return Qt.ItemIsEnabled | Qt.ItemIsSelectable

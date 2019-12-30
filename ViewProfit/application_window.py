@@ -141,7 +141,7 @@ class ApplicationWindow(QObject):
             index = index - 1  # do not count the Total tab
 
             table_dict = self.tables[index]
-            # table = table_dict['object']
+            table = table_dict['object']
             table_type = table_dict['type']
 
             if table_type == "benchmark":
@@ -149,7 +149,7 @@ class ApplicationWindow(QObject):
             else:
                 pass
 
-            # table.load_data()
+            table.calculate()
         else:
             pass
 

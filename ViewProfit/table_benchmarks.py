@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
 
 import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, Qt, Signal
-from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit,
-                               QMessageBox, QPushButton, QTableView)
 
 from ViewProfit.model_benchmark import ModelBenchmark
 from ViewProfit.table_base import TableBase
@@ -19,52 +15,9 @@ class TableBenchmarks(TableBase):
     def __init__(self, db, chart):
         TableBase.__init__(self, db, chart)
 
-        self.module_path = os.path.dirname(__file__)
-
         self.model = ModelBenchmark(self, db)
 
-        loader = QUiLoader()
-
-        self.main_widget = loader.load(self.module_path + "/ui/table_benchmarks.ui")
-
-        self.table_view = self.main_widget.findChild(QTableView, "table_view")
-        table_cfg_frame = self.main_widget.findChild(QFrame, "table_cfg_frame")
-        self.lineedit_name = self.main_widget.findChild(QLineEdit, "benchmark_name")
-        button_update_name = self.main_widget.findChild(QPushButton, "button_update_name")
-        button_add_row = self.main_widget.findChild(QPushButton, "button_add_row")
-        button_calculate = self.main_widget.findChild(QPushButton, "button_calculate")
-        button_save_table = self.main_widget.findChild(QPushButton, "button_save_table")
-        button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
-        button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
-        self.groupbox_axis = self.main_widget.findChild(QGroupBox, "groupbox_axis")
-        self.groupbox_norm = self.main_widget.findChild(QGroupBox, "groupbox_norm")
-
-        self.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table_view.setModel(self.model)
-
-        # effects
-
-        table_cfg_frame.setGraphicsEffect(self.card_shadow())
-        button_update_name.setGraphicsEffect(self.button_shadow())
-        button_add_row.setGraphicsEffect(self.button_shadow())
-        button_calculate.setGraphicsEffect(self.button_shadow())
-        button_save_table.setGraphicsEffect(self.button_shadow())
-        button_remove_table.setGraphicsEffect(self.button_shadow())
-        button_remove_row.setGraphicsEffect(self.button_shadow())
-
-        # signals
-
-        button_update_name.clicked.connect(lambda: self.new_name.emit(self.name, self.lineedit_name.displayText()))
-        button_remove_table.clicked.connect(self.on_remove_table)
-        button_save_table.clicked.connect(self.save_table_to_db)
-        button_remove_row.clicked.connect(self.remove_selected_rows)
-        button_add_row.clicked.connect(self.add_row)
-        button_calculate.clicked.connect(self.calculate)
-
-        # event filter
-
-        self.table_view.installEventFilter(self)
 
     def add_row(self):
         rec = self.model.record()
@@ -74,24 +27,10 @@ class TableBenchmarks(TableBase):
         rec.setValue("value", float(0.0))
         rec.setValue("accumulated", float(0.0))
 
-        if self.model.insertRecord(0, rec):
-            # self.load_data()
-            pass
-        else:
+        if not self.model.insertRecord(0, rec):
             print("failed to add row to table " + self.name)
 
-    def on_remove_table(self):
-        box = QMessageBox(self.main_widget)
-
-        box.setText("Remove this benchmark permanentely from the database?")
-        box.setInformativeText("This action cannot be undone!")
-        box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        box.setDefaultButton(QMessageBox.Yes)
-
-        r = box.exec_()
-
-        if r == QMessageBox.Yes:
-            self.remove_from_db.emit(self.name)
+            print(self.model.lastError().text())
 
     def recalculate_columns(self):
         list_value = []
@@ -117,20 +56,14 @@ class TableBenchmarks(TableBase):
                 self.model.setRecord(n, rec)
 
     def show_chart(self):
-        self.chart.removeAllSeries()
-
-        if self.chart.axisX():
-            self.chart.removeAxis(self.chart.axisX())
-
-        if self.chart.axisY():
-            self.chart.removeAxis(self.chart.axisY())
+        self.clear_chart()
 
         self.chart.setTitle(self.name)
 
         series0 = QtCharts.QLineSeries()
         series1 = QtCharts.QLineSeries()
 
-        series0.setName("Value")
+        series0.setName("Monthly Value")
         series1.setName("Accumulated")
 
         series0.hovered.connect(self.on_hover)
@@ -164,6 +97,7 @@ class TableBenchmarks(TableBase):
         axis_x.setLabelsAngle(-10)
 
         axis_y = QtCharts.QValueAxis()
+        axis_y.setTitleText("%")
         # axis_y.setLabelFormat("%.1f")
         axis_y.setRange(1.01 * vmin, 1.01 * vmax)
 
@@ -175,13 +109,3 @@ class TableBenchmarks(TableBase):
 
         series1.attachAxis(axis_x)
         series1.attachAxis(axis_y)
-
-    def save_table_to_db(self):
-        if not self.model.submitAll():
-            print("failed to save table " + self.name + " to the database")
-
-            print(self.model.lastError().text())
-
-    def on_hover(self, point, state):
-        if state:
-            self.new_mouse_coords.emit(point)
