@@ -2,14 +2,14 @@
 
 import os
 
-from PySide2.QtCore import QFile, QObject, Qt
-from PySide2.QtGui import QColor
+from PySide2.QtCharts import QtCharts
+from PySide2.QtCore import QDateTime, QFile, QObject, Qt
+from PySide2.QtGui import QColor, QPainter
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
                                QLabel, QPushButton, QTabWidget)
 
-from ViewProfit.plot import Plot
 from ViewProfit.table_benchmarks import TableBenchmarks
 
 
@@ -26,12 +26,12 @@ class ApplicationWindow(QObject):
 
         loader = QUiLoader()
 
-        loader.registerCustomWidget(Plot)
+        loader.registerCustomWidget(QtCharts.QChartView)
 
         self.window = loader.load(self.module_path + "/ui/application_window.ui")
 
-        plot_frame = self.window.findChild(QFrame, "plot_frame")
-        self.plot = self.window.findChild(Plot, "plot")
+        chart_frame = self.window.findChild(QFrame, "chart_frame")
+        self.chart_view = self.window.findChild(QtCharts.QChartView, "chart_view")
         self.tab_widget = self.window.findChild(QTabWidget, "tab_widget")
         button_add_fund = self.window.findChild(QPushButton, "button_add_fund")
         button_add_benchmark = self.window.findChild(QPushButton, "button_add_benchmark")
@@ -51,7 +51,7 @@ class ApplicationWindow(QObject):
         # effects
 
         self.tab_widget.setGraphicsEffect(self.card_shadow())
-        plot_frame.setGraphicsEffect(self.card_shadow())
+        chart_frame.setGraphicsEffect(self.card_shadow())
         button_reset_zoom.setGraphicsEffect(self.button_shadow())
         button_save_image.setGraphicsEffect(self.button_shadow())
         button_add_fund.setGraphicsEffect(self.button_shadow())
@@ -63,7 +63,7 @@ class ApplicationWindow(QObject):
         button_add_benchmark.clicked.connect(self.add_benchmark_table)
         button_reset_zoom.clicked.connect(self.reset_zoom)
         button_save_image.clicked.connect(self.save_image)
-        self.plot.mouse_motion.connect(self.on_new_mouse_coords)
+        # self.plot.mouse_motion.connect(self.on_new_mouse_coords)
 
         # init sqlite
 
@@ -76,6 +76,16 @@ class ApplicationWindow(QObject):
 
             if self.db.open():
                 print("the database was opened!")
+
+        # Creating QChart
+        self.chart = QtCharts.QChart()
+        self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
+        self.chart.setTheme(QtCharts.QChart.ChartThemeLight)
+        self.chart.setAcceptHoverEvents(True)
+
+        self.chart_view.setChart(self.chart)
+        self.chart_view.setRenderHint(QPainter.Antialiasing)
+        self.chart_view.setRubberBand(QtCharts.QChartView.RectangleRubberBand)
 
         self.load_saved_tables()
 
@@ -126,7 +136,6 @@ class ApplicationWindow(QObject):
                     self.add_table('benchmark', name)
 
     def on_tab_changed(self, index):
-        self.plot.axes.clear()
 
         if index > 0:
             index = index - 1  # do not count the Total tab
@@ -177,7 +186,7 @@ class ApplicationWindow(QObject):
         self.add_table('benchmark', name)
 
     def add_table(self, table_type, name):
-        table = TableBenchmarks(self.plot, self.db)
+        table = TableBenchmarks(self.db, self.chart)
 
         table.name = name
 
@@ -201,6 +210,7 @@ class ApplicationWindow(QObject):
 
         table.new_name.connect(self.update_table_name)
         table.remove_from_db.connect(self.remove_table)
+        table.new_mouse_coords.connect(self.on_new_mouse_coords)
 
     def update_table_name(self, old_name, new_name):
         for n in range(len(self.tables)):
@@ -222,13 +232,14 @@ class ApplicationWindow(QObject):
                 if not query.exec_():
                     print("failed to rename table " + old_name)
 
-        self.plot.set_title(new_name)
+        self.chart.setTitle(new_name)
 
-    def on_new_mouse_coords(self, point_x, point_y):
-        if point_x > 1:
-            d = self.plot.num2date(point_x)
+    def on_new_mouse_coords(self, point):
+        qdt = QDateTime()
 
-            self.label_mouse_xy.setText("x = {0}, y = {1:.2f}".format(d.strftime("%d/%m/%Y"), point_y))
+        qdt.setMSecsSinceEpoch(point.x())
+
+        self.label_mouse_xy.setText("x = {0}, y = {1:.2f}".format(qdt.toString("dd/MM/yyyy"), point.y()))
 
     def save_image(self):
         home = os.path.expanduser("~")
@@ -239,8 +250,9 @@ class ApplicationWindow(QObject):
             if not path.endswith(".png"):
                 path += ".png"
 
-            self.plot.save_image(path)
+            pixmap = self.chart_view.grab()
+
+            pixmap.save(path)
 
     def reset_zoom(self):
-        # self.chart.zoomReset()
-        pass
+        self.chart.zoomReset()

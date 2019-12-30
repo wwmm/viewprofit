@@ -11,12 +11,13 @@ class TableBase(QObject):
     new_name = Signal(str, str)
     remove_from_db = Signal(str,)
 
-    def __init__(self, plot):
+    def __init__(self, db, chart):
         QObject.__init__(self)
 
         self.module_path = os.path.dirname(__file__)
 
-        self.plot = plot
+        self.db = db
+        self.chart = chart
         self.model = None
         self.table_view = None
         self.series = None
@@ -138,4 +139,4 @@ class TableBase(QObject):
     def calculate(self):
         self.recalculate_columns()
 
-        self.load_data()
+        self.show_chart()

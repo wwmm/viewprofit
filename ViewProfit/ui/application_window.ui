@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>994</width>
-    <height>603</height>
+    <width>1098</width>
+    <height>604</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -105,7 +105,7 @@
      </widget>
     </item>
     <item row="1" column="2" rowspan="2">
-     <widget class="QFrame" name="plot_frame">
+     <widget class="QFrame" name="chart_frame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
         <horstretch>0</horstretch>
@@ -119,6 +119,39 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="PySide2.QtCharts.QtCharts.QChartView" name="chart_view">
+         <property name="minimumSize">
+          <size>
+           <width>640</width>
+           <height>480</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_mouse_xy">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_mouse_coords">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
        <item row="3" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
@@ -149,39 +182,6 @@
          </item>
         </layout>
        </item>
-       <item row="0" column="0">
-        <widget class="Plot" name="plot" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_mouse_coords">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string notr="true"/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_mouse_xy">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
@@ -190,10 +190,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Plot</class>
-   <extends>QWidget</extends>
-   <header>QtWidgets</header>
-   <container>1</container>
+   <class>PySide2.QtCharts.QtCharts.QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>qtcharts.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
