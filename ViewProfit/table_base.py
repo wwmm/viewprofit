@@ -90,28 +90,17 @@ class TableBase(QObject):
                         if model_i < self.model.rowCount():
                             row_cols = table_rows[i].split("\t")
 
-                            print(model_i, row_cols)
-
                             for j in range(len(row_cols)):
                                 model_j = first_col + j
 
                                 if model_j < self.model.columnCount():
                                     self.model.setData(self.model.index(model_i, model_j), row_cols[j], Qt.EditRole)
 
-                                    print("setData", model_i, model_j)
-
                                     if model_j > last_col_idx:
                                         last_col_idx = model_j
 
                             if model_i > last_row_idx:
                                 last_row_idx = model_i
-
-                    first_index = self.model.index(first_row, first_col)
-                    last_index = self.model.index(last_row_idx, last_col_idx)
-
-                    self.model.submitAll()
-                    self.model.select()
-                    self.model.dataChanged.emit(first_index, last_index)
 
                 return True
             else:
@@ -133,7 +122,7 @@ class TableBase(QObject):
                 row_list.add(index.row())
                 column_list.add(index.column())
 
-            # go ahead only if all columns above the primary key were selected
+            # go ahead only if all columns above the id were selected
             for idx in range(1, self.model.columnCount()):
                 if idx not in column_list:
                     return
@@ -142,10 +131,12 @@ class TableBase(QObject):
 
             row_list.sort(reverse=True)
 
-            for index in row_list:
-                self.model.removeRow(index)
+            if len(row_list) > 0:
+                for index in row_list:
+                    self.model.removeRow(index)
 
     def data_changed(self, top_left_index, bottom_right_index, roles):
-        self.recalculate_columns()
+        # self.recalculate_columns()
 
-        self.load_data()
+        # self.load_data()
+        pass

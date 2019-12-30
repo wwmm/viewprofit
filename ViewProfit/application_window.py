@@ -4,13 +4,13 @@ import os
 
 from PySide2.QtCore import QFile, QObject, Qt
 from PySide2.QtGui import QColor
-from PySide2.QtSql import QSqlDatabase, QSqlQuery
+from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
                                QLabel, QPushButton, QTabWidget)
 
-from ViewProfit.table_benchmarks import TableBenchmarks
 from ViewProfit.plot import Plot
+from ViewProfit.table_benchmarks import TableBenchmarks
 
 
 class ApplicationWindow(QObject):
@@ -132,7 +132,7 @@ class ApplicationWindow(QObject):
             index = index - 1  # do not count the Total tab
 
             table_dict = self.tables[index]
-            table = table_dict['object']
+            # table = table_dict['object']
             table_type = table_dict['type']
 
             if table_type == "benchmark":
@@ -140,7 +140,7 @@ class ApplicationWindow(QObject):
             else:
                 pass
 
-            table.load_data()
+            # table.load_data()
         else:
             pass
 
@@ -167,7 +167,9 @@ class ApplicationWindow(QObject):
 
         query = QSqlQuery(self.db)
 
-        query.prepare("create table " + name + " (id integer primary key, date int, value real, accumulated real)")
+        query.prepare("create table " + name + " (id integer primary key," +
+                      " date int default (cast(strftime('%s','now') as int))," + " value real default 0.0," +
+                      " accumulated real default 0.0)")
 
         if not query.exec_():
             print("failed to create table " + name + ". Maybe it already exists.")
@@ -177,31 +179,28 @@ class ApplicationWindow(QObject):
     def add_table(self, table_type, name):
         table = TableBenchmarks(self.plot, self.db)
 
-        # data series
-
-        # table.create_series()
-
-        # signals
-
-        table.new_name.connect(self.update_table_name)
-        table.remove_from_db.connect(self.remove_table)
-
         table.name = name
 
         table.lineedit_name.setText(name)
 
         table.model.setTable(name)
+        table.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         table.model.setHeaderData(1, Qt.Horizontal, "Date")
         table.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
         table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
         table.model.setSort(1, Qt.SortOrder.DescendingOrder)
         table.model.select()
 
-        table.table_view.setColumnHidden(0, True)
+        table.table_view.setColumnHidden(0, True)  # do no show the id column
 
         self.tab_widget.addTab(table.main_widget, name)
 
         self.tables.append(dict({'object': table, 'type': table_type, 'name': name}))
+
+        # signals
+
+        table.new_name.connect(self.update_table_name)
+        table.remove_from_db.connect(self.remove_table)
 
     def update_table_name(self, old_name, new_name):
         for n in range(len(self.tables)):
@@ -223,7 +222,7 @@ class ApplicationWindow(QObject):
                 if not query.exec_():
                     print("failed to rename table " + old_name)
 
-        self.plot.setTitle(new_name)
+        self.plot.set_title(new_name)
 
     def on_new_mouse_coords(self, point_x, point_y):
         if point_x > 1:

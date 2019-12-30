@@ -34,6 +34,7 @@ class TableBenchmarks(TableBase):
         self.lineedit_name = self.main_widget.findChild(QLineEdit, "benchmark_name")
         button_update_name = self.main_widget.findChild(QPushButton, "button_update_name")
         button_add_row = self.main_widget.findChild(QPushButton, "button_add_row")
+        button_save_table = self.main_widget.findChild(QPushButton, "button_save_table")
         button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
         button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
         self.groupbox_axis = self.main_widget.findChild(QGroupBox, "groupbox_axis")
@@ -48,6 +49,7 @@ class TableBenchmarks(TableBase):
         table_cfg_frame.setGraphicsEffect(self.card_shadow())
         button_update_name.setGraphicsEffect(self.button_shadow())
         button_add_row.setGraphicsEffect(self.button_shadow())
+        button_save_table.setGraphicsEffect(self.button_shadow())
         button_remove_table.setGraphicsEffect(self.button_shadow())
         button_remove_row.setGraphicsEffect(self.button_shadow())
 
@@ -55,6 +57,7 @@ class TableBenchmarks(TableBase):
 
         button_update_name.clicked.connect(lambda: self.new_name.emit(self.name, self.lineedit_name.displayText()))
         button_remove_table.clicked.connect(self.on_remove_table)
+        button_save_table.clicked.connect(self.save_table_to_db)
         button_remove_row.clicked.connect(self.remove_selected_rows)
         button_add_row.clicked.connect(self.add_row)
         self.model.dataChanged.connect(self.data_changed)
@@ -64,18 +67,16 @@ class TableBenchmarks(TableBase):
         self.table_view.installEventFilter(self)
 
     def add_row(self):
-        query = QSqlQuery(self.db)
+        rec = self.model.record()
 
-        query.prepare("insert or ignore into " + self.name + " values (null,?,?,?)")
+        rec.setGenerated("id", False)
+        rec.setValue("date", QDateTime().currentSecsSinceEpoch())
+        rec.setValue("value", 0.0)
+        rec.setValue("accumulated", 0.0)
 
-        query.addBindValue(QDateTime().currentSecsSinceEpoch())
-        query.addBindValue(0.0)
-        query.addBindValue(0.0)
-
-        if query.exec_():
-            self.model.submitAll()
-            self.model.select()
-            self.load_data()
+        if self.model.insertRecord(0, rec):
+            # self.load_data()
+            pass
         else:
             print("failed to add row to table " + self.name)
 
@@ -101,6 +102,8 @@ class TableBenchmarks(TableBase):
             list_date = []
             list_value = []
 
+            print("recalculating columns...")
+
             while query.next():
                 date, value = query.value(0), query.value(1)
 
@@ -110,18 +113,20 @@ class TableBenchmarks(TableBase):
             if len(list_value) > 0:
                 list_value = np.array(list_value)
 
-                accumulated = np.cumprod(list_value + 1.0) - 1.0
+                # accumulated = np.cumprod(list_value + 1.0) - 1.0
 
-                query.prepare("update " + self.name + " set accumulated=? where date=?")
+                # query = QSqlQuery(self.db)
 
-                query.addBindValue(accumulated.tolist())
-                query.addBindValue(list_date)
+                # query.prepare("update " + self.name + " set accumulated=? where date=?")
 
-                if not query.execBatch():
-                    print("failed to recalculate column values in table " + self.name)
-                else:
-                    self.model.submitAll()
-                    self.model.select()
+                # query.addBindValue(accumulated.tolist())
+                # query.addBindValue(list_date)
+
+                # if not query.execBatch():
+                #     print("failed to recalculate column values in table " + self.name)
+                # else:
+                #     self.model.submitAll()
+                #     self.model.select()
 
     def load_data(self):
         # remove old plots
@@ -159,3 +164,8 @@ class TableBenchmarks(TableBase):
             self.plot.set_y_to_percentage_format()
 
             self.plot.redraw_canvas()
+
+    def save_table_to_db(self):
+        if not self.model.submitAll():
+            print("failed to save table " + self.name + " to the database")
+            print(self.model.lastError().text())
