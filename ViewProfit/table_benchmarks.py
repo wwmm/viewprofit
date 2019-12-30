@@ -60,7 +60,8 @@ class TableBenchmarks(TableBase):
         button_save_table.clicked.connect(self.save_table_to_db)
         button_remove_row.clicked.connect(self.remove_selected_rows)
         button_add_row.clicked.connect(self.add_row)
-        self.model.dataChanged.connect(self.data_changed)
+
+        # self.model.myDataChanged.connect(self.data_changed)
 
         # event filter
 
@@ -70,9 +71,9 @@ class TableBenchmarks(TableBase):
         rec = self.model.record()
 
         rec.setGenerated("id", False)
-        rec.setValue("date", QDateTime().currentSecsSinceEpoch())
-        rec.setValue("value", 0.0)
-        rec.setValue("accumulated", 0.0)
+        rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()))
+        rec.setValue("value", float(0.0))
+        rec.setValue("accumulated", float(0.0))
 
         if self.model.insertRecord(0, rec):
             # self.load_data()
@@ -94,39 +95,29 @@ class TableBenchmarks(TableBase):
             self.remove_from_db.emit(self.name)
 
     def recalculate_columns(self):
-        query = QSqlQuery(self.db)
+        # print("recalculating columns...")
 
-        query.prepare("select date,value from " + self.name + " order by date")
+        list_value = []
 
-        if query.exec_():
-            list_date = []
-            list_value = []
+        for n in range(self.model.rowCount()):
+            list_value.append(self.model.record(n).value("value"))
 
-            print("recalculating columns...")
+        if len(list_value) > 0:
+            list_value.sort(reverse=True)
 
-            while query.next():
-                date, value = query.value(0), query.value(1)
+            list_value = np.array(list_value) * 0.01
 
-                list_date.append(date)
-                list_value.append(value)
+            accumulated = np.cumprod(list_value + 1.0) - 1.0
 
-            if len(list_value) > 0:
-                list_value = np.array(list_value)
+            accumulated = accumulated[::-1]  # reversed array
 
-                # accumulated = np.cumprod(list_value + 1.0) - 1.0
+            for n in range(self.model.rowCount()):
+                rec = self.model.record(n)
 
-                # query = QSqlQuery(self.db)
+                rec.setGenerated("accumulated", True)
+                rec.setValue("accumulated", float(accumulated[n]))
 
-                # query.prepare("update " + self.name + " set accumulated=? where date=?")
-
-                # query.addBindValue(accumulated.tolist())
-                # query.addBindValue(list_date)
-
-                # if not query.execBatch():
-                #     print("failed to recalculate column values in table " + self.name)
-                # else:
-                #     self.model.submitAll()
-                #     self.model.select()
+                self.model.setRecord(n, rec)
 
     def load_data(self):
         # remove old plots

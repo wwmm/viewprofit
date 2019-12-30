@@ -2,7 +2,7 @@
 
 from PySide2.QtCore import QDate, QDateTime, Qt
 from PySide2.QtGui import QColor
-from PySide2.QtSql import QSqlTableModel
+from PySide2.QtSql import QSqlTableModel, QSqlQueryModel
 
 
 class ModelBenchmark(QSqlTableModel):
@@ -10,12 +10,14 @@ class ModelBenchmark(QSqlTableModel):
         QSqlTableModel.__init__(self, parent, db)
 
     def flags(self, index):
-        column = index.column()
+        # column = index.column()
 
-        if column < 3:
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
-        else:
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        # if column < 4:
+        #     return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+        # else:
+        #     return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
     def data(self, index, role):
         if role == Qt.BackgroundRole:
@@ -28,24 +30,28 @@ class ModelBenchmark(QSqlTableModel):
             column = index.column()
 
             if column == 1:
-                variant_data = QSqlTableModel.data(self, index, role)
+                v = QSqlQueryModel.data(self, index, role)
 
-                if isinstance(variant_data, int):
+                if not v:
+                    v = QSqlTableModel.data(self, index, role)
+
+                if isinstance(v, int):
                     qdt = QDateTime()
 
-                    qdt.setSecsSinceEpoch(variant_data)
+                    qdt.setSecsSinceEpoch(v)
 
                     return qdt.toString(Qt.SystemLocaleDate).split(" ")[0]
                 else:
-                    return variant_data
+                    return v
 
             elif column == 2 or column == 3:
-                variant_data = QSqlTableModel.data(self, index, role)
+                v = QSqlQueryModel.data(self, index, role)
 
-                if variant_data:
-                    return variant_data * 100
+                if not v:
+                    v = QSqlTableModel.data(self, index, role)
 
-            return QSqlTableModel.data(self, index, role)
+                return v * 100
+
         else:
             return QSqlTableModel.data(self, index, role)
 
@@ -62,11 +68,13 @@ class ModelBenchmark(QSqlTableModel):
                 qdt.setDate(QDate.fromString(value, "dd/MM/yyyy"))
 
                 return QSqlTableModel.setData(self, index, qdt.toSecsSinceEpoch(), role)
+            elif isinstance(value, int):
+                return QSqlTableModel.setData(self, index, value, role)
             else:
                 return False
-        elif column == 2:
+        elif column == 1 or column == 2:
             value = float(value)
 
             return QSqlTableModel.setData(self, index, value * 0.01, role)
         else:
-            return QSqlTableModel.setData(self, index, value, role)
+            return False

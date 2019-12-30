@@ -135,8 +135,8 @@ class TableBase(QObject):
                 for index in row_list:
                     self.model.removeRow(index)
 
-    def data_changed(self, top_left_index, bottom_right_index, roles):
-        # self.recalculate_columns()
+    def data_changed(self):
+        self.recalculate_columns()
+        pass
 
         # self.load_data()
-        pass
