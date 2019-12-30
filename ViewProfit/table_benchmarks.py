@@ -19,19 +19,6 @@ class TableBenchmarks(TableBase):
 
         self.table_view.setModel(self.model)
 
-    def add_row(self):
-        rec = self.model.record()
-
-        rec.setGenerated("id", False)
-        rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()))
-        rec.setValue("value", float(0.0))
-        rec.setValue("accumulated", float(0.0))
-
-        if not self.model.insertRecord(0, rec):
-            print("failed to add row to table " + self.name)
-
-            print(self.model.lastError().text())
-
     def recalculate_columns(self):
         list_value = []
 

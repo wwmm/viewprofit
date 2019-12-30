@@ -2,7 +2,7 @@
 
 import os
 
-from PySide2.QtCore import QEvent, QObject, Qt, Signal
+from PySide2.QtCore import QDateTime, QEvent, QObject, Qt, Signal
 from PySide2.QtGui import QColor, QGuiApplication, QKeySequence
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QGroupBox,
@@ -155,6 +155,17 @@ class TableBase(QObject):
             return QObject.eventFilter(self, obj, event)
 
         return QObject.eventFilter(self, obj, event)
+
+    def add_row(self):
+        rec = self.model.record()
+
+        rec.setGenerated("id", False)
+        rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()))
+
+        if not self.model.insertRecord(0, rec):
+            print("failed to add row to table " + self.name)
+
+            print(self.model.lastError().text())
 
     def remove_selected_rows(self):
         s_model = self.table_view.selectionModel()

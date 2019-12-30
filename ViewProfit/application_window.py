@@ -11,6 +11,7 @@ from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
                                QLabel, QPushButton, QTabWidget)
 
 from ViewProfit.table_benchmarks import TableBenchmarks
+from ViewProfit.table_investment import TableInvestment
 
 
 class ApplicationWindow(QObject):
@@ -33,7 +34,7 @@ class ApplicationWindow(QObject):
         chart_frame = self.window.findChild(QFrame, "chart_frame")
         self.chart_view = self.window.findChild(QtCharts.QChartView, "chart_view")
         self.tab_widget = self.window.findChild(QTabWidget, "tab_widget")
-        button_add_fund = self.window.findChild(QPushButton, "button_add_fund")
+        button_add_investment = self.window.findChild(QPushButton, "button_add_investment")
         button_add_benchmark = self.window.findChild(QPushButton, "button_add_benchmark")
         button_reset_zoom = self.window.findChild(QPushButton, "button_reset_zoom")
         button_save_image = self.window.findChild(QPushButton, "button_save_image")
@@ -54,16 +55,16 @@ class ApplicationWindow(QObject):
         chart_frame.setGraphicsEffect(self.card_shadow())
         button_reset_zoom.setGraphicsEffect(self.button_shadow())
         button_save_image.setGraphicsEffect(self.button_shadow())
-        button_add_fund.setGraphicsEffect(self.button_shadow())
+        button_add_investment.setGraphicsEffect(self.button_shadow())
         button_add_benchmark.setGraphicsEffect(self.button_shadow())
 
         # signal connection
 
         self.tab_widget.currentChanged.connect(self.on_tab_changed)
         button_add_benchmark.clicked.connect(self.add_benchmark_table)
+        button_add_investment.clicked.connect(self.add_investment_table)
         button_reset_zoom.clicked.connect(self.reset_zoom)
         button_save_image.clicked.connect(self.save_image)
-        # self.plot.mouse_motion.connect(self.on_new_mouse_coords)
 
         # init sqlite
 
@@ -134,6 +135,8 @@ class ApplicationWindow(QObject):
 
                 if n_cols == 4:
                     self.add_table('benchmark', name)
+                else:
+                    self.add_table('investment', name)
 
     def on_tab_changed(self, index):
 
@@ -185,8 +188,30 @@ class ApplicationWindow(QObject):
 
         self.add_table('benchmark', name)
 
+    def add_investment_table(self):
+        name = "Investment" + str(len(self.tables))
+
+        query = QSqlQuery(self.db)
+
+        query.prepare("create table " + name + " (id integer primary key," +
+                      " date int default (cast(strftime('%s','now') as int))," + " contribution real default 0.0," +
+                      " bank_balance real default 0.0," + " total_contribution real default 0.0," +
+                      " gross_return real default 0.0," + " gross_return_perc real default 0.0," +
+                      " real_return real default 0.0," + " real_return_perc real default 0.0," +
+                      " real_bank_balance real default 0.0)")
+
+        if not query.exec_():
+            print("failed to create table " + name + ". Maybe it already exists.")
+
+        self.add_table('investment', name)
+
     def add_table(self, table_type, name):
-        table = TableBenchmarks(self.db, self.chart)
+        table = None
+
+        if table_type == "benchmark":
+            table = TableBenchmarks(self.db, self.chart)
+        elif table_type == "investment":
+            table = TableInvestment(self.db, self.chart)
 
         table.name = name
 
@@ -194,10 +219,23 @@ class ApplicationWindow(QObject):
 
         table.model.setTable(name)
         table.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        table.model.setHeaderData(1, Qt.Horizontal, "Date")
-        table.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
-        table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
         table.model.setSort(1, Qt.SortOrder.DescendingOrder)
+
+        if table_type == "benchmark":
+            table.model.setHeaderData(1, Qt.Horizontal, "Date")
+            table.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
+            table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
+        elif table_type == "investment":
+            table.model.setHeaderData(1, Qt.Horizontal, "Date")
+            table.model.setHeaderData(2, Qt.Horizontal, "Contribution")
+            table.model.setHeaderData(3, Qt.Horizontal, "Bank Balance")
+            table.model.setHeaderData(4, Qt.Horizontal, "Total Contribution")
+            table.model.setHeaderData(5, Qt.Horizontal, "Gross Return")
+            table.model.setHeaderData(6, Qt.Horizontal, "Gross Return %")
+            table.model.setHeaderData(7, Qt.Horizontal, "Real Return")
+            table.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
+            table.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance")
+
         table.model.select()
 
         table.table_view.setColumnHidden(0, True)  # do no show the id column

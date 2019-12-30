@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1098</width>
+    <width>1239</width>
     <height>604</height>
    </rect>
   </property>
@@ -33,7 +33,7 @@
     <item row="1" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QPushButton" name="button_add_fund">
+       <widget class="QPushButton" name="button_add_investment">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -41,7 +41,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Add Investiment</string>
+         <string>Add Investment</string>
         </property>
        </widget>
       </item>
@@ -94,11 +94,11 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Total</string>
+        <string>Portfolio</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
-         <widget class="QTableView" name="tableview_total"/>
+         <widget class="QTableView" name="tableview_portfolio"/>
         </item>
        </layout>
       </widget>
@@ -121,6 +121,12 @@
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">
         <widget class="PySide2.QtCharts.QtCharts.QChartView" name="chart_view">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>640</width>

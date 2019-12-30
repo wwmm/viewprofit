@@ -77,7 +77,7 @@
          <enum>Qt::ScrollBarAsNeeded</enum>
         </property>
         <property name="sizeAdjustPolicy">
-         <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
         </property>
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectItems</enum>
