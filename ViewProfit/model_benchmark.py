@@ -2,7 +2,7 @@
 
 from PySide2.QtCore import QDate, QDateTime, Qt
 from PySide2.QtGui import QColor
-from PySide2.QtSql import QSqlTableModel, QSqlQueryModel
+from PySide2.QtSql import QSqlTableModel
 
 
 class ModelBenchmark(QSqlTableModel):
@@ -30,10 +30,7 @@ class ModelBenchmark(QSqlTableModel):
             column = index.column()
 
             if column == 1:
-                v = QSqlQueryModel.data(self, index, role)
-
-                if not v:
-                    v = QSqlTableModel.data(self, index, role)
+                v = QSqlTableModel.data(self, index, role)
 
                 if isinstance(v, int):
                     qdt = QDateTime()
@@ -44,13 +41,7 @@ class ModelBenchmark(QSqlTableModel):
                 else:
                     return v
 
-            elif column == 2 or column == 3:
-                v = QSqlQueryModel.data(self, index, role)
-
-                if not v:
-                    v = QSqlTableModel.data(self, index, role)
-
-                return v * 100
+            return QSqlTableModel.data(self, index, role)
 
         else:
             return QSqlTableModel.data(self, index, role)
@@ -72,9 +63,7 @@ class ModelBenchmark(QSqlTableModel):
                 return QSqlTableModel.setData(self, index, value, role)
             else:
                 return False
-        elif column == 1 or column == 2:
-            value = float(value)
-
-            return QSqlTableModel.setData(self, index, value * 0.01, role)
+        elif column == 2 or column == 3:
+            return QSqlTableModel.setData(self, index, float(value), role)
         else:
             return False

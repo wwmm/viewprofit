@@ -175,7 +175,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="button_remove_row">
+         <widget class="QPushButton" name="button_calculate">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -183,7 +183,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Remove Rows</string>
+           <string>Calculate Columns</string>
           </property>
          </widget>
         </item>
@@ -197,6 +197,19 @@
           </property>
           <property name="text">
            <string>Save Table</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="button_remove_row">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Remove Rows</string>
           </property>
          </widget>
         </item>

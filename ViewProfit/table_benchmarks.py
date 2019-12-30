@@ -4,7 +4,6 @@ import os
 
 import numpy as np
 from PySide2.QtCore import QDateTime
-from PySide2.QtSql import QSqlQuery
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFrame, QGroupBox, QHeaderView, QLineEdit,
                                QMessageBox, QPushButton, QTableView)
@@ -34,6 +33,7 @@ class TableBenchmarks(TableBase):
         self.lineedit_name = self.main_widget.findChild(QLineEdit, "benchmark_name")
         button_update_name = self.main_widget.findChild(QPushButton, "button_update_name")
         button_add_row = self.main_widget.findChild(QPushButton, "button_add_row")
+        button_calculate = self.main_widget.findChild(QPushButton, "button_calculate")
         button_save_table = self.main_widget.findChild(QPushButton, "button_save_table")
         button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
         button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
@@ -49,6 +49,7 @@ class TableBenchmarks(TableBase):
         table_cfg_frame.setGraphicsEffect(self.card_shadow())
         button_update_name.setGraphicsEffect(self.button_shadow())
         button_add_row.setGraphicsEffect(self.button_shadow())
+        button_calculate.setGraphicsEffect(self.button_shadow())
         button_save_table.setGraphicsEffect(self.button_shadow())
         button_remove_table.setGraphicsEffect(self.button_shadow())
         button_remove_row.setGraphicsEffect(self.button_shadow())
@@ -60,8 +61,7 @@ class TableBenchmarks(TableBase):
         button_save_table.clicked.connect(self.save_table_to_db)
         button_remove_row.clicked.connect(self.remove_selected_rows)
         button_add_row.clicked.connect(self.add_row)
-
-        # self.model.myDataChanged.connect(self.data_changed)
+        button_calculate.clicked.connect(self.calculate)
 
         # event filter
 
@@ -95,8 +95,6 @@ class TableBenchmarks(TableBase):
             self.remove_from_db.emit(self.name)
 
     def recalculate_columns(self):
-        # print("recalculating columns...")
-
         list_value = []
 
         for n in range(self.model.rowCount()):
@@ -107,7 +105,7 @@ class TableBenchmarks(TableBase):
 
             list_value = np.array(list_value) * 0.01
 
-            accumulated = np.cumprod(list_value + 1.0) - 1.0
+            accumulated = (np.cumprod(list_value + 1.0) - 1.0) * 100.0
 
             accumulated = accumulated[::-1]  # reversed array
 
@@ -130,31 +128,25 @@ class TableBenchmarks(TableBase):
         list_value = []
         list_accumulated = []
 
-        query = QSqlQuery(self.db)
+        for n in range(self.model.rowCount()):
+            list_date.append(self.model.record(n).value("date"))
+            list_value.append(self.model.record(n).value("value"))
+            list_accumulated.append(self.model.record(n).value("accumulated"))
 
-        query.prepare("select date,value,accumulated from " + self.name + " order by date")
+        print(list_date)
+        # if len(list_date) > 0:
+        #     self.plot.set_title(self.name)
+        #     self.plot.set_grid(True)
 
-        if query.exec_():
-            while query.next():
-                date, value, accumulated = query.value(0), query.value(1), query.value(2)
+        #     l1 = self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
+        #     l2 = self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
 
-                list_date.append(date)
-                list_value.append(100 * value)
-                list_accumulated.append(100 * accumulated)
+        #     self.plot_lines.append(l1)
+        #     self.plot_lines.append(l2)
 
-        if len(list_date) > 0:
-            self.plot.set_title(self.name)
-            self.plot.set_grid(True)
+        #     self.plot.set_y_to_percentage_format()
 
-            l1 = self.plot.plot_date(list_date, list_value, 0, "Monthly Value")
-            l2 = self.plot.plot_date(list_date, list_accumulated, 1, "Accumulated")
-
-            self.plot_lines.append(l1)
-            self.plot_lines.append(l2)
-
-            self.plot.set_y_to_percentage_format()
-
-            self.plot.redraw_canvas()
+        #     self.plot.redraw_canvas()
 
     def save_table_to_db(self):
         if not self.model.submitAll():
