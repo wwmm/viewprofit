@@ -26,9 +26,9 @@ class TableBase(QObject):
 
         self.module_path = os.path.dirname(__file__)
 
-        loader = QUiLoader()
+        self.loader = QUiLoader()
 
-        self.main_widget = loader.load(self.module_path + "/ui/table.ui")
+        self.main_widget = self.loader.load(self.module_path + "/ui/table.ui")
 
         self.table_view = self.main_widget.findChild(QTableView, "table_view")
         table_cfg_frame = self.main_widget.findChild(QFrame, "table_cfg_frame")

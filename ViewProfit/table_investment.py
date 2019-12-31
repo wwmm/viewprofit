@@ -4,6 +4,7 @@
 import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, Qt, Signal
+from PySide2.QtWidgets import QCheckBox, QFrame
 
 from ViewProfit.model_investment import ModelInvestment
 from ViewProfit.table_base import TableBase
@@ -18,6 +19,20 @@ class TableInvestment(TableBase):
         self.model = ModelInvestment(self, db)
 
         self.table_view.setModel(self.model)
+
+        cfg_widget = self.loader.load(self.module_path + "/ui/investment_chart_cfg.ui")
+
+        chart_cfg_frame = cfg_widget.findChild(QFrame, "chart_cfg_frame")
+        self.checbox_total_contribution = cfg_widget.findChild(QFrame, "checbox_total_contribution")
+        self.checkbox_real_bank_balance = cfg_widget.findChild(QFrame, "checkbox_real_bank_balance")
+        self.checkbox_real_return = cfg_widget.findChild(QFrame, "checkbox_real_return")
+        self.checkbox_real_return_perc = cfg_widget.findChild(QFrame, "checkbox_real_return_perc")
+
+        self.main_widget.layout().addWidget(chart_cfg_frame)
+
+        # effects
+
+        chart_cfg_frame.setGraphicsEffect(self.card_shadow())
 
     def recalculate_columns(self):
         self.calculate_total_contribution()
@@ -62,10 +77,9 @@ class TableInvestment(TableBase):
                 self.model.setRecord(n, rec)
 
     def show_chart(self):
-        pass
-        # self.clear_chart()
+        self.clear_chart()
 
-        # self.chart.setTitle(self.name)
+        self.chart.setTitle(self.name)
 
         # series0 = QtCharts.QLineSeries()
         # series1 = QtCharts.QLineSeries()
