@@ -8,7 +8,8 @@ from PySide2.QtGui import QColor, QPainter
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
-                               QLabel, QPushButton, QTabWidget)
+                               QLabel, QPushButton, QRadioButton,
+                               QStackedWidget, QTabWidget)
 
 from ViewProfit.table_benchmarks import TableBenchmarks
 from ViewProfit.table_investment import TableInvestment
@@ -32,7 +33,11 @@ class ApplicationWindow(QObject):
         self.window = loader.load(self.module_path + "/ui/application_window.ui")
 
         chart_frame = self.window.findChild(QFrame, "chart_frame")
-        self.chart_view = self.window.findChild(QtCharts.QChartView, "chart_view")
+        self.chart_view1 = self.window.findChild(QtCharts.QChartView, "chart_view1")
+        self.chart_view2 = self.window.findChild(QtCharts.QChartView, "chart_view2")
+        self.radio_chart1 = self.window.findChild(QRadioButton, "radio_chart1")
+        self.radio_chart2 = self.window.findChild(QRadioButton, "radio_chart2")
+        self.stackedwidget = self.window.findChild(QStackedWidget, "stackedwidget")
         self.tab_widget = self.window.findChild(QTabWidget, "tab_widget")
         button_add_investment = self.window.findChild(QPushButton, "button_add_investment")
         button_add_benchmark = self.window.findChild(QPushButton, "button_add_benchmark")
@@ -65,6 +70,8 @@ class ApplicationWindow(QObject):
         button_add_investment.clicked.connect(self.add_investment_table)
         button_reset_zoom.clicked.connect(self.reset_zoom)
         button_save_image.clicked.connect(self.save_image)
+        self.radio_chart1.toggled.connect(self.on_chart_selection)
+        self.radio_chart2.toggled.connect(self.on_chart_selection)
 
         # init sqlite
 
@@ -79,14 +86,23 @@ class ApplicationWindow(QObject):
                 print("the database was opened!")
 
         # Creating QChart
-        self.chart = QtCharts.QChart()
-        self.chart.setAnimationOptions(QtCharts.QChart.GridAxisAnimations)
-        self.chart.setTheme(QtCharts.QChart.ChartThemeLight)
-        self.chart.setAcceptHoverEvents(True)
+        self.chart1 = QtCharts.QChart()
+        self.chart1.setAnimationOptions(QtCharts.QChart.GridAxisAnimations)
+        self.chart1.setTheme(QtCharts.QChart.ChartThemeLight)
+        self.chart1.setAcceptHoverEvents(True)
 
-        self.chart_view.setChart(self.chart)
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.chart_view.setRubberBand(QtCharts.QChartView.RectangleRubberBand)
+        self.chart2 = QtCharts.QChart()
+        self.chart2.setAnimationOptions(QtCharts.QChart.GridAxisAnimations)
+        self.chart2.setTheme(QtCharts.QChart.ChartThemeLight)
+        self.chart2.setAcceptHoverEvents(True)
+
+        self.chart_view1.setChart(self.chart1)
+        self.chart_view1.setRenderHint(QPainter.Antialiasing)
+        self.chart_view1.setRubberBand(QtCharts.QChartView.RectangleRubberBand)
+
+        self.chart_view2.setChart(self.chart2)
+        self.chart_view2.setRenderHint(QPainter.Antialiasing)
+        self.chart_view2.setRubberBand(QtCharts.QChartView.RectangleRubberBand)
 
         self.load_saved_tables()
 
@@ -146,10 +162,19 @@ class ApplicationWindow(QObject):
 
             table_dict = self.tables[index]
             table = table_dict['object']
+            table_type = table_dict['type']
+
+            if table_type == "benchmark":
+                self.radio_chart1.setText("Monthly Values")
+                self.radio_chart2.setText("Accumulated Values")
+            elif table_type == "investment":
+                self.radio_chart1.setText("Absolute Values")
+                self.radio_chart2.setText("Percentage Values")
 
             table.calculate()
         else:
-            pass
+            self.radio_chart1.setText("Absolute Values")
+            self.radio_chart2.setText("Percentage Values")
 
     def remove_table(self, name):
         for index in range(len(self.tables)):
@@ -204,9 +229,9 @@ class ApplicationWindow(QObject):
         table = None
 
         if table_type == "benchmark":
-            table = TableBenchmarks(self.db, self.chart)
+            table = TableBenchmarks(self.db, self.chart1, self.chart2)
         elif table_type == "investment":
-            table = TableInvestment(self.db, self.chart)
+            table = TableInvestment(self.db, self.chart1, self.chart2)
 
         table.name = name
 
@@ -285,9 +310,26 @@ class ApplicationWindow(QObject):
             if not path.endswith(".png"):
                 path += ".png"
 
-            pixmap = self.chart_view.grab()
+            if self.radio_chart1.isChecked():
+                pixmap = self.chart_view1.grab()
 
-            pixmap.save(path)
+                pixmap.save(path)
+
+            if self.radio_chart2.isChecked():
+                pixmap = self.chart_view2.grab()
+
+                pixmap.save(path)
 
     def reset_zoom(self):
-        self.chart.zoomReset()
+        if self.radio_chart1.isChecked():
+            self.chart1.zoomReset()
+
+        if self.radio_chart2.isChecked():
+            self.chart2.zoomReset()
+
+    def on_chart_selection(self, state):
+        if state:
+            if self.radio_chart1.isChecked():
+                self.stackedwidget.setCurrentIndex(0)
+            elif self.radio_chart2.isChecked():
+                self.stackedwidget.setCurrentIndex(1)

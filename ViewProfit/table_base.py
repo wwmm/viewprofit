@@ -14,11 +14,12 @@ class TableBase(QObject):
     new_name = Signal(str, str)
     remove_from_db = Signal(str,)
 
-    def __init__(self, db, chart):
+    def __init__(self, db, chart1, chart2):
         QObject.__init__(self)
 
         self.db = db
-        self.chart = chart
+        self.chart1 = chart1
+        self.chart2 = chart2
         self.model = None
         self.table_view = None
         self.series = None
@@ -197,14 +198,21 @@ class TableBase(QObject):
 
         self.show_chart()
 
-    def clear_chart(self):
-        self.chart.removeAllSeries()
+    def clear_charts(self):
+        self.chart1.removeAllSeries()
+        self.chart2.removeAllSeries()
 
-        if self.chart.axisX():
-            self.chart.removeAxis(self.chart.axisX())
+        if self.chart1.axisX():
+            self.chart1.removeAxis(self.chart1.axisX())
 
-        if self.chart.axisY():
-            self.chart.removeAxis(self.chart.axisY())
+        if self.chart1.axisY():
+            self.chart1.removeAxis(self.chart1.axisY())
+
+        if self.chart2.axisX():
+            self.chart2.removeAxis(self.chart2.axisX())
+
+        if self.chart2.axisY():
+            self.chart2.removeAxis(self.chart2.axisY())
 
     def on_remove_table(self):
         box = QMessageBox(self.main_widget)

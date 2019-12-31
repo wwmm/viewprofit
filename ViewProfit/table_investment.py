@@ -3,7 +3,7 @@
 
 import numpy as np
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, Qt, Signal
+from PySide2.QtCore import QDateTime, QLocale, Qt, Signal
 from PySide2.QtWidgets import QCheckBox, QFrame
 
 from ViewProfit.model_investment import ModelInvestment
@@ -13,8 +13,8 @@ from ViewProfit.table_base import TableBase
 class TableInvestment(TableBase):
     new_mouse_coords = Signal(object,)
 
-    def __init__(self, db, chart):
-        TableBase.__init__(self, db, chart)
+    def __init__(self, db, chart1, chart2):
+        TableBase.__init__(self, db, chart1, chart2)
 
         self.model = ModelInvestment(self, db)
 
@@ -23,10 +23,10 @@ class TableInvestment(TableBase):
         cfg_widget = self.loader.load(self.module_path + "/ui/investment_chart_cfg.ui")
 
         chart_cfg_frame = cfg_widget.findChild(QFrame, "chart_cfg_frame")
-        self.checbox_total_contribution = cfg_widget.findChild(QFrame, "checbox_total_contribution")
-        self.checkbox_real_bank_balance = cfg_widget.findChild(QFrame, "checkbox_real_bank_balance")
-        self.checkbox_real_return = cfg_widget.findChild(QFrame, "checkbox_real_return")
-        self.checkbox_real_return_perc = cfg_widget.findChild(QFrame, "checkbox_real_return_perc")
+        self.checbox_total_contribution = cfg_widget.findChild(QCheckBox, "checbox_total_contribution")
+        self.checkbox_real_bank_balance = cfg_widget.findChild(QCheckBox, "checkbox_real_bank_balance")
+        self.checkbox_real_return = cfg_widget.findChild(QCheckBox, "checkbox_real_return")
+        self.checkbox_real_return_perc = cfg_widget.findChild(QCheckBox, "checkbox_real_return_perc")
 
         self.main_widget.layout().addWidget(chart_cfg_frame)
 
@@ -76,57 +76,45 @@ class TableInvestment(TableBase):
 
                 self.model.setRecord(n, rec)
 
-    def show_chart(self):
-        self.clear_chart()
+    def make_chart1(self):
+        self.chart1.setTitle(self.name)
 
-        self.chart.setTitle(self.name)
+        series0 = QtCharts.QLineSeries()
 
-        # series0 = QtCharts.QLineSeries()
-        # series1 = QtCharts.QLineSeries()
+        series0.setName("Total Contribution")
 
-        # series0.setName("Monthly Value")
-        # series1.setName("Accumulated")
+        series0.hovered.connect(self.on_hover)
 
-        # series0.hovered.connect(self.on_hover)
-        # series1.hovered.connect(self.on_hover)
+        for n in range(self.model.rowCount()):
+            qdt = QDateTime.fromString(self.model.record(n).value("date"), "dd/MM/yyyy")
 
-        # vmin, vmax = 0, 0
+            epoch_in_ms = qdt.toMSecsSinceEpoch()
 
-        # for n in range(self.model.rowCount()):
-        #     qdt = QDateTime.fromString(self.model.record(n).value("date"), "dd/MM/yyyy")
+            total_contribution = self.model.record(n).value("total_contribution")
+            # real_bank_balance = self.model.record(n).value("real_bank_balance")
 
-        #     epoch_in_ms = qdt.toMSecsSinceEpoch()
+            series0.append(epoch_in_ms, total_contribution)
+            # series1.append(epoch_in_ms, real_bank_balance)
 
-        #     v = self.model.record(n).value("value")
-        #     accu = self.model.record(n).value("accumulated")
+        self.chart1.addSeries(series0)
 
-        #     vmin = min(vmin, v)
-        #     vmin = min(vmin, accu)
+        axis_x = QtCharts.QDateTimeAxis()
+        axis_x.setTitleText("Date")
+        axis_x.setFormat("dd/MM/yyyy")
+        axis_x.setLabelsAngle(-10)
 
-        #     vmax = max(vmax, v)
-        #     vmax = max(vmax, accu)
-
-        #     series0.append(epoch_in_ms, v)
-        #     series1.append(epoch_in_ms, accu)
-
-        # self.chart.addSeries(series0)
-        # self.chart.addSeries(series1)
-
-        # axis_x = QtCharts.QDateTimeAxis()
-        # axis_x.setTitleText("Date")
-        # axis_x.setFormat("dd/MM/yyyy")
-        # axis_x.setLabelsAngle(-10)
-
-        # axis_y = QtCharts.QValueAxis()
-        # axis_y.setTitleText("%")
-        # # axis_y.setLabelFormat("%.1f")
+        axis_y = QtCharts.QValueAxis()
+        axis_y.setTitleText(QLocale().currencySymbol())
+        axis_y.setLabelFormat("%.2f")
         # axis_y.setRange(1.01 * vmin, 1.01 * vmax)
 
-        # self.chart.addAxis(axis_x, Qt.AlignBottom)
-        # self.chart.addAxis(axis_y, Qt.AlignLeft)
+        self.chart1.addAxis(axis_x, Qt.AlignBottom)
+        self.chart1.addAxis(axis_y, Qt.AlignLeft)
 
-        # series0.attachAxis(axis_x)
-        # series0.attachAxis(axis_y)
+        series0.attachAxis(axis_x)
+        series0.attachAxis(axis_y)
 
-        # series1.attachAxis(axis_x)
-        # series1.attachAxis(axis_y)
+    def show_chart(self):
+        self.clear_charts()
+
+        self.make_chart1()

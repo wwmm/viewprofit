@@ -12,8 +12,8 @@ from ViewProfit.table_base import TableBase
 class TableBenchmarks(TableBase):
     new_mouse_coords = Signal(object,)
 
-    def __init__(self, db, chart):
-        TableBase.__init__(self, db, chart)
+    def __init__(self, db, chart1, chart2):
+        TableBase.__init__(self, db, chart1, chart2)
 
         self.model = ModelBenchmark(self, db)
 
@@ -44,9 +44,10 @@ class TableBenchmarks(TableBase):
                 self.model.setRecord(n, rec)
 
     def show_chart(self):
-        self.clear_chart()
+        self.clear_charts()
 
-        self.chart.setTitle(self.name)
+        self.chart1.setTitle(self.name)
+        self.chart2.setTitle(self.name)
 
         series0 = QtCharts.QLineSeries()
         series1 = QtCharts.QLineSeries()
@@ -57,8 +58,6 @@ class TableBenchmarks(TableBase):
         series0.hovered.connect(self.on_hover)
         series1.hovered.connect(self.on_hover)
 
-        vmin, vmax = 0, 0
-
         for n in range(self.model.rowCount()):
             qdt = QDateTime.fromString(self.model.record(n).value("date"), "dd/MM/yyyy")
 
@@ -67,17 +66,13 @@ class TableBenchmarks(TableBase):
             v = self.model.record(n).value("value")
             accu = self.model.record(n).value("accumulated")
 
-            vmin = min(vmin, v)
-            vmin = min(vmin, accu)
-
-            vmax = max(vmax, v)
-            vmax = max(vmax, accu)
-
             series0.append(epoch_in_ms, v)
             series1.append(epoch_in_ms, accu)
 
-        self.chart.addSeries(series0)
-        self.chart.addSeries(series1)
+        self.chart1.addSeries(series0)
+        self.chart2.addSeries(series1)
+
+        # add axes to series 0
 
         axis_x = QtCharts.QDateTimeAxis()
         axis_x.setTitleText("Date")
@@ -86,14 +81,27 @@ class TableBenchmarks(TableBase):
 
         axis_y = QtCharts.QValueAxis()
         axis_y.setTitleText("%")
-        # axis_y.setLabelFormat("%.1f")
-        axis_y.setRange(1.01 * vmin, 1.01 * vmax)
+        axis_y.setLabelFormat("%.2f")
 
-        self.chart.addAxis(axis_x, Qt.AlignBottom)
-        self.chart.addAxis(axis_y, Qt.AlignLeft)
+        self.chart1.addAxis(axis_x, Qt.AlignBottom)
+        self.chart1.addAxis(axis_y, Qt.AlignLeft)
 
         series0.attachAxis(axis_x)
         series0.attachAxis(axis_y)
+
+        # add axes to series 1
+
+        axis_x = QtCharts.QDateTimeAxis()
+        axis_x.setTitleText("Date")
+        axis_x.setFormat("dd/MM/yyyy")
+        axis_x.setLabelsAngle(-10)
+
+        axis_y = QtCharts.QValueAxis()
+        axis_y.setTitleText("%")
+        axis_y.setLabelFormat("%.2f")
+
+        self.chart2.addAxis(axis_x, Qt.AlignBottom)
+        self.chart2.addAxis(axis_y, Qt.AlignLeft)
 
         series1.attachAxis(axis_x)
         series1.attachAxis(axis_y)

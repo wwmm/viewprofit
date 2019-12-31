@@ -87,7 +87,7 @@
       <item row="0" column="0" colspan="4" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Visualization</string>
+         <string>Settings</string>
         </property>
        </widget>
       </item>
