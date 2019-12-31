@@ -3,8 +3,8 @@
 
 import numpy as np
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, QLocale, Qt, Signal
-from PySide2.QtWidgets import QCheckBox, QFrame
+from PySide2.QtCore import QDateTime, QLocale, QSettings, Qt, Signal
+from PySide2.QtWidgets import QCheckBox, QDoubleSpinBox, QFrame
 
 from ViewProfit.model_investment import ModelInvestment
 from ViewProfit.table_base import TableBase
@@ -13,20 +13,19 @@ from ViewProfit.table_base import TableBase
 class TableInvestment(TableBase):
     new_mouse_coords = Signal(object,)
 
-    def __init__(self, db, chart1, chart2):
-        TableBase.__init__(self, db, chart1, chart2)
+    def __init__(self, name, db, chart1, chart2):
+        TableBase.__init__(self, name, db, chart1, chart2)
 
         self.model = ModelInvestment(self, db)
 
         self.table_view.setModel(self.model)
 
+        self.qsettings = QSettings()
+
         cfg_widget = self.loader.load(self.module_path + "/ui/investment_chart_cfg.ui")
 
         chart_cfg_frame = cfg_widget.findChild(QFrame, "chart_cfg_frame")
-        self.checbox_total_contribution = cfg_widget.findChild(QCheckBox, "checbox_total_contribution")
-        self.checkbox_real_bank_balance = cfg_widget.findChild(QCheckBox, "checkbox_real_bank_balance")
-        self.checkbox_real_return = cfg_widget.findChild(QCheckBox, "checkbox_real_return")
-        self.checkbox_real_return_perc = cfg_widget.findChild(QCheckBox, "checkbox_real_return_perc")
+        self.doublespinbox_income_tax = cfg_widget.findChild(QDoubleSpinBox, "doublespinbox_income_tax")
 
         self.main_widget.layout().addWidget(chart_cfg_frame)
 
@@ -34,23 +33,47 @@ class TableInvestment(TableBase):
 
         chart_cfg_frame.setGraphicsEffect(self.card_shadow())
 
+        # read qsettings values and initialize the interface
+
+        self.qsettings.beginGroup(self.name)
+
+        self.doublespinbox_income_tax.setValue(float(self.qsettings.value("income_tax", 0.0)))
+
+        self.qsettings.endGroup()
+
+        # signals
+
+        self.doublespinbox_income_tax.valueChanged.connect(self.on_income_tax_changed)
+
     def recalculate_columns(self):
         self.calculate_total_contribution()
 
-        for n in range(self.model.rowCount()):
-            v = self.model.record(n).value("total_contribution")
+        self.qsettings.beginGroup(self.name)
 
-            dv = self.model.record(n).value("bank_balance") - v
+        income_tax = float(self.qsettings.value("income_tax", 0.0))
+
+        self.qsettings.endGroup()
+
+        for n in range(self.model.rowCount()):
+            total_contribution = self.model.record(n).value("total_contribution")
+
+            gross_return = self.model.record(n).value("bank_balance") - total_contribution
+
+            real_return = gross_return * (1.0 - 0.01 * income_tax)
 
             rec = self.model.record(n)
 
             rec.setGenerated("gross_return", True)
             rec.setGenerated("gross_return_perc", True)
+            rec.setGenerated("real_return", True)
+            rec.setGenerated("real_return_perc", True)
 
-            rec.setValue("gross_return", float(dv))
+            rec.setValue("gross_return", float(gross_return))
+            rec.setValue("real_return", float(real_return))
 
-            if v > 0:
-                rec.setValue("gross_return_perc", float(100 * dv / v))
+            if total_contribution > 0:
+                rec.setValue("gross_return_perc", float(100 * gross_return / total_contribution))
+                rec.setValue("real_return_perc", float(100 * real_return / total_contribution))
 
             self.model.setRecord(n, rec)
 
@@ -118,3 +141,12 @@ class TableInvestment(TableBase):
         self.clear_charts()
 
         self.make_chart1()
+
+    def on_income_tax_changed(self, value):
+        self.qsettings.beginGroup(self.name)
+
+        self.qsettings.setValue("income_tax", value)
+
+        self.qsettings.endGroup()
+
+        self.qsettings.sync()

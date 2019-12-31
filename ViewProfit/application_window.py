@@ -3,7 +3,8 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, QFile, QLocale, QObject, Qt
+from PySide2.QtCore import (QCoreApplication, QDateTime, QFile, QLocale,
+                            QObject, Qt)
 from PySide2.QtGui import QColor, QPainter
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
@@ -23,6 +24,11 @@ class ApplicationWindow(QObject):
 
         self.tables = []
         self.db = None
+
+        # configuring QSettings
+
+        QCoreApplication.setOrganizationName("wwmm")
+        QCoreApplication.setApplicationName("ViewProfit")
 
         # loading widgets from designer file
 
@@ -103,6 +109,13 @@ class ApplicationWindow(QObject):
         self.chart_view2.setChart(self.chart2)
         self.chart_view2.setRenderHint(QPainter.Antialiasing)
         self.chart_view2.setRubberBand(QtCharts.QChartView.RectangleRubberBand)
+
+        # select the default chart
+
+        if self.radio_chart1.isChecked():
+            self.stackedwidget.setCurrentIndex(0)
+        elif self.radio_chart2.isChecked():
+            self.stackedwidget.setCurrentIndex(1)
 
         self.load_saved_tables()
 
@@ -229,11 +242,9 @@ class ApplicationWindow(QObject):
         table = None
 
         if table_type == "benchmark":
-            table = TableBenchmarks(self.db, self.chart1, self.chart2)
+            table = TableBenchmarks(name, self.db, self.chart1, self.chart2)
         elif table_type == "investment":
-            table = TableInvestment(self.db, self.chart1, self.chart2)
-
-        table.name = name
+            table = TableInvestment(name, self.db, self.chart1, self.chart2)
 
         table.lineedit_name.setText(name)
 
