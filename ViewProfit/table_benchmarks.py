@@ -37,6 +37,8 @@ class TableBenchmarks(TableBase):
             for n in range(self.model.rowCount()):
                 rec = self.model.record(n)
 
+                rec.setGenerated("accumulated", True)
+
                 rec.setValue("accumulated", float(accumulated[n]))
 
                 self.model.setRecord(n, rec)

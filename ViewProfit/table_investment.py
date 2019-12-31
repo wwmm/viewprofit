@@ -22,6 +22,23 @@ class TableInvestment(TableBase):
     def recalculate_columns(self):
         self.calculate_total_contribution()
 
+        for n in range(self.model.rowCount()):
+            v = self.model.record(n).value("total_contribution")
+
+            dv = self.model.record(n).value("bank_balance") - v
+
+            rec = self.model.record(n)
+
+            rec.setGenerated("gross_return", True)
+            rec.setGenerated("gross_return_perc", True)
+
+            rec.setValue("gross_return", float(dv))
+
+            if v > 0:
+                rec.setValue("gross_return_perc", float(100 * dv / v))
+
+            self.model.setRecord(n, rec)
+
     def calculate_total_contribution(self):
         list_v = []
 
@@ -37,6 +54,8 @@ class TableInvestment(TableBase):
 
             for n in range(self.model.rowCount()):
                 rec = self.model.record(n)
+
+                rec.setGenerated("total_contribution", True)
 
                 rec.setValue("total_contribution", float(cum_v[n]))
 

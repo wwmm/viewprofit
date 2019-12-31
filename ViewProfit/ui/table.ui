@@ -86,7 +86,7 @@
          <enum>Qt::ElideNone</enum>
         </property>
         <property name="horizontalScrollMode">
-         <enum>QAbstractItemView::ScrollPerPixel</enum>
+         <enum>QAbstractItemView::ScrollPerItem</enum>
         </property>
         <property name="showGrid">
          <bool>false</bool>
@@ -104,7 +104,7 @@
          <number>160</number>
         </attribute>
         <attribute name="horizontalHeaderDefaultSectionSize">
-         <number>150</number>
+         <number>160</number>
         </attribute>
         <attribute name="horizontalHeaderStretchLastSection">
          <bool>false</bool>
