@@ -105,10 +105,15 @@ class TableInvestment(TableBase):
         self.chart1.setTitle(self.name)
 
         series0 = QtCharts.QLineSeries()
+        series1 = QtCharts.QLineSeries()
 
         series0.setName("Total Contribution")
+        series1.setName("Real Bank Balance")
 
         series0.hovered.connect(self.on_hover)
+        series1.hovered.connect(self.on_hover)
+
+        vmin, vmax = None, None
 
         for n in range(self.model.rowCount()):
             qdt = QDateTime.fromString(self.model.record(n).value("date"), "dd/MM/yyyy")
@@ -116,12 +121,25 @@ class TableInvestment(TableBase):
             epoch_in_ms = qdt.toMSecsSinceEpoch()
 
             total_contribution = self.model.record(n).value("total_contribution")
-            # real_bank_balance = self.model.record(n).value("real_bank_balance")
+            real_bank_balance = self.model.record(n).value("real_bank_balance")
+
+            if vmin:
+                vmin = min(vmin, total_contribution)
+                vmin = min(vmin, real_bank_balance)
+            else:
+                vmin = total_contribution
+
+            if vmax:
+                vmax = max(vmax, total_contribution)
+                vmax = max(vmax, real_bank_balance)
+            else:
+                vmax = total_contribution
 
             series0.append(epoch_in_ms, total_contribution)
-            # series1.append(epoch_in_ms, real_bank_balance)
+            series1.append(epoch_in_ms, real_bank_balance)
 
         self.chart1.addSeries(series0)
+        self.chart1.addSeries(series1)
 
         axis_x = QtCharts.QDateTimeAxis()
         axis_x.setTitleText("Date")
@@ -131,10 +149,48 @@ class TableInvestment(TableBase):
         axis_y = QtCharts.QValueAxis()
         axis_y.setTitleText(QLocale().currencySymbol())
         axis_y.setLabelFormat("%.2f")
-        # axis_y.setRange(1.01 * vmin, 1.01 * vmax)
+        axis_y.setRange(0.9 * vmin, 1.2 * vmax)
 
         self.chart1.addAxis(axis_x, Qt.AlignBottom)
         self.chart1.addAxis(axis_y, Qt.AlignLeft)
+
+        series0.attachAxis(axis_x)
+        series0.attachAxis(axis_y)
+
+        series1.attachAxis(axis_x)
+        series1.attachAxis(axis_y)
+
+    def make_chart2(self):
+        self.chart2.setTitle(self.name)
+
+        series0 = QtCharts.QLineSeries()
+
+        series0.setName("Real Return")
+
+        series0.hovered.connect(self.on_hover)
+
+        for n in range(self.model.rowCount()):
+            qdt = QDateTime.fromString(self.model.record(n).value("date"), "dd/MM/yyyy")
+
+            epoch_in_ms = qdt.toMSecsSinceEpoch()
+
+            real_return_perc = self.model.record(n).value("real_return_perc")
+
+            series0.append(epoch_in_ms, real_return_perc)
+
+        self.chart2.addSeries(series0)
+
+        axis_x = QtCharts.QDateTimeAxis()
+        axis_x.setTitleText("Date")
+        axis_x.setFormat("dd/MM/yyyy")
+        axis_x.setLabelsAngle(-10)
+
+        axis_y = QtCharts.QValueAxis()
+        axis_y.setTitleText("%")
+        axis_y.setLabelFormat("%.2f")
+
+        self.chart2.addAxis(axis_x, Qt.AlignBottom)
+        self.chart2.addAxis(axis_y, Qt.AlignLeft)
 
         series0.attachAxis(axis_x)
         series0.attachAxis(axis_y)
@@ -143,6 +199,7 @@ class TableInvestment(TableBase):
         self.clear_charts()
 
         self.make_chart1()
+        self.make_chart2()
 
     def on_income_tax_changed(self, value):
         self.qsettings.beginGroup(self.name)
