@@ -26,7 +26,7 @@ class TableBenchmarks(TableBase):
             list_value.append(self.model.record(n).value("value"))
 
         if len(list_value) > 0:
-            list_value.sort(reverse=True)
+            list_value.reverse()
 
             list_value = np.array(list_value) * 0.01
 
@@ -37,7 +37,6 @@ class TableBenchmarks(TableBase):
             for n in range(self.model.rowCount()):
                 rec = self.model.record(n)
 
-                rec.setGenerated("accumulated", True)
                 rec.setValue("accumulated", float(accumulated[n]))
 
                 self.model.setRecord(n, rec)

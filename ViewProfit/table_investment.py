@@ -5,7 +5,7 @@ import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, Qt, Signal
 
-from ViewProfit.model_benchmark import ModelBenchmark
+from ViewProfit.model_investment import ModelInvestment
 from ViewProfit.table_base import TableBase
 
 
@@ -15,33 +15,32 @@ class TableInvestment(TableBase):
     def __init__(self, db, chart):
         TableBase.__init__(self, db, chart)
 
-        self.model = ModelBenchmark(self, db)
+        self.model = ModelInvestment(self, db)
 
         self.table_view.setModel(self.model)
 
     def recalculate_columns(self):
-        pass
-        # list_value = []
+        self.calculate_total_contribution()
 
-        # for n in range(self.model.rowCount()):
-        #     list_value.append(self.model.record(n).value("value"))
+    def calculate_total_contribution(self):
+        list_v = []
 
-        # if len(list_value) > 0:
-        #     list_value.sort(reverse=True)
+        for n in range(self.model.rowCount()):
+            list_v.append(self.model.record(n).value("contribution"))
 
-        #     list_value = np.array(list_value) * 0.01
+        if len(list_v) > 0:
+            list_v.reverse()
 
-        #     accumulated = (np.cumprod(list_value + 1.0) - 1.0) * 100.0
+            cum_v = np.cumsum(np.array([list_v]))
 
-        #     accumulated = accumulated[::-1]  # reversed array
+            cum_v = cum_v[::-1]
 
-        #     for n in range(self.model.rowCount()):
-        #         rec = self.model.record(n)
+            for n in range(self.model.rowCount()):
+                rec = self.model.record(n)
 
-        #         rec.setGenerated("accumulated", True)
-        #         rec.setValue("accumulated", float(accumulated[n]))
+                rec.setValue("total_contribution", float(cum_v[n]))
 
-        #         self.model.setRecord(n, rec)
+                self.model.setRecord(n, rec)
 
     def show_chart(self):
         pass

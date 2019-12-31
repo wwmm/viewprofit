@@ -80,7 +80,7 @@ class ApplicationWindow(QObject):
 
         # Creating QChart
         self.chart = QtCharts.QChart()
-        self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
+        self.chart.setAnimationOptions(QtCharts.QChart.GridAxisAnimations)
         self.chart.setTheme(QtCharts.QChart.ChartThemeLight)
         self.chart.setAcceptHoverEvents(True)
 
@@ -124,6 +124,8 @@ class ApplicationWindow(QObject):
         if query.exec_():
             while query.next():
                 names.append(query.value(0))
+
+            names.sort()
         else:
             print("failed to get table names")
 
@@ -139,18 +141,11 @@ class ApplicationWindow(QObject):
                     self.add_table('investment', name)
 
     def on_tab_changed(self, index):
-
         if index > 0:
-            index = index - 1  # do not count the Total tab
+            index = index - 1  # do not count the Portfolio tab
 
             table_dict = self.tables[index]
             table = table_dict['object']
-            table_type = table_dict['type']
-
-            if table_type == "benchmark":
-                pass
-            else:
-                pass
 
             table.calculate()
         else:
