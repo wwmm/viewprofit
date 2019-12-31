@@ -241,6 +241,9 @@ class TableInvestment(TableBase):
     def show_chart(self):
         self.clear_charts()
 
+        if self.model.rowCount() == 0:
+            return
+
         self.make_chart1()
         self.make_chart2()
 

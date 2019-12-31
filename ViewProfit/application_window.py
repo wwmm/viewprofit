@@ -311,7 +311,8 @@ class ApplicationWindow(QObject):
                 if not query.exec_():
                     print("failed to rename table " + old_name)
 
-        self.chart.setTitle(new_name)
+        self.chart1.setTitle(new_name)
+        self.chart2.setTitle(new_name)
 
     def on_new_mouse_coords(self, point):
         qdt = QDateTime()
