@@ -4,7 +4,7 @@
 import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, QLocale, QSettings, Qt, Signal
-from PySide2.QtWidgets import QCheckBox, QDoubleSpinBox, QFrame
+from PySide2.QtWidgets import QDoubleSpinBox, QFrame
 
 from ViewProfit.model_investment import ModelInvestment
 from ViewProfit.table_base import TableBase
@@ -67,9 +67,11 @@ class TableInvestment(TableBase):
             rec.setGenerated("gross_return_perc", True)
             rec.setGenerated("real_return", True)
             rec.setGenerated("real_return_perc", True)
+            rec.setGenerated("real_bank_balance", True)
 
             rec.setValue("gross_return", float(gross_return))
             rec.setValue("real_return", float(real_return))
+            rec.setValue("real_bank_balance", float(total_contribution + real_return))
 
             if total_contribution > 0:
                 rec.setValue("gross_return_perc", float(100 * gross_return / total_contribution))

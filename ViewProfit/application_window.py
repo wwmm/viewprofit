@@ -4,7 +4,7 @@ import os
 
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import (QCoreApplication, QDateTime, QFile, QLocale,
-                            QObject, Qt)
+                            QObject, QSettings, Qt)
 from PySide2.QtGui import QColor, QPainter
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
@@ -29,6 +29,8 @@ class ApplicationWindow(QObject):
 
         QCoreApplication.setOrganizationName("wwmm")
         QCoreApplication.setApplicationName("ViewProfit")
+
+        self.qsettings = QSettings()
 
         # loading widgets from designer file
 
@@ -197,6 +199,12 @@ class ApplicationWindow(QObject):
                 self.tab_widget.removeTab(index + 1)  # Total tab is not in self.tables
 
                 self.tables.remove(table_dict)
+
+                self.qsettings.beginGroup(name)
+
+                self.qsettings.remove("")
+
+                self.qsettings.endGroup()
 
                 query = QSqlQuery(self.db)
 
