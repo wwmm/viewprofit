@@ -13,10 +13,10 @@ from ViewProfit.table_base import TableBase
 class TableInvestment(TableBase):
     new_mouse_coords = Signal(object,)
 
-    def __init__(self, name, db, chart1, chart2):
-        TableBase.__init__(self, name, db, chart1, chart2)
+    def __init__(self, app, name):
+        TableBase.__init__(self, app, name)
 
-        self.model = ModelInvestment(self, db)
+        self.model = ModelInvestment(self, app.db)
 
         self.table_view.setModel(self.model)
 
@@ -169,12 +169,24 @@ class TableInvestment(TableBase):
 
         series0.hovered.connect(self.on_hover)
 
+        vmin, vmax = None, None
+
         for n in range(self.model.rowCount()):
             qdt = QDateTime.fromString(self.model.record(n).value("date"), "dd/MM/yyyy")
 
             epoch_in_ms = qdt.toMSecsSinceEpoch()
 
             real_return_perc = self.model.record(n).value("real_return_perc")
+
+            if vmin:
+                vmin = min(vmin, real_return_perc)
+            else:
+                vmin = real_return_perc
+
+            if vmax:
+                vmax = max(vmax, real_return_perc)
+            else:
+                vmax = real_return_perc
 
             series0.append(epoch_in_ms, real_return_perc)
 
@@ -194,6 +206,37 @@ class TableInvestment(TableBase):
 
         series0.attachAxis(axis_x)
         series0.attachAxis(axis_y)
+
+        # add benchmarks
+
+        for table_dict in self.app.tables:
+            if table_dict['type'] == "benchmark":
+                t = table_dict['object']
+
+                series = QtCharts.QLineSeries()
+
+                series.setName(table_dict['name'])
+
+                series.hovered.connect(self.on_hover)
+
+                for n in range(t.model.rowCount()):
+                    qdt = QDateTime.fromString(t.model.record(n).value("date"), "dd/MM/yyyy")
+
+                    epoch_in_ms = qdt.toMSecsSinceEpoch()
+
+                    accu = t.model.record(n).value("accumulated")
+
+                    vmin = min(vmin, accu)
+                    vmax = max(vmax, accu)
+
+                    series.append(epoch_in_ms, accu)
+
+                self.chart2.addSeries(series)
+
+                series.attachAxis(axis_x)
+                series.attachAxis(axis_y)
+
+        axis_y.setRange(0.9 * vmin, 1.2 * vmax)
 
     def show_chart(self):
         self.clear_charts()

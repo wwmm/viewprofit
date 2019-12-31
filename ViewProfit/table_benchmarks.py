@@ -12,10 +12,10 @@ from ViewProfit.table_base import TableBase
 class TableBenchmarks(TableBase):
     new_mouse_coords = Signal(object,)
 
-    def __init__(self, name, db, chart1, chart2):
-        TableBase.__init__(self, name, db, chart1, chart2)
+    def __init__(self, app, name):
+        TableBase.__init__(self, app, name)
 
-        self.model = ModelBenchmark(self, db)
+        self.model = ModelBenchmark(self, app.db)
 
         self.table_view.setModel(self.model)
 

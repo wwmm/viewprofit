@@ -14,12 +14,13 @@ class TableBase(QObject):
     new_name = Signal(str, str)
     remove_from_db = Signal(str,)
 
-    def __init__(self, name, db, chart1, chart2):
+    def __init__(self, app, name):
         QObject.__init__(self)
 
-        self.db = db
-        self.chart1 = chart1
-        self.chart2 = chart2
+        self.app = app
+        self.db = app.db
+        self.chart1 = app.chart1
+        self.chart2 = app.chart2
         self.model = None
         self.table_view = None
         self.series = None

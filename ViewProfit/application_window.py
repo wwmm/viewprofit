@@ -250,9 +250,9 @@ class ApplicationWindow(QObject):
         table = None
 
         if table_type == "benchmark":
-            table = TableBenchmarks(name, self.db, self.chart1, self.chart2)
+            table = TableBenchmarks(self, name)
         elif table_type == "investment":
-            table = TableInvestment(name, self.db, self.chart1, self.chart2)
+            table = TableInvestment(self, name)
 
         table.lineedit_name.setText(name)
 
