@@ -3,7 +3,7 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, QFile, QObject, Qt
+from PySide2.QtCore import QDateTime, QFile, QLocale, QObject, Qt
 from PySide2.QtGui import QColor, QPainter
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
@@ -226,15 +226,17 @@ class ApplicationWindow(QObject):
             table.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
             table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
         elif table_type == "investment":
+            currency = QLocale().currencySymbol()
+
             table.model.setHeaderData(1, Qt.Horizontal, "Date")
-            table.model.setHeaderData(2, Qt.Horizontal, "Contribution")
-            table.model.setHeaderData(3, Qt.Horizontal, "Bank Balance")
-            table.model.setHeaderData(4, Qt.Horizontal, "Total Contribution")
-            table.model.setHeaderData(5, Qt.Horizontal, "Gross Return")
+            table.model.setHeaderData(2, Qt.Horizontal, "Contribution " + currency)
+            table.model.setHeaderData(3, Qt.Horizontal, "Bank Balance " + currency)
+            table.model.setHeaderData(4, Qt.Horizontal, "Total Contribution " + currency)
+            table.model.setHeaderData(5, Qt.Horizontal, "Gross Return " + currency)
             table.model.setHeaderData(6, Qt.Horizontal, "Gross Return %")
-            table.model.setHeaderData(7, Qt.Horizontal, "Real Return")
+            table.model.setHeaderData(7, Qt.Horizontal, "Real Return " + currency)
             table.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
-            table.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance")
+            table.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance " + currency)
 
         table.model.select()
 

@@ -56,14 +56,14 @@
       <item row="4" column="0" colspan="3">
        <widget class="QTableView" name="table_view">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>400</width>
+          <width>0</width>
           <height>0</height>
          </size>
         </property>
@@ -77,13 +77,16 @@
          <enum>Qt::ScrollBarAsNeeded</enum>
         </property>
         <property name="sizeAdjustPolicy">
-         <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+         <enum>QAbstractScrollArea::AdjustIgnored</enum>
         </property>
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectItems</enum>
         </property>
         <property name="textElideMode">
          <enum>Qt::ElideNone</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
         </property>
         <property name="showGrid">
          <bool>false</bool>
@@ -97,6 +100,12 @@
         <property name="cornerButtonEnabled">
          <bool>false</bool>
         </property>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>160</number>
+        </attribute>
+        <attribute name="horizontalHeaderDefaultSectionSize">
+         <number>150</number>
+        </attribute>
         <attribute name="horizontalHeaderStretchLastSection">
          <bool>false</bool>
         </attribute>
