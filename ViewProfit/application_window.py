@@ -310,15 +310,16 @@ class ApplicationWindow(QObject):
 
                 self.tab_widget.setTabText(n + 1, new_name)
 
+                # finish any pending operation before changing the table name
+
+                table.model.submitAll()
+
                 query = QSqlQuery(self.db)
 
                 query.prepare("alter table " + old_name + " rename to " + new_name)
 
                 if query.exec_():
-                    # table.model.submitAll()
-                    # table.model.setTable(new_name)
-                    # table.model.select()
-                    pass
+                    table.init_model()
                 else:
                     print("failed to rename table " + old_name)
 

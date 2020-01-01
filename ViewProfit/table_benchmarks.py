@@ -18,7 +18,12 @@ class TableBenchmarks(TableBaseIB):
 
         self.model = ModelBenchmark(self, app.db)
 
-        self.model.setTable(name)
+        self.init_model()
+
+        self.lineedit_name.setText(name)
+
+    def init_model(self):
+        self.model.setTable(self.name)
         self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.model.setSort(1, Qt.SortOrder.DescendingOrder)
         self.model.setHeaderData(1, Qt.Horizontal, "Date")
@@ -29,8 +34,6 @@ class TableBenchmarks(TableBaseIB):
 
         self.table_view.setModel(self.model)
         self.table_view.setColumnHidden(0, True)  # do no show the id column
-
-        self.lineedit_name.setText(name)
 
     def recalculate_columns(self):
         list_value = []

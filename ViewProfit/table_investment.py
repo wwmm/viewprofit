@@ -19,26 +19,7 @@ class TableInvestment(TableBaseIB):
 
         self.model = ModelInvestment(self, app.db)
 
-        self.model.setTable(name)
-        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.model.setSort(1, Qt.SortOrder.DescendingOrder)
-
-        currency = QLocale().currencySymbol()
-
-        self.model.setHeaderData(1, Qt.Horizontal, "Date")
-        self.model.setHeaderData(2, Qt.Horizontal, "Contribution " + currency)
-        self.model.setHeaderData(3, Qt.Horizontal, "Bank Balance " + currency)
-        self.model.setHeaderData(4, Qt.Horizontal, "Total Contribution " + currency)
-        self.model.setHeaderData(5, Qt.Horizontal, "Gross Return " + currency)
-        self.model.setHeaderData(6, Qt.Horizontal, "Gross Return %")
-        self.model.setHeaderData(7, Qt.Horizontal, "Real Return " + currency)
-        self.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
-        self.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance " + currency)
-
-        self.model.select()
-
-        self.table_view.setModel(self.model)
-        self.table_view.setColumnHidden(0, True)  # do no show the id column
+        self.init_model()
 
         self.qsettings = QSettings()
 
@@ -66,6 +47,28 @@ class TableInvestment(TableBaseIB):
         # signals
 
         self.doublespinbox_income_tax.valueChanged.connect(self.on_income_tax_changed)
+
+    def init_model(self):
+        self.model.setTable(self.name)
+        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.model.setSort(1, Qt.SortOrder.DescendingOrder)
+
+        currency = QLocale().currencySymbol()
+
+        self.model.setHeaderData(1, Qt.Horizontal, "Date")
+        self.model.setHeaderData(2, Qt.Horizontal, "Contribution " + currency)
+        self.model.setHeaderData(3, Qt.Horizontal, "Bank Balance " + currency)
+        self.model.setHeaderData(4, Qt.Horizontal, "Total Contribution " + currency)
+        self.model.setHeaderData(5, Qt.Horizontal, "Gross Return " + currency)
+        self.model.setHeaderData(6, Qt.Horizontal, "Gross Return %")
+        self.model.setHeaderData(7, Qt.Horizontal, "Real Return " + currency)
+        self.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
+        self.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance " + currency)
+
+        self.model.select()
+
+        self.table_view.setModel(self.model)
+        self.table_view.setColumnHidden(0, True)  # do no show the id column
 
     def recalculate_columns(self):
         self.calculate_total_contribution()
