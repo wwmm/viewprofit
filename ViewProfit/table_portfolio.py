@@ -124,12 +124,12 @@ class TablePortfolio(TableBase):
                     query = QSqlQuery(self.db)
 
                     """
-                        864000 seconds = 10 days. If the time difference is smaller than that we consider that the dates
-                        refer to the same month
+                        604800 seconds = 7 days. If the time difference is smaller than that we consider that the dates
+                        refer to the same period. In other words they will show the same values in the Portfolio tab
                     """
 
                     query.prepare("select distinct date,total_contribution,real_bank_balance from " + t.name +
-                                  " where abs(date - ?) < 864000")
+                                  " where abs(date - ?) < 604800")
 
                     query.addBindValue(date)
 
