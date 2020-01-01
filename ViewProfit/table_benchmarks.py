@@ -4,6 +4,7 @@
 import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, Qt, Signal
+from PySide2.QtSql import QSqlTableModel
 
 from ViewProfit.model_benchmark import ModelBenchmark
 from ViewProfit.table_base_ib import TableBaseIB
@@ -17,7 +18,19 @@ class TableBenchmarks(TableBaseIB):
 
         self.model = ModelBenchmark(self, app.db)
 
+        self.model.setTable(name)
+        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.model.setSort(1, Qt.SortOrder.DescendingOrder)
+        self.model.setHeaderData(1, Qt.Horizontal, "Date")
+        self.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
+        self.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
+
+        self.model.select()
+
         self.table_view.setModel(self.model)
+        self.table_view.setColumnHidden(0, True)  # do no show the id column
+
+        self.lineedit_name.setText(name)
 
     def recalculate_columns(self):
         list_value = []

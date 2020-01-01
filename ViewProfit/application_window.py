@@ -3,10 +3,10 @@
 import os
 
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import (QCoreApplication, QDateTime, QFile, QLocale,
-                            QObject, QSettings, Qt)
+from PySide2.QtCore import (QCoreApplication, QDateTime, QFile, QObject,
+                            QSettings)
 from PySide2.QtGui import QColor, QPainter
-from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
+from PySide2.QtSql import QSqlDatabase, QSqlQuery
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
                                QLabel, QPushButton, QRadioButton,
@@ -258,6 +258,8 @@ class ApplicationWindow(QObject):
 
         self.add_table('benchmark', name)
 
+        self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
+
     def add_investment_table(self):
         name = "Investment" + str(len(self.tables))
 
@@ -275,6 +277,8 @@ class ApplicationWindow(QObject):
 
         self.add_table('investment', name)
 
+        self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
+
     def add_table(self, table_type, name):
         table = None
 
@@ -282,33 +286,6 @@ class ApplicationWindow(QObject):
             table = TableBenchmarks(self, name)
         elif table_type == "investment":
             table = TableInvestment(self, name)
-
-        table.lineedit_name.setText(name)
-
-        table.model.setTable(name)
-        table.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        table.model.setSort(1, Qt.SortOrder.DescendingOrder)
-
-        if table_type == "benchmark":
-            table.model.setHeaderData(1, Qt.Horizontal, "Date")
-            table.model.setHeaderData(2, Qt.Horizontal, "Monthly Value %")
-            table.model.setHeaderData(3, Qt.Horizontal, "Accumulated %")
-        elif table_type == "investment":
-            currency = QLocale().currencySymbol()
-
-            table.model.setHeaderData(1, Qt.Horizontal, "Date")
-            table.model.setHeaderData(2, Qt.Horizontal, "Contribution " + currency)
-            table.model.setHeaderData(3, Qt.Horizontal, "Bank Balance " + currency)
-            table.model.setHeaderData(4, Qt.Horizontal, "Total Contribution " + currency)
-            table.model.setHeaderData(5, Qt.Horizontal, "Gross Return " + currency)
-            table.model.setHeaderData(6, Qt.Horizontal, "Gross Return %")
-            table.model.setHeaderData(7, Qt.Horizontal, "Real Return " + currency)
-            table.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
-            table.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance " + currency)
-
-        table.model.select()
-
-        table.table_view.setColumnHidden(0, True)  # do no show the id column
 
         self.tab_widget.addTab(table.main_widget, name)
 
@@ -337,8 +314,15 @@ class ApplicationWindow(QObject):
 
                 query.prepare("alter table " + old_name + " rename to " + new_name)
 
-                if not query.exec_():
+                if query.exec_():
+                    # table.model.submitAll()
+                    # table.model.setTable(new_name)
+                    # table.model.select()
+                    pass
+                else:
                     print("failed to rename table " + old_name)
+
+                break
 
         self.chart1.setTitle(new_name)
         self.chart2.setTitle(new_name)

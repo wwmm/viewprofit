@@ -4,6 +4,7 @@
 import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, QLocale, QSettings, Qt, Signal
+from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDoubleSpinBox, QFrame
 
 from ViewProfit.model_investment import ModelInvestment
@@ -18,7 +19,26 @@ class TableInvestment(TableBaseIB):
 
         self.model = ModelInvestment(self, app.db)
 
+        self.model.setTable(name)
+        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.model.setSort(1, Qt.SortOrder.DescendingOrder)
+
+        currency = QLocale().currencySymbol()
+
+        self.model.setHeaderData(1, Qt.Horizontal, "Date")
+        self.model.setHeaderData(2, Qt.Horizontal, "Contribution " + currency)
+        self.model.setHeaderData(3, Qt.Horizontal, "Bank Balance " + currency)
+        self.model.setHeaderData(4, Qt.Horizontal, "Total Contribution " + currency)
+        self.model.setHeaderData(5, Qt.Horizontal, "Gross Return " + currency)
+        self.model.setHeaderData(6, Qt.Horizontal, "Gross Return %")
+        self.model.setHeaderData(7, Qt.Horizontal, "Real Return " + currency)
+        self.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
+        self.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance " + currency)
+
+        self.model.select()
+
         self.table_view.setModel(self.model)
+        self.table_view.setColumnHidden(0, True)  # do no show the id column
 
         self.qsettings = QSettings()
 
@@ -28,6 +48,8 @@ class TableInvestment(TableBaseIB):
         self.doublespinbox_income_tax = cfg_widget.findChild(QDoubleSpinBox, "doublespinbox_income_tax")
 
         self.main_widget.layout().addWidget(chart_cfg_frame)
+
+        self.lineedit_name.setText(name)
 
         # effects
 
