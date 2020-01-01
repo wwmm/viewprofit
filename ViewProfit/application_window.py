@@ -219,7 +219,7 @@ class ApplicationWindow(QObject):
             table_dict = self.tables[index]
 
             if name == table_dict['name']:
-                self.tab_widget.removeTab(index + 1)  # Total tab is not in self.tables
+                self.tab_widget.removeTab(index + 1)  # The Portfolio tab is not in self.tables
 
                 self.tables.remove(table_dict)
 

@@ -7,7 +7,7 @@ import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, QLocale, QObject, Qt, Signal
 from PySide2.QtGui import QColor
-from PySide2.QtSql import QSqlTableModel
+from PySide2.QtSql import QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QPushButton,
                                QTableView)
@@ -87,7 +87,63 @@ class TablePortfolio(QObject):
         return effect
 
     def calculate(self):
-        print("calc")
+        list_dates = set()
+
+        for table_dict in self.app.tables:
+            t = table_dict['object']
+            table_type = table_dict['type']
+
+            # making sure all the latest data was saved to the database
+
+            t.model.submitAll()
+
+            if table_type == "investment":
+                query = QSqlQuery(self.db)
+
+                query.prepare("select distinct date from " + t.name + " order by date")
+
+                if query.exec_():
+                    while query.next():
+                        list_dates.add(query.value(0))
+                else:
+                    print(t.model.lastError().text())
+
+        list_dates = list(list_dates)
+
+        list_dates.sort()
+
+        for date in list_dates:
+            total_contribution = 0.0
+            real_bank_balance = 0.0
+            real_return = 0.0
+            real_return_perc = 0.0
+
+            for table_dict in self.app.tables:
+                t = table_dict['object']
+                table_type = table_dict['type']
+
+                if table_type == "investment":
+                    query = QSqlQuery(self.db)
+
+                    """
+                        432000 seconds = 5 days. If the time difference is smaller than that we consider that the dates
+                        refer to the same month
+                    """
+
+                    query.prepare("select distinct date,total_contribution,real_bank_balance,real_return," +
+                                  "real_return_perc from " + t.name + " where abs(date - ?) < 432000")
+
+                    query.addBindValue(date)
+
+                    if query.exec_():
+                        while query.next():
+                            total_contribution += query.value(1)
+                            real_bank_balance += query.value(2)
+                            real_return += query.value(3)
+                            real_return_perc += query.value(4)
+                    else:
+                        print(t.model.lastError().text())
+
         # self.recalculate_columns()
 
         # self.show_chart()
