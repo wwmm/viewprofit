@@ -164,7 +164,7 @@ QTabBar::tab:selected {
 QTabWidget#tab_widget QTabBar::tab {
   padding: 6px;
   line-height: 100px;
-  height: 120px;
+  height: 140px;
 }
 
 /*
