@@ -3,7 +3,6 @@
 
 import os
 
-import numpy as np
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, QLocale, QObject, Qt, Signal
 from PySide2.QtGui import QColor
@@ -52,6 +51,8 @@ class TablePortfolio(QObject):
         table_cfg_frame = self.main_widget.findChild(QFrame, "table_cfg_frame")
         self.table_view = self.main_widget.findChild(QTableView, "table_view")
         button_calculate = self.main_widget.findChild(QPushButton, "button_calculate")
+        button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
+        button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
 
         self.table_view.setModel(self.model)
 
@@ -61,10 +62,13 @@ class TablePortfolio(QObject):
 
         table_cfg_frame.setGraphicsEffect(self.card_shadow())
         button_calculate.setGraphicsEffect(self.button_shadow())
+        button_remove_row.setGraphicsEffect(self.button_shadow())
+        button_remove_table.setGraphicsEffect(self.button_shadow())
 
         # signals
 
         button_calculate.clicked.connect(self.calculate)
+        button_remove_table.clicked.connect(self.remove_table)
 
     def button_shadow(self):
         effect = QGraphicsDropShadowEffect(self.main_widget)
@@ -85,6 +89,17 @@ class TablePortfolio(QObject):
         effect.setBlurRadius(5)
 
         return effect
+
+    def remove_table(self):
+        query = QSqlQuery(self.db)
+
+        query.prepare("delete from " + self.name)
+
+        if query.exec_():
+            self.model.submitAll()
+            self.model.select()
+        else:
+            print(self.model.lastError().text())
 
     def calculate(self):
         list_dates = set()
@@ -115,8 +130,6 @@ class TablePortfolio(QObject):
         for date in list_dates:
             total_contribution = 0.0
             real_bank_balance = 0.0
-            real_return = 0.0
-            real_return_perc = 0.0
 
             for table_dict in self.app.tables:
                 t = table_dict['object']
@@ -126,12 +139,12 @@ class TablePortfolio(QObject):
                     query = QSqlQuery(self.db)
 
                     """
-                        432000 seconds = 5 days. If the time difference is smaller than that we consider that the dates
+                        864000 seconds = 10 days. If the time difference is smaller than that we consider that the dates
                         refer to the same month
                     """
 
-                    query.prepare("select distinct date,total_contribution,real_bank_balance,real_return," +
-                                  "real_return_perc from " + t.name + " where abs(date - ?) < 432000")
+                    query.prepare("select distinct date,total_contribution,real_bank_balance from " + t.name +
+                                  " where abs(date - ?) < 864000")
 
                     query.addBindValue(date)
 
@@ -139,70 +152,31 @@ class TablePortfolio(QObject):
                         while query.next():
                             total_contribution += query.value(1)
                             real_bank_balance += query.value(2)
-                            real_return += query.value(3)
-                            real_return_perc += query.value(4)
                     else:
                         print(t.model.lastError().text())
 
-        # self.recalculate_columns()
+            real_return = real_bank_balance - total_contribution
+            real_return_perc = 100 * real_return / total_contribution
 
-        # self.show_chart()
+            query = QSqlQuery(self.db)
 
-    def recalculate_columns(self):
-        self.calculate_total_contribution()
+            query.prepare("insert or replace into " + self.name + " values ((select id from " + self.name +
+                          " where date == ?),?,?,?,?,?)")
 
-        self.qsettings.beginGroup(self.name)
+            query.addBindValue(date)
+            query.addBindValue(date)
+            query.addBindValue(total_contribution)
+            query.addBindValue(real_bank_balance)
+            query.addBindValue(real_return)
+            query.addBindValue(real_return_perc)
 
-        income_tax = float(self.qsettings.value("income_tax", 0.0))
+            if query.exec_():
+                self.model.submitAll()
+                self.model.select()
+            else:
+                print(t.model.lastError().text())
 
-        self.qsettings.endGroup()
-
-        for n in range(self.model.rowCount()):
-            total_contribution = self.model.record(n).value("total_contribution")
-
-            gross_return = self.model.record(n).value("bank_balance") - total_contribution
-
-            real_return = gross_return * (1.0 - 0.01 * income_tax)
-
-            rec = self.model.record(n)
-
-            rec.setGenerated("gross_return", True)
-            rec.setGenerated("gross_return_perc", True)
-            rec.setGenerated("real_return", True)
-            rec.setGenerated("real_return_perc", True)
-            rec.setGenerated("real_bank_balance", True)
-
-            rec.setValue("gross_return", float(gross_return))
-            rec.setValue("real_return", float(real_return))
-            rec.setValue("real_bank_balance", float(total_contribution + real_return))
-
-            if total_contribution > 0:
-                rec.setValue("gross_return_perc", float(100 * gross_return / total_contribution))
-                rec.setValue("real_return_perc", float(100 * real_return / total_contribution))
-
-            self.model.setRecord(n, rec)
-
-    def calculate_total_contribution(self):
-        list_v = []
-
-        for n in range(self.model.rowCount()):
-            list_v.append(self.model.record(n).value("contribution"))
-
-        if len(list_v) > 0:
-            list_v.reverse()
-
-            cum_v = np.cumsum(np.array([list_v]))
-
-            cum_v = cum_v[::-1]
-
-            for n in range(self.model.rowCount()):
-                rec = self.model.record(n)
-
-                rec.setGenerated("total_contribution", True)
-
-                rec.setValue("total_contribution", float(cum_v[n]))
-
-                self.model.setRecord(n, rec)
+        self.show_chart()
 
     def make_chart1(self):
         self.chart1.setTitle(self.name)

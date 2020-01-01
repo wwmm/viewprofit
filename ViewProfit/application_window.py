@@ -214,6 +214,8 @@ class ApplicationWindow(QObject):
             self.radio_chart1.setText("Absolute Values")
             self.radio_chart2.setText("Percentage Values")
 
+            self.table_portfolio.show_chart()
+
     def remove_table(self, name):
         for index in range(len(self.tables)):
             table_dict = self.tables[index]
