@@ -5,9 +5,8 @@ import os
 from PySide2.QtCore import QDateTime, QEvent, QObject, Qt, Signal
 from PySide2.QtGui import QColor, QGuiApplication, QKeySequence
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QGroupBox,
-                               QHeaderView, QLineEdit, QMessageBox,
-                               QPushButton, QTableView)
+from PySide2.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QHeaderView,
+                               QLineEdit, QMessageBox, QPushButton, QTableView)
 
 
 class TableBase(QObject):
@@ -23,7 +22,6 @@ class TableBase(QObject):
         self.chart2 = app.chart2
         self.model = None
         self.table_view = None
-        self.series = None
         self.name = name
 
         self.module_path = os.path.dirname(__file__)
@@ -34,15 +32,13 @@ class TableBase(QObject):
 
         self.table_view = self.main_widget.findChild(QTableView, "table_view")
         table_cfg_frame = self.main_widget.findChild(QFrame, "table_cfg_frame")
-        self.lineedit_name = self.main_widget.findChild(QLineEdit, "benchmark_name")
+        self.lineedit_name = self.main_widget.findChild(QLineEdit, "table_name")
         button_update_name = self.main_widget.findChild(QPushButton, "button_update_name")
         button_add_row = self.main_widget.findChild(QPushButton, "button_add_row")
         button_calculate = self.main_widget.findChild(QPushButton, "button_calculate")
         button_save_table = self.main_widget.findChild(QPushButton, "button_save_table")
         button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
         button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
-        self.groupbox_axis = self.main_widget.findChild(QGroupBox, "groupbox_axis")
-        self.groupbox_norm = self.main_widget.findChild(QGroupBox, "groupbox_norm")
 
         self.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)

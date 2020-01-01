@@ -14,6 +14,7 @@ from PySide2.QtWidgets import (QFileDialog, QFrame, QGraphicsDropShadowEffect,
 
 from ViewProfit.table_benchmarks import TableBenchmarks
 from ViewProfit.table_investment import TableInvestment
+from ViewProfit.table_portfolio import TablePortfolio
 
 
 class ApplicationWindow(QObject):
@@ -93,6 +94,15 @@ class ApplicationWindow(QObject):
             if self.db.open():
                 print("the database was opened!")
 
+                query = QSqlQuery(self.db)
+
+                query.prepare("create table if not exists portfolio" " (id integer primary key, date int," +
+                              " total_contribution real, real_bank_balance real, real_return real," +
+                              " real_return_perc real)")
+
+                if not query.exec_():
+                    print("failed to create table portfolio. Maybe it already exists.")
+
         # Creating QChart
         self.chart1 = QtCharts.QChart()
         self.chart1.setAnimationOptions(QtCharts.QChart.GridAxisAnimations)
@@ -118,6 +128,16 @@ class ApplicationWindow(QObject):
             self.stackedwidget.setCurrentIndex(0)
         elif self.radio_chart2.isChecked():
             self.stackedwidget.setCurrentIndex(1)
+
+        # load the portfolio table
+
+        self.table_portfolio = TablePortfolio(self)
+
+        self.tab_widget.addTab(self.table_portfolio.main_widget, self.table_portfolio.name)
+
+        self.table_portfolio.new_mouse_coords.connect(self.on_new_mouse_coords)
+
+        # load the other tables
 
         self.load_saved_tables()
 
@@ -154,7 +174,10 @@ class ApplicationWindow(QObject):
 
         if query.exec_():
             while query.next():
-                names.append(query.value(0))
+                name = query.value(0)
+
+                if name != "portfolio":
+                    names.append(name)
 
             names.sort()
         else:
