@@ -7,14 +7,14 @@ from PySide2.QtCore import QDateTime, QLocale, QSettings, Qt, Signal
 from PySide2.QtWidgets import QDoubleSpinBox, QFrame
 
 from ViewProfit.model_investment import ModelInvestment
-from ViewProfit.table_base import TableBase
+from ViewProfit.table_base_ib import TableBaseIB
 
 
-class TableInvestment(TableBase):
+class TableInvestment(TableBaseIB):
     new_mouse_coords = Signal(object,)
 
     def __init__(self, app, name):
-        TableBase.__init__(self, app, name)
+        TableBaseIB.__init__(self, app, name)
 
         self.model = ModelInvestment(self, app.db)
 

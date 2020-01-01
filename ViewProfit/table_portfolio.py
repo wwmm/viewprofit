@@ -1,32 +1,23 @@
 # -*- coding: utf-8 -*-
 
 
-import os
-
 from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import QDateTime, QLocale, QObject, Qt, Signal
-from PySide2.QtGui import QColor
+from PySide2.QtCore import QDateTime, QLocale, Qt, Signal
 from PySide2.QtSql import QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QPushButton,
-                               QTableView)
+from PySide2.QtWidgets import QFrame, QPushButton, QTableView
 
 from ViewProfit.model_portfolio import ModelPortfolio
+from ViewProfit.table_base import TableBase
 
 
-class TablePortfolio(QObject):
+class TablePortfolio(TableBase):
     new_mouse_coords = Signal(object,)
 
     def __init__(self, app):
-        QObject.__init__(self)
-
-        self.app = app
-        self.db = app.db
-        self.chart1 = app.chart1
-        self.chart2 = app.chart2
         self.name = "portfolio"
 
-        self.module_path = os.path.dirname(__file__)
+        TableBase.__init__(self, app, self.name)
 
         self.model = ModelPortfolio(self, app.db)
 
@@ -70,25 +61,9 @@ class TablePortfolio(QObject):
         button_calculate.clicked.connect(self.calculate)
         button_remove_table.clicked.connect(self.remove_table)
 
-    def button_shadow(self):
-        effect = QGraphicsDropShadowEffect(self.main_widget)
+        # event filter
 
-        effect.setColor(QColor(0, 0, 0, 100))
-        effect.setXOffset(1)
-        effect.setYOffset(1)
-        effect.setBlurRadius(5)
-
-        return effect
-
-    def card_shadow(self):
-        effect = QGraphicsDropShadowEffect(self.main_widget)
-
-        effect.setColor(QColor(0, 0, 0, 100))
-        effect.setXOffset(2)
-        effect.setYOffset(2)
-        effect.setBlurRadius(5)
-
-        return effect
+        self.table_view.installEventFilter(self)
 
     def remove_table(self):
         query = QSqlQuery(self.db)
@@ -323,23 +298,3 @@ class TablePortfolio(QObject):
 
         self.make_chart1()
         self.make_chart2()
-
-    def on_hover(self, point, state):
-        if state:
-            self.new_mouse_coords.emit(point)
-
-    def clear_charts(self):
-        self.chart1.removeAllSeries()
-        self.chart2.removeAllSeries()
-
-        if self.chart1.axisX():
-            self.chart1.removeAxis(self.chart1.axisX())
-
-        if self.chart1.axisY():
-            self.chart1.removeAxis(self.chart1.axisY())
-
-        if self.chart2.axisX():
-            self.chart2.removeAxis(self.chart2.axisX())
-
-        if self.chart2.axisY():
-            self.chart2.removeAxis(self.chart2.axisY())

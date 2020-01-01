@@ -2,16 +2,14 @@
 
 import os
 
-from PySide2.QtCore import QDateTime, QEvent, QObject, Qt, Signal
+from PySide2.QtCore import QEvent, QObject, Qt, Signal
 from PySide2.QtGui import QColor, QGuiApplication, QKeySequence
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QHeaderView,
-                               QLineEdit, QMessageBox, QPushButton, QTableView)
+from PySide2.QtWidgets import QGraphicsDropShadowEffect
 
 
 class TableBase(QObject):
     new_name = Signal(str, str)
-    remove_from_db = Signal(str,)
 
     def __init__(self, app, name):
         QObject.__init__(self)
@@ -27,44 +25,6 @@ class TableBase(QObject):
         self.module_path = os.path.dirname(__file__)
 
         self.loader = QUiLoader()
-
-        self.main_widget = self.loader.load(self.module_path + "/ui/table.ui")
-
-        self.table_view = self.main_widget.findChild(QTableView, "table_view")
-        table_cfg_frame = self.main_widget.findChild(QFrame, "table_cfg_frame")
-        self.lineedit_name = self.main_widget.findChild(QLineEdit, "table_name")
-        button_update_name = self.main_widget.findChild(QPushButton, "button_update_name")
-        button_add_row = self.main_widget.findChild(QPushButton, "button_add_row")
-        button_calculate = self.main_widget.findChild(QPushButton, "button_calculate")
-        button_save_table = self.main_widget.findChild(QPushButton, "button_save_table")
-        button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
-        button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
-
-        self.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-
-        # effects
-
-        table_cfg_frame.setGraphicsEffect(self.card_shadow())
-        button_update_name.setGraphicsEffect(self.button_shadow())
-        button_add_row.setGraphicsEffect(self.button_shadow())
-        button_calculate.setGraphicsEffect(self.button_shadow())
-        button_save_table.setGraphicsEffect(self.button_shadow())
-        button_remove_table.setGraphicsEffect(self.button_shadow())
-        button_remove_row.setGraphicsEffect(self.button_shadow())
-
-        # signals
-
-        button_update_name.clicked.connect(lambda: self.new_name.emit(self.name, self.lineedit_name.displayText()))
-        button_remove_table.clicked.connect(self.on_remove_table)
-        button_save_table.clicked.connect(self.save_table_to_db)
-        button_remove_row.clicked.connect(self.remove_selected_rows)
-        button_add_row.clicked.connect(self.add_row)
-        button_calculate.clicked.connect(self.calculate)
-
-        # event filter
-
-        self.table_view.installEventFilter(self)
 
     def button_shadow(self):
         effect = QGraphicsDropShadowEffect(self.main_widget)
@@ -154,17 +114,6 @@ class TableBase(QObject):
 
         return QObject.eventFilter(self, obj, event)
 
-    def add_row(self):
-        rec = self.model.record()
-
-        rec.setGenerated("id", False)
-        rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()))
-
-        if not self.model.insertRecord(0, rec):
-            print("failed to add row to table " + self.name)
-
-            print(self.model.lastError().text())
-
     def remove_selected_rows(self):
         s_model = self.table_view.selectionModel()
 
@@ -190,11 +139,6 @@ class TableBase(QObject):
                 for index in row_list:
                     self.model.removeRow(index)
 
-    def calculate(self):
-        self.recalculate_columns()
-
-        self.show_chart()
-
     def clear_charts(self):
         self.chart1.removeAllSeries()
         self.chart2.removeAllSeries()
@@ -211,25 +155,6 @@ class TableBase(QObject):
         if self.chart2.axisY():
             self.chart2.removeAxis(self.chart2.axisY())
 
-    def on_remove_table(self):
-        box = QMessageBox(self.main_widget)
-
-        box.setText("Remove this table from the database?")
-        box.setInformativeText("This action cannot be undone!")
-        box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        box.setDefaultButton(QMessageBox.Yes)
-
-        r = box.exec_()
-
-        if r == QMessageBox.Yes:
-            self.remove_from_db.emit(self.name)
-
     def on_hover(self, point, state):
         if state:
             self.new_mouse_coords.emit(point)
-
-    def save_table_to_db(self):
-        if not self.model.submitAll():
-            print("failed to save table " + self.name + " to the database")
-
-            print(self.model.lastError().text())

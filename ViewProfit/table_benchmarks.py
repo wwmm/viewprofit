@@ -6,14 +6,14 @@ from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, Qt, Signal
 
 from ViewProfit.model_benchmark import ModelBenchmark
-from ViewProfit.table_base import TableBase
+from ViewProfit.table_base_ib import TableBaseIB
 
 
-class TableBenchmarks(TableBase):
+class TableBenchmarks(TableBaseIB):
     new_mouse_coords = Signal(object,)
 
     def __init__(self, app, name):
-        TableBase.__init__(self, app, name)
+        TableBaseIB.__init__(self, app, name)
 
         self.model = ModelBenchmark(self, app.db)
 
