@@ -38,10 +38,10 @@ class TablePortfolio(QObject):
         currency = QLocale().currencySymbol()
 
         self.model.setHeaderData(1, Qt.Horizontal, "Date")
-        self.model.setHeaderData(4, Qt.Horizontal, "Total Contribution " + currency)
-        self.model.setHeaderData(9, Qt.Horizontal, "Real Bank Balance " + currency)
-        self.model.setHeaderData(7, Qt.Horizontal, "Real Return " + currency)
-        self.model.setHeaderData(8, Qt.Horizontal, "Real Return %")
+        self.model.setHeaderData(2, Qt.Horizontal, "Total Contribution " + currency)
+        self.model.setHeaderData(3, Qt.Horizontal, "Real Bank Balance " + currency)
+        self.model.setHeaderData(4, Qt.Horizontal, "Real Return " + currency)
+        self.model.setHeaderData(5, Qt.Horizontal, "Real Return %")
 
         self.model.select()
 
@@ -62,6 +62,10 @@ class TablePortfolio(QObject):
         table_cfg_frame.setGraphicsEffect(self.card_shadow())
         button_calculate.setGraphicsEffect(self.button_shadow())
 
+        # signals
+
+        button_calculate.clicked.connect(self.calculate)
+
     def button_shadow(self):
         effect = QGraphicsDropShadowEffect(self.main_widget)
 
@@ -81,6 +85,12 @@ class TablePortfolio(QObject):
         effect.setBlurRadius(5)
 
         return effect
+
+    def calculate(self):
+        print("calc")
+        # self.recalculate_columns()
+
+        # self.show_chart()
 
     def recalculate_columns(self):
         self.calculate_total_contribution()
