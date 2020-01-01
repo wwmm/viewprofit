@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>780</width>
-    <height>572</height>
+    <width>748</width>
+    <height>304</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -53,7 +53,7 @@
       <property name="spacing">
        <number>12</number>
       </property>
-      <item row="0" column="2">
+      <item row="0" column="1">
        <widget class="QPushButton" name="button_remove_table">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -62,7 +62,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Remove Table</string>
+         <string>Clear Table</string>
         </property>
        </widget>
       </item>
@@ -79,20 +79,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="button_remove_row">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Remove Rows</string>
-        </property>
-       </widget>
-      </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressbar">
+     <property name="maximum">
+      <number>0</number>
+     </property>
+     <property name="value">
+      <number>-1</number>
+     </property>
     </widget>
    </item>
    <item>

@@ -10,6 +10,7 @@ from PySide2.QtWidgets import QGraphicsDropShadowEffect
 
 class TableBase(QObject):
     new_name = Signal(str, str)
+    hide_progress_bar = Signal()
 
     def __init__(self, app, name):
         QObject.__init__(self)

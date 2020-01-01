@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import threading
 
 from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import QDateTime, QLocale, Qt, Signal
 from PySide2.QtSql import QSqlQuery, QSqlTableModel
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QFrame, QPushButton, QTableView
+from PySide2.QtWidgets import QFrame, QProgressBar, QPushButton, QTableView
 
 from ViewProfit.model_portfolio import ModelPortfolio
 from ViewProfit.table_base import TableBase
@@ -42,8 +43,10 @@ class TablePortfolio(TableBase):
         table_cfg_frame = self.main_widget.findChild(QFrame, "table_cfg_frame")
         self.table_view = self.main_widget.findChild(QTableView, "table_view")
         button_calculate = self.main_widget.findChild(QPushButton, "button_calculate")
-        button_remove_row = self.main_widget.findChild(QPushButton, "button_remove_row")
         button_remove_table = self.main_widget.findChild(QPushButton, "button_remove_table")
+        self.progressbar = self.main_widget.findChild(QProgressBar, "progressbar")
+
+        self.progressbar.hide()
 
         self.table_view.setModel(self.model)
 
@@ -53,13 +56,14 @@ class TablePortfolio(TableBase):
 
         table_cfg_frame.setGraphicsEffect(self.card_shadow())
         button_calculate.setGraphicsEffect(self.button_shadow())
-        button_remove_row.setGraphicsEffect(self.button_shadow())
         button_remove_table.setGraphicsEffect(self.button_shadow())
 
         # signals
 
-        button_calculate.clicked.connect(self.calculate)
+        button_calculate.clicked.connect(self.aux_calculate)
         button_remove_table.clicked.connect(self.remove_table)
+
+        self.hide_progress_bar.connect(self.on_hide_progress_bar)
 
         # event filter
 
@@ -72,9 +76,15 @@ class TablePortfolio(TableBase):
 
         if query.exec_():
             self.model.submitAll()
-            self.model.select()
         else:
             print(self.model.lastError().text())
+
+    def aux_calculate(self):
+        self.progressbar.show()
+
+        t = threading.Thread(target=self.calculate, args=(), daemon=True)
+
+        t.start()
 
     def calculate(self):
         list_dates = set()
@@ -145,13 +155,17 @@ class TablePortfolio(TableBase):
             query.addBindValue(real_return)
             query.addBindValue(real_return_perc)
 
-            if query.exec_():
-                self.model.submitAll()
-                self.model.select()
-            else:
+            if not query.exec_():
                 print(t.model.lastError().text())
 
+        self.model.submitAll()
+
+        self.hide_progress_bar.emit()
+
+    def on_hide_progress_bar(self):
         self.show_chart()
+
+        self.progressbar.hide()
 
     def make_chart1(self):
         self.chart1.setTitle(self.name)

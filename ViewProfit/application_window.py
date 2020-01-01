@@ -141,6 +141,10 @@ class ApplicationWindow(QObject):
 
         self.load_saved_tables()
 
+        # now that we have the benchmarks tables we can call this function
+
+        self.table_portfolio.show_chart()
+
         # show window
 
         self.window.show()
