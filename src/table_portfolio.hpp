@@ -6,7 +6,7 @@
 class TablePortfolio : public TableBase {
   Q_OBJECT
  public:
-  TablePortfolio(QWidget* parent = nullptr);
+  explicit TablePortfolio(QWidget* parent = nullptr);
 
   void init_model();
 

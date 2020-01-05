@@ -6,7 +6,7 @@
 class TableInvestments : public TableBase {
   Q_OBJECT
  public:
-  TableInvestments(QWidget* parent = nullptr);
+  explicit TableInvestments(QWidget* parent = nullptr);
 
   void init_model();
 

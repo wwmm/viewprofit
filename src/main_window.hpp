@@ -25,6 +25,9 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   void add_investment_table();
   void load_saved_tables();
 
+  void on_listwidget_item_clicked(int currentRow);
+  void on_remove_table();
+
   template <class T>
   T* load_table(const QString& name) {
     auto table = new T();
@@ -33,7 +36,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
     table->name = name;
     table->init_model();
 
-    connect(table, &T::tableNameChanged, this, [=](auto new_name) {
+    connect(table, &T::tableNameChanged, this, [=](QString new_name) {
       // finish any pending operation before changing the table name
 
       table->model->submitAll();
@@ -45,7 +48,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
       if (query.exec()) {
         table->name = new_name;
 
-        tab_widget->setTabText(tab_widget->currentIndex(), new_name);
+        listwidget_tables->currentItem()->setText(new_name.toUpper());
 
         table->init_model();
       } else {
@@ -53,25 +56,10 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
       }
     });
 
-    connect(table, &T::removeTableFromDatabase, this, [=]() {
-      tab_widget->removeTab(tab_widget->currentIndex());
+    // tab_widget->addTab(table, name);
+    stackedwidget->addWidget(table);
 
-      qsettings.beginGroup(table->name);
-
-      qsettings.remove("");
-
-      qsettings.endGroup();
-
-      auto query = QSqlQuery(db);
-
-      query.prepare("drop table if exists " + table->name);
-
-      if (!query.exec()) {
-        qDebug("Failed remove table " + name.toUtf8() + ". Maybe has already been removed.");
-      }
-    });
-
-    tab_widget->addTab(table, name);
+    listwidget_tables->addItem(name.toUpper());
 
     return table;
   }

@@ -55,16 +55,19 @@ QPushButton#button_add_investment:pressed {
 }
 
 QPushButton#button_remove_table,
+QPushButton#button_clear_table,
 QPushButton#button_remove_row {
   background-color: #c62828;
 }
 
 QPushButton#button_remove_table:hover,
+QPushButton#button_clear_table:hover,
 QPushButton#button_remove_row:hover {
   background-color: #d32f2f;
 }
 
 QPushButton#button_remove_table:pressed,
+QPushButton#button_clear_table:pressed,
 QPushButton#button_remove_row:pressed {
   background-color: #e53935;
 }

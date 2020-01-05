@@ -63,8 +63,8 @@ void TableBenchmarks::calculate() {
 void TableBenchmarks::show_chart() {
   clear_charts();
 
-  chart1->setTitle(name);
-  chart2->setTitle(name);
+  chart1->setTitle(name.toUpper());
+  chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, "%");
   add_series_to_chart(chart1, model, "Monthly Value", "value");

@@ -126,7 +126,7 @@ void TableInvestments::calculate() {
 }
 
 void TableInvestments::make_chart1() {
-  chart1->setTitle(name);
+  chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
   add_series_to_chart(chart1, model, "Total Contribution", "total_contribution");
@@ -134,7 +134,7 @@ void TableInvestments::make_chart1() {
 }
 
 void TableInvestments::make_chart2() {
-  chart2->setTitle(name);
+  chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
   add_series_to_chart(chart2, model, "Real Return", "real_return_perc");

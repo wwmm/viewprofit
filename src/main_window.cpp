@@ -15,10 +15,12 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
   // shadow effects
 
-  tab_widget->setGraphicsEffect(card_shadow());
+  frame_table_selection->setGraphicsEffect(card_shadow());
+  stackedwidget->setGraphicsEffect(card_shadow());
   button_add_investment->setGraphicsEffect(button_shadow());
   button_add_benchmark->setGraphicsEffect(button_shadow());
   button_database_file->setGraphicsEffect(button_shadow());
+  button_remove_table->setGraphicsEffect(button_shadow());
 
   // signals
 
@@ -28,6 +30,8 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
     auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDesktopServices::openUrl(path);
   });
+  connect(listwidget_tables, &QListWidget::currentRowChanged, this, &MainWindow::on_listwidget_item_clicked);
+  connect(button_remove_table, &QPushButton::clicked, this, &MainWindow::on_remove_table);
 
   // apply custom stylesheet
 
@@ -83,8 +87,8 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       connect(table, &TablePortfolio::getInvestmentTablesName, this, [=]() {
         auto tables = QVector<TableBase*>();
 
-        for (int n = 1; n < tab_widget->count(); n++) {
-          auto btable = dynamic_cast<TableBase*>(tab_widget->widget(n));
+        for (int n = 1; n < stackedwidget->count(); n++) {
+          auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
           if (btable->type == TableType::Investment) {
             tables.append(btable);
@@ -95,8 +99,8 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       });
 
       connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
-        for (int n = 1; n < tab_widget->count(); n++) {
-          auto btable = dynamic_cast<TableBase*>(tab_widget->widget(n));
+        for (int n = 1; n < stackedwidget->count(); n++) {
+          auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
           if (btable->type == TableType::Benchmark) {
             table->show_benchmark(btable);
@@ -104,7 +108,11 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
         }
       });
 
-      tab_widget->addTab(table, table->name);
+      // tab_widget->addTab(table, table->name);
+      stackedwidget->addWidget(table);
+
+      listwidget_tables->addItem(table->name.toUpper());
+      listwidget_tables->setCurrentRow(0);
 
       load_saved_tables();
 
@@ -140,7 +148,7 @@ QGraphicsDropShadowEffect* MainWindow::card_shadow() {
 }
 
 void MainWindow::add_benchmark_table() {
-  auto name = QString("Benchmark%1").arg(tab_widget->count());
+  auto name = QString("Benchmark%1").arg(stackedwidget->count());
 
   auto query = QSqlQuery(db);
 
@@ -151,14 +159,16 @@ void MainWindow::add_benchmark_table() {
   if (query.exec()) {
     load_table<TableBenchmarks>(name);
 
-    tab_widget->setCurrentIndex(tab_widget->count() - 1);
+    stackedwidget->setCurrentIndex(stackedwidget->count() - 1);
+
+    listwidget_tables->setCurrentRow(listwidget_tables->count() - 1);
   } else {
     qDebug("Failed to create table " + name.toUtf8() + ". Maybe it already exists.");
   }
 }
 
 void MainWindow::add_investment_table() {
-  auto name = QString("Investment%1").arg(tab_widget->count());
+  auto name = QString("Investment%1").arg(stackedwidget->count());
 
   auto query = QSqlQuery(db);
 
@@ -171,7 +181,9 @@ void MainWindow::add_investment_table() {
   if (query.exec()) {
     load_table<TableInvestments>(name);
 
-    tab_widget->setCurrentIndex(tab_widget->count() - 1);
+    stackedwidget->setCurrentIndex(stackedwidget->count() - 1);
+
+    listwidget_tables->setCurrentRow(listwidget_tables->count() - 1);
   } else {
     qDebug("Failed to create table " + name.toUtf8() + ". Maybe it already exists.");
   }
@@ -222,8 +234,8 @@ void MainWindow::load_saved_tables() {
       auto table = load_table<TableInvestments>(name);
 
       connect(table, &TableInvestments::getBenchmarkTables, this, [=]() {
-        for (int n = 1; n < tab_widget->count(); n++) {
-          auto btable = dynamic_cast<TableBase*>(tab_widget->widget(n));
+        for (int n = 1; n < stackedwidget->count(); n++) {
+          auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
           if (btable->type == TableType::Benchmark) {
             table->show_benchmark(btable);
@@ -236,12 +248,57 @@ void MainWindow::load_saved_tables() {
       load_table<TableBenchmarks>(name);
     }
 
-    for (int n = 1; n < tab_widget->count(); n++) {
-      auto btable = dynamic_cast<TableBase*>(tab_widget->widget(n));
+    for (int n = 1; n < stackedwidget->count(); n++) {
+      auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
       btable->calculate();
     }
   } else {
     qDebug("Failed to get table names!");
+  }
+}
+
+void MainWindow::on_listwidget_item_clicked(int currentRow) {
+  stackedwidget->setCurrentIndex(currentRow);
+}
+
+void MainWindow::on_remove_table() {
+  if (listwidget_tables->currentRow() == 0) {
+    return;
+  }
+
+  auto box = QMessageBox(this);
+
+  box.setText("Remove the selected table from the database?");
+  box.setInformativeText("This action cannot be undone!");
+  box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  box.setDefaultButton(QMessageBox::Yes);
+
+  auto r = box.exec();
+
+  if (r == QMessageBox::Yes) {
+    auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+
+    stackedwidget->removeWidget(stackedwidget->widget(stackedwidget->currentIndex()));
+
+    auto it = listwidget_tables->takeItem(listwidget_tables->currentRow());
+
+    if (it != nullptr) {
+      delete it;
+    }
+
+    qsettings.beginGroup(table->name);
+
+    qsettings.remove("");
+
+    qsettings.endGroup();
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("drop table if exists " + table->name);
+
+    if (!query.exec()) {
+      qDebug("Failed remove table " + table->name.toUtf8() + ". Maybe has already been removed.");
+    }
   }
 }

@@ -27,7 +27,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
   void tableNameChanged(const QString& new_name);
   void hideProgressBar();
   void newChartMouseHover(const QPointF& point);
-  void removeTableFromDatabase();
 
  protected:
   QSqlDatabase db;
@@ -70,7 +69,7 @@ class TableBase : public QWidget, protected Ui::TableBase {
                            const QString& column_name) const {
     auto series = new QLineSeries();
 
-    series->setName(series_name);
+    series->setName(series_name.toLower());
 
     connect(series, &QLineSeries::hovered, this, &TableBase::on_chart_mouse_hover);
 
@@ -113,7 +112,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
   }
 
  private:
-  void on_remove_table();
   void on_save_table_to_database();
   void on_add_row();
 };

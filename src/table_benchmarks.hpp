@@ -5,7 +5,7 @@
 
 class TableBenchmarks : public TableBase {
  public:
-  TableBenchmarks(QWidget* parent = nullptr);
+  explicit TableBenchmarks(QWidget* parent = nullptr);
 
   void init_model();
 

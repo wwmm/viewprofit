@@ -1,6 +1,7 @@
 #include "table_base.hpp"
 #include <QGuiApplication>
 #include <QSqlError>
+#include <QSqlQuery>
 #include <QSqlRecord>
 
 TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), chart2(new QChart()) {
@@ -12,12 +13,12 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
 
   // shadow effects
 
-  table_cfg_frame->setGraphicsEffect(card_shadow());
+  // table_cfg_frame->setGraphicsEffect(card_shadow());
   button_update_name->setGraphicsEffect(button_shadow());
   button_add_row->setGraphicsEffect(button_shadow());
   button_calculate->setGraphicsEffect(button_shadow());
   button_remove_row->setGraphicsEffect(button_shadow());
-  button_remove_table->setGraphicsEffect(button_shadow());
+  button_clear_table->setGraphicsEffect(button_shadow());
   button_save_table->setGraphicsEffect(button_shadow());
   chart_cfg_frame->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
@@ -27,7 +28,6 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
 
   connect(button_update_name, &QPushButton::clicked,
           [&]() { emit tableNameChanged(lineedit_table_name->displayText()); });
-  connect(button_remove_table, &QPushButton::clicked, this, &TableBase::on_remove_table);
   connect(button_save_table, &QPushButton::clicked, this, &TableBase::on_save_table_to_database);
   connect(button_remove_row, &QPushButton::clicked, this, &TableBase::remove_selected_rows);
   connect(button_add_row, &QPushButton::clicked, this, &TableBase::on_add_row);
@@ -36,6 +36,20 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
   connect(button_reset_zoom, &QPushButton::clicked, this, &TableBase::reset_zoom);
   connect(radio_chart1, &QRadioButton::toggled, this, &TableBase::on_chart_selection);
   connect(radio_chart2, &QRadioButton::toggled, this, &TableBase::on_chart_selection);
+
+  connect(button_clear_table, &QPushButton::clicked, this, [&]() {
+    auto query = QSqlQuery(db);
+
+    query.prepare("delete from " + name);
+
+    if (query.exec()) {
+      model->select();
+
+      clear_charts();
+    } else {
+      qDebug(model->lastError().text().toUtf8());
+    }
+  });
 
   // chart 1 settings
 
@@ -296,21 +310,6 @@ void TableBase::on_add_row() {
     qDebug("failed to add row to table " + name.toUtf8());
 
     qDebug(model->lastError().text().toUtf8());
-  }
-}
-
-void TableBase::on_remove_table() {
-  auto box = QMessageBox(this);
-
-  box.setText("Remove this table from the database?");
-  box.setInformativeText("This action cannot be undone!");
-  box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-  box.setDefaultButton(QMessageBox::Yes);
-
-  auto r = box.exec();
-
-  if (r == QMessageBox::Yes) {
-    emit removeTableFromDatabase();
   }
 }
 

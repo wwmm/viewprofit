@@ -14,23 +14,6 @@ TablePortfolio::TablePortfolio(QWidget* parent) {
   button_add_row->hide();
   button_remove_row->hide();
   button_save_table->hide();
-
-  button_remove_table->disconnect();
-  button_remove_table->setText("Clear Table");
-
-  connect(button_remove_table, &QPushButton::clicked, this, [&]() {
-    auto query = QSqlQuery(db);
-
-    query.prepare("delete from " + name);
-
-    if (query.exec()) {
-      model->select();
-
-      clear_charts();
-    } else {
-      qDebug(model->lastError().text().toUtf8());
-    }
-  });
 }
 
 void TablePortfolio::init_model() {
@@ -141,7 +124,7 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
 }
 
 void TablePortfolio::make_chart1() {
-  chart1->setTitle(name);
+  chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
   add_series_to_chart(chart1, model, "Total Contribution", "total_contribution");
@@ -149,7 +132,7 @@ void TablePortfolio::make_chart1() {
 }
 
 void TablePortfolio::make_chart2() {
-  chart2->setTitle(name);
+  chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
   add_series_to_chart(chart2, model, "Real Return", "real_return_perc");
