@@ -263,12 +263,34 @@ void TableBase::on_add_row() {
   auto rec = model->record();
 
   rec.setGenerated("id", false);
+
+  rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()));
+
+  // table benchmark
   rec.setGenerated("value", true);
   rec.setGenerated("accumulated", true);
 
-  rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()));
   rec.setValue("value", 0.0);
   rec.setValue("accumulated", 0.0);
+
+  // table investment
+  rec.setGenerated("contribution", true);
+  rec.setGenerated("bank_balance", true);
+  rec.setGenerated("total_contribution", true);
+  rec.setGenerated("gross_return", true);
+  rec.setGenerated("gross_return_perc", true);
+  rec.setGenerated("real_return", true);
+  rec.setGenerated("real_return_perc", true);
+  rec.setGenerated("real_bank_balance", true);
+
+  rec.setValue("contribution", 0.0);
+  rec.setValue("bank_balance", 0.0);
+  rec.setValue("total_contribution", 0.0);
+  rec.setValue("gross_return", 0.0);
+  rec.setValue("gross_return_perc", 0.0);
+  rec.setValue("real_return", 0.0);
+  rec.setValue("real_return_perc", 0.0);
+  rec.setValue("real_bank_balance", 0.0);
 
   if (!model->insertRecord(0, rec)) {
     qDebug("failed to add row to table " + name.toUtf8());

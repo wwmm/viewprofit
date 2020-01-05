@@ -22,6 +22,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   // signals
 
   connect(button_add_benchmark, &QPushButton::clicked, this, &MainWindow::add_benchmark_table);
+  connect(button_add_investment, &QPushButton::clicked, this, &MainWindow::add_investment_table);
 
   // apply custom stylesheet
 
