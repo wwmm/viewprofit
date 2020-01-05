@@ -35,19 +35,22 @@ QPushButton:pressed {
 
 QPushButton#button_add_row,
 QPushButton#button_add_fund,
-QPushButton#button_save_image {
+QPushButton#button_add_investment,
+QPushButton#button_add_benchmark {
   background-color: #1565c0;
 }
 
 QPushButton#button_add_row:hover,
 QPushButton#button_add_fund:hover,
-QPushButton#button_save_image:hover {
+QPushButton#button_add_benchmark:hover,
+QPushButton#button_add_investment:hover {
   background-color: #1976d2;
 }
 
 QPushButton#button_add_row:pressed,
 QPushButton#button_add_fund:pressed,
-QPushButton#button_save_image:pressed {
+QPushButton#button_add_benchmark:pressed,
+QPushButton#button_add_investment:pressed {
   background-color: #1e88e5;
 }
 
