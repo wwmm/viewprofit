@@ -1,0 +1,1 @@
+resources = qt5.preprocess(qresources : 'resources.qrc')

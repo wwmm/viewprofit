@@ -1,32 +1,28 @@
-project('viewprofit',
-  version: '0.0.1',
-  meson_version: '>= 0.51.0'
+project(
+	'viewprofit',
+	'cpp',
+	default_options : ['cpp_std=c++17','buildtype=debugoptimized'],
+	version: '0.0.1',
+	meson_version: '>= 0.52.1'
 )
-
-pymod = import('python')
-i18n_mod = import('i18n')
-
-required_modules = ['PySide2','PySide2.QtCharts']
-
-py3 = pymod.find_installation('python3', modules:required_modules)
-
-message('python version: ' + py3.language_version())
-message('module install path: ' + py3.get_install_dir())
 
 prefix = get_option('prefix')
 bindir = join_paths(prefix, get_option('bindir'))
 datadir = join_paths(prefix, get_option('datadir'))
 localedir = join_paths(prefix, get_option('localedir'))
+config_h_dir = include_directories('.')
 
-install_subdir('ViewProfit', install_dir: py3.get_install_dir())
+# Configuration
+conf = configuration_data()
 
-conf_viewprofit = configuration_data()
-conf_viewprofit.set('LOCALEDIR', localedir)
-conf_viewprofit.set('PROJECT_NAME', meson.project_name())
-configure_file(input: 'viewprofit.in',
-               output: 'viewprofit',
-               configuration: conf_viewprofit,
-               install_dir: bindir)
+conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
+conf.set_quoted('LOCALE_DIR', localedir)
+conf.set_quoted('VERSION', meson.project_version())
+
+configure_file(output: 'config.h', configuration: conf)
+
+qt5 = import('qt5')
 
 subdir('data')
+subdir('src')
 

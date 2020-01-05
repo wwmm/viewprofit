@@ -1,0 +1,74 @@
+#include "table_benchmarks.hpp"
+
+TableBenchmarks::TableBenchmarks(QWidget* parent) : TableBase(parent) {
+  type = TableType::Benchmark;
+
+  investment_cfg_frame->hide();
+
+  radio_chart2->setText("Accumulated");
+  radio_chart1->setText("Monthly Value");
+}
+
+void TableBenchmarks::init_model() {
+  model->setTable(name);
+  model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+  model->setSort(1, Qt::DescendingOrder);
+  model->setHeaderData(1, Qt::Horizontal, "Date");
+  model->setHeaderData(2, Qt::Horizontal, "Monthly Value %");
+  model->setHeaderData(3, Qt::Horizontal, "Accumulated %");
+  model->select();
+
+  table_view->setModel(model);
+  table_view->setColumnHidden(0, true);
+}
+
+void TableBenchmarks::calculate() {
+  QVector<double> list_values;
+
+  for (int n = 0; n < model->rowCount(); n++) {
+    list_values.append(model->record(n).value("value").toDouble());
+  }
+
+  if (list_values.size() > 0) {
+    std::reverse(list_values.begin(), list_values.end());
+
+    for (auto& value : list_values) {
+      value = value * 0.01 + 1.0;
+    }
+
+    // cumulative product
+
+    std::partial_sum(list_values.begin(), list_values.end(), list_values.begin(), std::multiplies<double>());
+
+    for (auto& value : list_values) {
+      value = (value - 1.0) * 100;
+    }
+
+    std::reverse(list_values.begin(), list_values.end());
+
+    for (int n = 0; n < model->rowCount(); n++) {
+      auto rec = model->record(n);
+
+      rec.setGenerated("accumulated", true);
+
+      rec.setValue("accumulated", list_values[n]);
+
+      model->setRecord(n, rec);
+    }
+
+    show_chart();
+  }
+}
+
+void TableBenchmarks::show_chart() {
+  clear_charts();
+
+  chart1->setTitle(name);
+  chart2->setTitle(name);
+
+  add_axes_to_chart(chart1, "%");
+  add_series_to_chart(chart1, model, "Monthly Value", "value");
+
+  add_axes_to_chart(chart2, "%");
+  add_series_to_chart(chart2, model, "Accumulated", "accumulated");
+}

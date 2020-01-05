@@ -78,7 +78,8 @@ QFrame {
 
 QFrame#table_cfg_frame,
 QFrame#pc_frame,
-QFrame#chart_cfg_frame {
+QFrame#chart_cfg_frame,
+QFrame#investment_cfg_frame {
   background-color: #eceff1;
 }
 

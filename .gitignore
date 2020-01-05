@@ -1,8 +1,5 @@
-__pycache__
+_build
 build
-dist
+.vscode
 node_modules
-*.mo
-*.prof
-viewprofit.spec
-viewprofit.sqlite
+package-lock.json
