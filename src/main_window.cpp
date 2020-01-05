@@ -18,11 +18,16 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   tab_widget->setGraphicsEffect(card_shadow());
   button_add_investment->setGraphicsEffect(button_shadow());
   button_add_benchmark->setGraphicsEffect(button_shadow());
+  button_database_file->setGraphicsEffect(button_shadow());
 
   // signals
 
   connect(button_add_benchmark, &QPushButton::clicked, this, &MainWindow::add_benchmark_table);
   connect(button_add_investment, &QPushButton::clicked, this, &MainWindow::add_investment_table);
+  connect(button_database_file, &QPushButton::clicked, this, [&]() {
+    auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDesktopServices::openUrl(path);
+  });
 
   // apply custom stylesheet
 
