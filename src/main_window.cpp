@@ -17,7 +17,6 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   // shadow effects
 
   frame_table_selection->setGraphicsEffect(card_shadow());
-  stackedwidget->setGraphicsEffect(card_shadow());
   button_add_investment->setGraphicsEffect(button_shadow());
   button_add_benchmark->setGraphicsEffect(button_shadow());
   button_database_file->setGraphicsEffect(button_shadow());

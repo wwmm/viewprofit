@@ -16,6 +16,8 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
   button_add_row->setGraphicsEffect(button_shadow());
   button_calculate->setGraphicsEffect(button_shadow());
   chart_cfg_frame->setGraphicsEffect(card_shadow());
+  frame_chart->setGraphicsEffect(card_shadow());
+  frame_tableview->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
   button_save_image->setGraphicsEffect(button_shadow());
 

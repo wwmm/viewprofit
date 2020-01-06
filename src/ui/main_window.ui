@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>ViewProfit</string>
   </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -43,7 +46,7 @@
     <item row="0" column="0">
      <widget class="QFrame" name="frame_table_selection">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+       <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
