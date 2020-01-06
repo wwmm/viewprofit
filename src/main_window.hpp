@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include "table_portfolio.hpp"
 #include "ui_main_window.h"
 
 class MainWindow : public QMainWindow, private Ui::MainWindow {
@@ -21,6 +22,8 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   QGraphicsDropShadowEffect* button_shadow();
   QGraphicsDropShadowEffect* card_shadow();
 
+  TablePortfolio* load_portfolio_table();
+  void load_inflation_table();
   void add_benchmark_table();
   void add_investment_table();
   void load_saved_tables();

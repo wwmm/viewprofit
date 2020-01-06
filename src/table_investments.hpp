@@ -21,7 +21,7 @@ class TableInvestments : public TableBase {
 
   double chart2_vmin = 0.0, chart2_vmax = 0.0;
 
-  void calculate_total_contribution();
+  void calculate_totals(const QString& column_name);
   void make_chart1();
   void make_chart2();
 };

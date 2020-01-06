@@ -6,7 +6,6 @@
 #include <QStandardPaths>
 #include "table_benchmarks.hpp"
 #include "table_investments.hpp"
-#include "table_portfolio.hpp"
 
 MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSettings()) {
   QCoreApplication::setOrganizationName("wwmm");
@@ -72,56 +71,13 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
     if (db.open()) {
       qDebug("The database file was opened!");
 
-      auto query = QSqlQuery(db);
+      auto portfolio_table = load_portfolio_table();
 
-      query.prepare(
-          "create table if not exists portfolio (id integer primary key,date int,total_contribution real,"
-          "real_bank_balance real,real_return real,real_return_perc real)");
-
-      if (!query.exec()) {
-        qDebug("Failed to create table portfolio. Maybe it already exists.");
-      }
-
-      // load the portfolio tab
-
-      auto table = new TablePortfolio();
-
-      table->set_database(db);
-      table->init_model();
-
-      connect(table, &TablePortfolio::getInvestmentTablesName, this, [=]() {
-        auto tables = QVector<TableBase*>();
-
-        for (int n = 1; n < stackedwidget->count(); n++) {
-          auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
-
-          if (btable->type == TableType::Investment) {
-            tables.append(btable);
-          }
-        }
-
-        table->process_investment_tables(tables);
-      });
-
-      connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
-        for (int n = 1; n < stackedwidget->count(); n++) {
-          auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
-
-          if (btable->type == TableType::Benchmark) {
-            table->show_benchmark(btable);
-          }
-        }
-      });
-
-      // tab_widget->addTab(table, table->name);
-      stackedwidget->addWidget(table);
-
-      listwidget_tables->addItem(table->name.toUpper());
-      listwidget_tables->setCurrentRow(0);
+      load_inflation_table();
 
       load_saved_tables();
 
-      table->calculate();  // it has to be called after loading the other tables
+      portfolio_table->calculate();  // it has to be called after loading the other tables
     } else {
       qCritical("Failed to open the database file!");
     }
@@ -152,6 +108,76 @@ QGraphicsDropShadowEffect* MainWindow::card_shadow() {
   return effect;
 }
 
+TablePortfolio* MainWindow::load_portfolio_table() {
+  auto query = QSqlQuery(db);
+
+  query.prepare(
+      "create table if not exists portfolio (id integer primary key, date int, deposit real, withdrawal real,"
+      " net_bank_balance real, net_return real, net_return_perc real, real_return_perc real)");
+
+  if (!query.exec()) {
+    qDebug("Failed to create table portfolio. Maybe it already exists.");
+  }
+
+  auto table = new TablePortfolio();
+
+  table->set_database(db);
+  table->init_model();
+
+  connect(table, &TablePortfolio::getInvestmentTablesName, this, [=]() {
+    auto tables = QVector<TableBase*>();
+
+    for (int n = 0; n < stackedwidget->count(); n++) {
+      auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+
+      if (btable->type == TableType::Investment) {
+        tables.append(btable);
+      }
+    }
+
+    table->process_investment_tables(tables);
+  });
+
+  connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
+    for (int n = 0; n < stackedwidget->count(); n++) {
+      auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+
+      if (btable->type == TableType::Benchmark) {
+        table->show_benchmark(btable);
+      }
+    }
+  });
+
+  stackedwidget->addWidget(table);
+
+  listwidget_tables->addItem(table->name.toUpper());
+  listwidget_tables->setCurrentRow(0);
+
+  return table;
+}
+
+void MainWindow::load_inflation_table() {
+  auto query = QSqlQuery(db);
+
+  query.prepare(
+      "create table if not exists inflation (id integer primary key,"
+      " date int default (cast(strftime('%s','now') as int)),value real default 0.0,accumulated real default 0.0)");
+
+  if (query.exec()) {
+    auto table = new TableBenchmarks();
+
+    table->set_database(db);
+    table->name = "inflation";
+    table->init_model();
+
+    stackedwidget->addWidget(table);
+
+    listwidget_tables->addItem("INFLATION");
+  } else {
+    qDebug("Failed to create table inflation. Maybe it already exists.");
+  }
+}
+
 void MainWindow::add_benchmark_table() {
   auto name = QString("Benchmark%1").arg(stackedwidget->count());
 
@@ -178,10 +204,11 @@ void MainWindow::add_investment_table() {
   auto query = QSqlQuery(db);
 
   query.prepare(
-      "create table " + name + " (id integer primary key," + " date int default (cast(strftime('%s','now') as int))," +
-      " contribution real default 0.0," + " bank_balance real default 0.0," + " total_contribution real default 0.0," +
-      " gross_return real default 0.0," + " gross_return_perc real default 0.0," + " real_return real default 0.0," +
-      " real_return_perc real default 0.0," + " real_bank_balance real default 0.0)");
+      "create table " + name + " (id integer primary key, date int default (cast(strftime('%s','now') as int))," +
+      " deposit real default 0.0, withdrawal real default 0.0, bank_balance real default 0.0," +
+      " total_deposit real default 0.0, total_withdrawal real default 0.0, gross_return real default 0.0," +
+      " gross_return_perc real default 0.0," + " net_return real default 0.0, net_return_perc real default 0.0," +
+      " net_bank_balance real default 0.0," + " real_return_perc real default 0.0)");
 
   if (query.exec()) {
     load_table<TableInvestments>(name);
@@ -205,7 +232,7 @@ void MainWindow::load_saved_tables() {
     while (query.next()) {
       auto name = query.value(0).toString();
 
-      if (name != "portfolio") {
+      if (name != "portfolio" && name != "inflation") {
         names.append(name);
       }
     }
@@ -297,7 +324,7 @@ void MainWindow::on_listwidget_item_changed(QListWidgetItem* item) {
 }
 
 void MainWindow::on_remove_table() {
-  if (listwidget_tables->currentRow() == 0) {
+  if (listwidget_tables->currentRow() < 2) {
     return;
   }
 

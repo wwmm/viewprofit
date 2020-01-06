@@ -19,10 +19,12 @@ void TablePortfolio::init_model() {
   auto currency = QLocale().currencySymbol();
 
   model->setHeaderData(1, Qt::Horizontal, "Date");
-  model->setHeaderData(2, Qt::Horizontal, "Total Contribution " + currency);
-  model->setHeaderData(3, Qt::Horizontal, "Real Bank Balance " + currency);
-  model->setHeaderData(4, Qt::Horizontal, "Real Return " + currency);
-  model->setHeaderData(5, Qt::Horizontal, "Real Return %");
+  model->setHeaderData(2, Qt::Horizontal, "Deposit " + currency);
+  model->setHeaderData(3, Qt::Horizontal, "Withdrawal " + currency);
+  model->setHeaderData(4, Qt::Horizontal, "Net Bank Balance " + currency);
+  model->setHeaderData(5, Qt::Horizontal, "Net Return " + currency);
+  model->setHeaderData(6, Qt::Horizontal, "Net Return %");
+  model->setHeaderData(7, Qt::Horizontal, "Real Return %");
 
   model->select();
 
@@ -36,6 +38,22 @@ void TablePortfolio::calculate() {
 
 void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables) {
   QSet<int> list_set;
+  QVector<QPair<int, double>> inflation_vec;
+
+  // get inflation values
+  auto query = QSqlQuery(db);
+
+  query.prepare("select distinct date,accumulated from inflation order by date desc");
+
+  if (query.exec()) {
+    while (query.next()) {
+      inflation_vec.append(QPair(query.value(0).toInt(), query.value(1).toDouble()));
+    }
+  } else {
+    qDebug("Failed to get inflation table values!");
+  }
+
+  // get date values in the investment tables
 
   for (auto& table : tables) {
     // making sure all the latest data was saved to the database
@@ -63,46 +81,56 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
 
   std::sort(list_dates.begin(), list_dates.end());
 
+  auto qdt = QDateTime();
+
   for (auto& date : list_dates) {
-    double total_contribution = 0.0;
-    double real_bank_balance = 0.0;
+    double total_deposit = 0.0, total_withdrawal = 0.0, net_bank_balance = 0.0;
+
+    qdt.setSecsSinceEpoch(date);
+
+    QString date_month = qdt.toString("MM/yyyy");
 
     for (auto& table : tables) {
-      auto query = QSqlQuery(db);
+      for (int n = 0; n < table->model->rowCount(); n++) {
+        QString tdate = table->model->record(n).value("date").toString();
 
-      /*
-        345600 seconds = 4 days. If the time difference is smaller than that we consider that the dates
-        refer to the same period. In other words they will show the same values in the Portfolio tab
-      */
+        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
+          total_deposit += table->model->record(n).value("total_deposit").toDouble();
+          total_withdrawal += table->model->record(n).value("total_withdrawal").toDouble();
+          net_bank_balance += table->model->record(n).value("net_bank_balance").toDouble();
 
-      query.prepare("select distinct total_contribution,real_bank_balance from " + table->name +
-                    " where abs(date - ?) < 345600");
-
-      query.addBindValue(date);
-
-      if (query.exec()) {
-        while (query.next()) {
-          total_contribution += query.value(0).toDouble();
-          real_bank_balance += query.value(1).toDouble();
+          break;
         }
-      } else {
-        qDebug(table->model->lastError().text().toUtf8());
       }
     }
 
-    double real_return = real_bank_balance - total_contribution;
-    double real_return_perc = 100 * real_return / total_contribution;
+    double net_return = net_bank_balance - (total_deposit - total_withdrawal);
+    double net_return_perc = 100 * net_return / (total_deposit - total_withdrawal);
+
+    double real_return_perc = 0.0;
+
+    for (auto& p : inflation_vec) {
+      qdt.setSecsSinceEpoch(p.first);
+
+      if (qdt.toString("MM/yyyy") == date_month) {
+        real_return_perc = 100.0 * (net_return_perc - p.second) / (100.0 + p.second);
+
+        break;
+      }
+    }
 
     auto query = QSqlQuery(db);
 
     query.prepare("insert or replace into " + name + " values ((select id from " + name +
-                  " where date == ?),?,?,?,?,?)");
+                  " where date == ?),?,?,?,?,?,?,?)");
 
     query.addBindValue(date);
     query.addBindValue(date);
-    query.addBindValue(total_contribution);
-    query.addBindValue(real_bank_balance);
-    query.addBindValue(real_return);
+    query.addBindValue(total_deposit);
+    query.addBindValue(total_withdrawal);
+    query.addBindValue(net_bank_balance);
+    query.addBindValue(net_return);
+    query.addBindValue(net_return_perc);
     query.addBindValue(real_return_perc);
 
     if (!query.exec()) {
@@ -122,14 +150,31 @@ void TablePortfolio::make_chart1() {
   chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
-  add_series_to_chart(chart1, model, "Total Contribution", "total_contribution");
-  add_series_to_chart(chart1, model, "Real Bank Balance", "real_bank_balance");
+  add_series_to_chart(chart1, model, "Deposits", "deposit");
+  add_series_to_chart(chart1, model, "Net Bank Balance", "net_bank_balance");
+
+  bool show_withdrawals = false;
+
+  for (int n = 0; n < model->rowCount(); n++) {
+    double withdrawal = model->record(n).value("withdrawal").toDouble();
+
+    if (fabs(withdrawal) > 0) {
+      show_withdrawals = true;
+
+      break;
+    }
+  }
+
+  if (show_withdrawals) {
+    add_series_to_chart(chart1, model, "Withdrawals", "withdrawal");
+  }
 }
 
 void TablePortfolio::make_chart2() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
+  add_series_to_chart(chart2, model, "Net Return", "net_return_perc");
   add_series_to_chart(chart2, model, "Real Return", "real_return_perc");
 
   // ask the main window class for the benchmarks
