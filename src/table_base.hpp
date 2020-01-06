@@ -69,18 +69,18 @@ class TableBase : public QWidget, protected Ui::TableBase {
                            const Model* tmodel,
                            const QString& series_name,
                            const QString& column_name) const {
+    if (chart->axes().size() == 0) {
+      return;
+    }
+
     auto series = new QLineSeries();
 
     series->setName(series_name.toLower());
 
     connect(series, &QLineSeries::hovered, this, &TableBase::on_chart_mouse_hover);
 
-    double vmin = 0.0, vmax = 0.0;
-
-    if (chart->axes().size() > 0) {
-      vmin = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
-      vmax = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
-    }
+    double vmin = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
+    double vmax = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
 
     for (int n = 0; n < tmodel->rowCount(); n++) {
       auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "dd/MM/yyyy");

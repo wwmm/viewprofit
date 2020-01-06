@@ -211,11 +211,21 @@ void MainWindow::add_investment_table() {
       " net_bank_balance real default 0.0," + " real_return_perc real default 0.0)");
 
   if (query.exec()) {
-    load_table<TableInvestments>(name);
+    auto table = load_table<TableInvestments>(name);
 
     stackedwidget->setCurrentIndex(stackedwidget->count() - 1);
 
     listwidget_tables->setCurrentRow(listwidget_tables->count() - 1);
+
+    connect(table, &TableInvestments::getBenchmarkTables, this, [=]() {
+      for (int n = 0; n < stackedwidget->count(); n++) {
+        auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+
+        if (btable->type == TableType::Benchmark) {
+          table->show_benchmark(btable);
+        }
+      }
+    });
   } else {
     qDebug("Failed to create table " + name.toUtf8() + ". Maybe it already exists.");
   }
@@ -266,7 +276,7 @@ void MainWindow::load_saved_tables() {
       auto table = load_table<TableInvestments>(name);
 
       connect(table, &TableInvestments::getBenchmarkTables, this, [=]() {
-        for (int n = 1; n < stackedwidget->count(); n++) {
+        for (int n = 0; n < stackedwidget->count(); n++) {
           auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
           if (btable->type == TableType::Benchmark) {
@@ -280,7 +290,7 @@ void MainWindow::load_saved_tables() {
       load_table<TableBenchmarks>(name);
     }
 
-    for (int n = 1; n < stackedwidget->count(); n++) {
+    for (int n = 0; n < stackedwidget->count(); n++) {
       auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
       btable->calculate();

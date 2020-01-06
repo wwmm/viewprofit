@@ -140,10 +140,12 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
 
   model->select();
 
-  clear_charts();
+  if (model->rowCount() > 0) {
+    clear_charts();
 
-  make_chart1();
-  make_chart2();
+    make_chart1();
+    make_chart2();
+  }
 }
 
 void TablePortfolio::make_chart1() {
