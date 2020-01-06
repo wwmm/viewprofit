@@ -84,9 +84,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QListWidget" name="listwidget_tables"/>
-       </item>
        <item row="1" column="0">
         <widget class="QPushButton" name="button_add_investment">
          <property name="sizePolicy">
@@ -100,7 +97,37 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="2" column="0" colspan="2">
+        <widget class="QListWidget" name="listwidget_tables">
+         <property name="editTriggers">
+          <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+         </property>
+         <property name="showDropIndicator" stdset="0">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QPushButton" name="button_remove_table">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QPushButton" name="button_clear_table">
+         <property name="text">
+          <string>Clear Data</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
         <widget class="QPushButton" name="button_database_file">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -113,8 +140,8 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QPushButton" name="button_remove_table">
+       <item row="3" column="0">
+        <widget class="QPushButton" name="button_save_table">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -122,7 +149,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Remove Table</string>
+          <string>Save</string>
          </property>
         </widget>
        </item>

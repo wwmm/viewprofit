@@ -8,10 +8,9 @@ class TableInvestments : public TableBase {
  public:
   explicit TableInvestments(QWidget* parent = nullptr);
 
-  void init_model();
-
   void show_benchmark(const TableBase* btable);
 
+  void init_model() override;
   void calculate() override;
 
  signals:

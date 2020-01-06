@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1232</width>
+    <width>1236</width>
     <height>595</height>
    </rect>
   </property>
@@ -219,67 +219,6 @@
       <number>12</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <property name="spacing">
-        <number>12</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label_table_name">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Name</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineedit_table_name">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::StrongFocus</enum>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-         </property>
-         <property name="placeholderText">
-          <string>new name</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_update_name">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Update Name</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="spacing">
         <number>12</number>
@@ -309,46 +248,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Calculate Columns</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_save_table">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Save Table</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_remove_row">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Remove Row</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_clear_table">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Clear Table</string>
+          <string>Calculate</string>
          </property>
         </widget>
        </item>
@@ -364,7 +264,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>640</width>
          <height>0</height>
         </size>
        </property>

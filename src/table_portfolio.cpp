@@ -8,12 +8,7 @@ TablePortfolio::TablePortfolio(QWidget* parent) {
   name = "portfolio";
 
   investment_cfg_frame->hide();
-  label_table_name->hide();
-  lineedit_table_name->hide();
-  button_update_name->hide();
   button_add_row->hide();
-  button_remove_row->hide();
-  button_save_table->hide();
 }
 
 void TablePortfolio::init_model() {

@@ -1,6 +1,7 @@
 #include "main_window.hpp"
 #include <QCoreApplication>
 #include <QDir>
+#include <QSqlError>
 #include <QSqlRecord>
 #include <QStandardPaths>
 #include "table_benchmarks.hpp"
@@ -21,6 +22,8 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   button_add_benchmark->setGraphicsEffect(button_shadow());
   button_database_file->setGraphicsEffect(button_shadow());
   button_remove_table->setGraphicsEffect(button_shadow());
+  button_clear_table->setGraphicsEffect(button_shadow());
+  button_save_table->setGraphicsEffect(button_shadow());
 
   // signals
 
@@ -31,7 +34,10 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
     QDesktopServices::openUrl(path);
   });
   connect(listwidget_tables, &QListWidget::currentRowChanged, this, &MainWindow::on_listwidget_item_clicked);
+  connect(listwidget_tables, &QListWidget::itemChanged, this, &MainWindow::on_listwidget_item_changed);
   connect(button_remove_table, &QPushButton::clicked, this, &MainWindow::on_remove_table);
+  connect(button_clear_table, &QPushButton::clicked, this, &MainWindow::on_clear_table);
+  connect(button_save_table, &QPushButton::clicked, this, &MainWindow::on_save_table_to_database);
 
   // apply custom stylesheet
 
@@ -262,6 +268,35 @@ void MainWindow::on_listwidget_item_clicked(int currentRow) {
   stackedwidget->setCurrentIndex(currentRow);
 }
 
+void MainWindow::on_listwidget_item_changed(QListWidgetItem* item) {
+  if (item == listwidget_tables->currentItem()) {
+    QString new_name = item->text();
+
+    auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+
+    // finish any pending operation before changing the table name
+
+    table->model->submitAll();
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("alter table " + table->name + " rename to " + new_name);
+
+    if (query.exec()) {
+      table->name = new_name;
+
+      listwidget_tables->currentItem()->setText(new_name.toUpper());
+
+      table->init_model();
+
+      table->set_chart1_title(new_name);
+      table->set_chart2_title(new_name);
+    } else {
+      qDebug("failed to rename table " + table->name.toUtf8());
+    }
+  }
+}
+
 void MainWindow::on_remove_table() {
   if (listwidget_tables->currentRow() == 0) {
     return;
@@ -300,5 +335,45 @@ void MainWindow::on_remove_table() {
     if (!query.exec()) {
       qDebug("Failed remove table " + table->name.toUtf8() + ". Maybe has already been removed.");
     }
+  }
+}
+
+void MainWindow::on_clear_table() {
+  if (listwidget_tables->count() == 0) {
+    return;
+  }
+
+  auto box = QMessageBox(this);
+
+  box.setText("Remove all rows from the selected table?");
+  box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  box.setDefaultButton(QMessageBox::Yes);
+
+  auto r = box.exec();
+
+  if (r == QMessageBox::Yes) {
+    auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("delete from " + table->name);
+
+    if (query.exec()) {
+      table->model->select();
+
+      table->clear_charts();
+    } else {
+      qDebug(table->model->lastError().text().toUtf8());
+    }
+  }
+}
+
+void MainWindow::on_save_table_to_database() {
+  auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+
+  if (!table->model->submitAll()) {
+    qDebug("failed to save table " + table->name.toUtf8() + " to the database");
+
+    qDebug(table->model->lastError().text().toUtf8());
   }
 }

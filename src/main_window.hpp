@@ -26,7 +26,10 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   void load_saved_tables();
 
   void on_listwidget_item_clicked(int currentRow);
+  void on_listwidget_item_changed(QListWidgetItem* item);
   void on_remove_table();
+  void on_clear_table();
+  void on_save_table_to_database();
 
   template <class T>
   T* load_table(const QString& name) {
@@ -36,30 +39,13 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
     table->name = name;
     table->init_model();
 
-    connect(table, &T::tableNameChanged, this, [=](QString new_name) {
-      // finish any pending operation before changing the table name
-
-      table->model->submitAll();
-
-      auto query = QSqlQuery(db);
-
-      query.prepare("alter table " + table->name + " rename to " + new_name);
-
-      if (query.exec()) {
-        table->name = new_name;
-
-        listwidget_tables->currentItem()->setText(new_name.toUpper());
-
-        table->init_model();
-      } else {
-        qDebug("failed to rename table " + name.toUtf8());
-      }
-    });
-
-    // tab_widget->addTab(table, name);
     stackedwidget->addWidget(table);
 
     listwidget_tables->addItem(name.toUpper());
+
+    auto added_item = listwidget_tables->item(listwidget_tables->count() - 1);
+
+    added_item->setFlags(added_item->flags() | Qt::ItemIsEditable);
 
     return table;
   }

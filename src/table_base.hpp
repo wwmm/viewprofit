@@ -20,11 +20,14 @@ class TableBase : public QWidget, protected Ui::TableBase {
   Model* model;
 
   void set_database(const QSqlDatabase& database);
+  void set_chart1_title(const QString& title);
+  void set_chart2_title(const QString& title);
+  void clear_charts();
 
+  virtual void init_model() = 0;
   virtual void calculate() = 0;
 
  signals:
-  void tableNameChanged(const QString& new_name);
   void hideProgressBar();
   void newChartMouseHover(const QPointF& point);
 
@@ -38,7 +41,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
 
   bool eventFilter(QObject* object, QEvent* event);
   void remove_selected_rows();
-  void clear_charts();
   void save_image();
   void reset_zoom();
 
@@ -112,7 +114,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
   }
 
  private:
-  void on_save_table_to_database();
   void on_add_row();
 };
 

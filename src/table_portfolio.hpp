@@ -8,13 +8,11 @@ class TablePortfolio : public TableBase {
  public:
   explicit TablePortfolio(QWidget* parent = nullptr);
 
-  void init_model();
-
   void show_benchmark(const TableBase* btable);
-
-  void calculate() override;
-
   void process_investment_tables(const QVector<TableBase*>& tables);
+
+  void init_model() override;
+  void calculate() override;
 
  signals:
   void getInvestmentTablesName();
