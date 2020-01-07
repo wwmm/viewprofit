@@ -83,25 +83,57 @@ void TableInvestments::calculate_totals(const QString& column_name) {
   }
 }
 
+QPair<QVector<int>, QVector<double>> TableInvestments::process_benchmark(const QString& table_name) const {
+  QVector<int> dates;
+  QVector<double> values;
+
+  // Tables are displayed in descending order. This is also the order the data has to be retrieved from the model
+
+  QString oldest_investment_date = model->record(model->rowCount() - 1).value("date").toString();
+
+  auto date_month = QDate::fromString(oldest_investment_date, "dd/MM/yyyy").toString("MM/yyyy");
+
+  auto qdt = QDateTime::fromString(date_month, "MM/yyyy");
+
+  auto query = QSqlQuery(db);
+
+  query.prepare("select distinct date,value from " + table_name + " where date >= ? order by date");
+
+  query.addBindValue(qdt.toSecsSinceEpoch());
+
+  if (query.exec()) {
+    while (query.next()) {
+      dates.append(query.value(0).toInt());
+      values.append(query.value(1).toDouble());
+    }
+  } else {
+    qDebug("Failed to get inflation table values!");
+  }
+
+  for (auto& v : values) {
+    v = v * 0.01 + 1.0;
+  }
+
+  // cumulative product
+
+  std::partial_sum(values.begin(), values.end(), values.begin(), std::multiplies<double>());
+
+  for (auto& v : values) {
+    v = (v - 1.0) * 100;
+  }
+
+  return {dates, values};
+}
+
 void TableInvestments::calculate() {
   if (model->rowCount() == 0) {
     return;
   }
 
-  // get inflation values
-  QVector<QPair<int, double>> inflation_vec;
+  auto p = process_benchmark("inflation");
 
-  auto query = QSqlQuery(db);
-
-  query.prepare("select distinct date,accumulated from inflation order by date desc");
-
-  if (query.exec()) {
-    while (query.next()) {
-      inflation_vec.append(QPair(query.value(0).toInt(), query.value(1).toDouble()));
-    }
-  } else {
-    qDebug("Failed to get inflation table values!");
-  }
+  QVector<int> inflation_dates = p.first;
+  QVector<double> inflation_values = p.second;
 
   calculate_totals("deposit");
   calculate_totals("withdrawal");
@@ -127,11 +159,11 @@ void TableInvestments::calculate() {
     auto date_month = QDate::fromString(date, "dd/MM/yyyy").toString("MM/yyyy");
     double real_return_perc = 0.0;
 
-    for (auto& p : inflation_vec) {
-      qdt.setSecsSinceEpoch(p.first);
+    for (int i = 0; i < inflation_dates.size(); i++) {
+      qdt.setSecsSinceEpoch(inflation_dates[i]);
 
       if (qdt.toString("MM/yyyy") == date_month) {
-        real_return_perc = 100.0 * (net_return_perc - p.second) / (100.0 + p.second);
+        real_return_perc = 100.0 * (net_return_perc - inflation_values[i]) / (100.0 + inflation_values[i]);
 
         break;
       }
@@ -199,5 +231,53 @@ void TableInvestments::make_chart2() {
 }
 
 void TableInvestments::show_benchmark(const TableBase* btable) {
-  add_series_to_chart(chart2, btable->model, btable->name, "accumulated");
+  // add_series_to_chart(chart2, btable->model, btable->name, "accumulated");
+
+  auto p = process_benchmark(btable->name);
+
+  QVector<int> dates = p.first;
+  QVector<double> values = p.second;
+
+  if (chart2->axes().size() == 0) {
+    return;
+  }
+
+  auto series = new QLineSeries();
+
+  series->setName(btable->name.toLower());
+
+  connect(series, &QLineSeries::hovered, this, &TableInvestments::on_chart_mouse_hover);
+
+  double vmin = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
+  double vmax = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();
+
+  for (int n = 0; n < dates.size(); n++) {
+    auto qdt = QDateTime::fromSecsSinceEpoch(dates[n]);
+
+    auto epoch_in_ms = qdt.toMSecsSinceEpoch();
+
+    double v = values[n];
+
+    if (chart2->series().size() > 0) {
+      vmin = std::min(vmin, v);
+      vmax = std::max(vmax, v);
+    } else {
+      if (n == 0) {
+        vmin = v;
+        vmax = v;
+      } else {
+        vmin = std::min(vmin, v);
+        vmax = std::max(vmax, v);
+      }
+    }
+
+    series->append(epoch_in_ms, v);
+  }
+
+  chart2->addSeries(series);
+
+  series->attachAxis(chart2->axes(Qt::Horizontal)[0]);
+  series->attachAxis(chart2->axes(Qt::Vertical)[0]);
+
+  chart2->axes(Qt::Vertical)[0]->setRange(vmin - 0.05 * fabs(vmin), vmax + 0.05 * fabs(vmax));
 }
