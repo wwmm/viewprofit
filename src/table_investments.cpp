@@ -116,8 +116,8 @@ void TableInvestments::calculate() {
 
   qsettings.endGroup();
 
-  calculate_accumulated_values("deposit");
-  calculate_accumulated_values("withdrawal");
+  calculate_accumulated_sum("deposit");
+  calculate_accumulated_sum("withdrawal");
 
   for (int n = 0; n < model->rowCount(); n++) {
     QString date = model->record(n).value("date").toString();
@@ -167,9 +167,9 @@ void TableInvestments::calculate() {
     model->setRecord(n, rec);
   }
 
-  calculate_accumulated_values("net_return");
-  calculate_accumulated_values("net_return_perc");
-  calculate_accumulated_values("real_return_perc");
+  calculate_accumulated_sum("net_return");
+  calculate_accumulated_product("net_return_perc");
+  calculate_accumulated_product("real_return_perc");
 
   clear_charts();
 

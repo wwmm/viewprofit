@@ -23,7 +23,7 @@ void TableBenchmarks::init_model() {
 }
 
 void TableBenchmarks::calculate() {
-  QVector<double> list_values;
+  QVector<double> list_values, accu;
 
   for (int n = 0; n < model->rowCount(); n++) {
     list_values.append(model->record(n).value("value").toDouble());
@@ -38,20 +38,22 @@ void TableBenchmarks::calculate() {
 
     // cumulative product
 
-    std::partial_sum(list_values.begin(), list_values.end(), list_values.begin(), std::multiplies<double>());
+    accu.resize(list_values.size());
 
-    for (auto& value : list_values) {
+    std::partial_sum(list_values.begin(), list_values.end(), accu.begin(), std::multiplies<double>());
+
+    for (auto& value : accu) {
       value = (value - 1.0) * 100;
     }
 
-    std::reverse(list_values.begin(), list_values.end());
+    std::reverse(accu.begin(), accu.end());
 
     for (int n = 0; n < model->rowCount(); n++) {
       auto rec = model->record(n);
 
       rec.setGenerated("accumulated", true);
 
-      rec.setValue("accumulated", list_values[n]);
+      rec.setValue("accumulated", accu[n]);
 
       model->setRecord(n, rec);
     }

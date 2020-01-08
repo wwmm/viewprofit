@@ -312,8 +312,8 @@ void TableBase::on_add_row() {
   }
 }
 
-void TableBase::calculate_accumulated_values(const QString& column_name) {
-  QVector<double> list_values;
+void TableBase::calculate_accumulated_sum(const QString& column_name) {
+  QVector<double> list_values, accu;
 
   for (int n = 0; n < model->rowCount(); n++) {
     list_values.append(model->record(n).value(column_name).toDouble());
@@ -324,16 +324,56 @@ void TableBase::calculate_accumulated_values(const QString& column_name) {
 
     // cumulative sum
 
-    std::partial_sum(list_values.begin(), list_values.end(), list_values.begin());
+    accu.resize(list_values.size());
 
-    std::reverse(list_values.begin(), list_values.end());
+    std::partial_sum(list_values.begin(), list_values.end(), accu.begin());
+
+    std::reverse(accu.begin(), accu.end());
 
     for (int n = 0; n < model->rowCount(); n++) {
       auto rec = model->record(n);
 
       rec.setGenerated("accumulated_" + column_name, true);
 
-      rec.setValue("accumulated_" + column_name, list_values[n]);
+      rec.setValue("accumulated_" + column_name, accu[n]);
+
+      model->setRecord(n, rec);
+    }
+  }
+}
+
+void TableBase::calculate_accumulated_product(const QString& column_name) {
+  QVector<double> list_values, accu;
+
+  for (int n = 0; n < model->rowCount(); n++) {
+    list_values.append(model->record(n).value(column_name).toDouble());
+  }
+
+  if (list_values.size() > 0) {
+    std::reverse(list_values.begin(), list_values.end());
+
+    for (auto& value : list_values) {
+      value = value * 0.01 + 1.0;
+    }
+
+    // cumulative product
+
+    accu.resize(list_values.size());
+
+    std::partial_sum(list_values.begin(), list_values.end(), accu.begin(), std::multiplies<double>());
+
+    for (auto& value : accu) {
+      value = (value - 1.0) * 100;
+    }
+
+    std::reverse(accu.begin(), accu.end());
+
+    for (int n = 0; n < model->rowCount(); n++) {
+      auto rec = model->record(n);
+
+      rec.setGenerated("accumulated_" + column_name, true);
+
+      rec.setValue("accumulated_" + column_name, accu[n]);
 
       model->setRecord(n, rec);
     }

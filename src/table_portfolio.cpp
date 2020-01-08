@@ -75,25 +75,6 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
 
   std::sort(list_dates.begin(), list_dates.end());
 
-  // get inflation values
-
-  QVector<int> inflation_date;
-  QVector<double> inflation_value, inflation_accumulated;
-
-  auto query = QSqlQuery(db);
-
-  query.prepare("select distinct date,value,accumulated from inflation order by date desc");
-
-  if (query.exec()) {
-    while (query.next()) {
-      inflation_date.append(query.value(0).toInt());
-      inflation_value.append(query.value(1).toDouble());
-      inflation_accumulated.append(query.value(2).toDouble());
-    }
-  } else {
-    qDebug("Failed to get inflation table values!");
-  }
-
   // calculate columns
 
   auto qdt = QDateTime();
@@ -128,23 +109,42 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
       }
     }
 
-    // double net_return_perc = 100 * net_return / (total_deposit - total_withdrawal);
+    double net_return_perc = 100 * net_return / (starting_balance + deposit - withdrawal);
 
-    double real_return_perc = 0.0, net_return_perc = 0;
+    double real_return_perc = net_return_perc;
 
-    // for (auto& p : inflation_vec) {
-    //   qdt.setSecsSinceEpoch(p.first);
+    // get inflation values so we can update real_return_perc
 
-    //   if (qdt.toString("MM/yyyy") == date_month) {
-    //     real_return_perc = 100.0 * (net_return_perc - p.second) / (100.0 + p.second);
+    QVector<int> inflation_dates;
+    QVector<double> inflation_values, inflation_accumulated;
 
-    //     break;
-    //   }
-    // }
+    auto query = QSqlQuery(db);
+
+    query.prepare("select distinct date,value,accumulated from inflation order by date desc");
+
+    if (query.exec()) {
+      while (query.next()) {
+        inflation_dates.append(query.value(0).toInt());
+        inflation_values.append(query.value(1).toDouble());
+        inflation_accumulated.append(query.value(2).toDouble());
+      }
+    } else {
+      qDebug("Failed to get inflation table values!");
+    }
+
+    for (int i = 0; i < inflation_dates.size(); i++) {
+      qdt.setSecsSinceEpoch(inflation_dates[i]);
+
+      if (qdt.toString("MM/yyyy") == date_month) {
+        real_return_perc = 100.0 * (net_return_perc - inflation_values[i]) / (100.0 + inflation_values[i]);
+
+        break;
+      }
+    }
 
     double accumulated_net_return_perc = 0, accumulated_real_return_perc = 0;
 
-    auto query = QSqlQuery(db);
+    query = QSqlQuery(db);
 
     query.prepare("insert or replace into " + name + " values ((select id from " + name +
                   " where date == ?),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
@@ -174,6 +174,10 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
   model->select();
 
   if (model->rowCount() > 0) {
+    calculate_accumulated_sum("net_return");
+    calculate_accumulated_product("net_return_perc");
+    calculate_accumulated_product("real_return_perc");
+
     clear_charts();
 
     make_chart1();

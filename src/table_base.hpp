@@ -43,7 +43,8 @@ class TableBase : public QWidget, protected Ui::TableBase {
   void remove_selected_rows();
   void save_image();
   void reset_zoom();
-  void calculate_accumulated_values(const QString& column_name);
+  void calculate_accumulated_sum(const QString& column_name);
+  void calculate_accumulated_product(const QString& column_name);
 
   void on_chart_mouse_hover(const QPointF& point, bool state);
   void on_chart_selection(const bool& state);
