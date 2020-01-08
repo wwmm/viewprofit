@@ -148,8 +148,6 @@ void TableInvestments::calculate() {
       if (qdt.toString("MM/yyyy") == date_month) {
         real_return_perc = 100.0 * (net_return_perc - inflation_values[i]) / (100.0 + inflation_values[i]);
 
-        qDebug(QString::number(inflation_values[i]).toUtf8());
-
         break;
       }
     }
