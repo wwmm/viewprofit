@@ -100,6 +100,10 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TableInvestments::pro
     v = (v - 1.0) * 100;
   }
 
+  for (auto& v : values) {
+    v = (v - 1.0) * 100;
+  }
+
   return {dates, values, accu};
 }
 
@@ -143,6 +147,8 @@ void TableInvestments::calculate() {
 
       if (qdt.toString("MM/yyyy") == date_month) {
         real_return_perc = 100.0 * (net_return_perc - inflation_values[i]) / (100.0 + inflation_values[i]);
+
+        qDebug(QString::number(inflation_values[i]).toUtf8());
 
         break;
       }

@@ -120,7 +120,7 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
 
     auto query = QSqlQuery(db);
 
-    query.prepare("select distinct date,value,accumulated from inflation order by date desc");
+    query.prepare("select distinct date,value,accumulated from inflation order by date");
 
     if (query.exec()) {
       while (query.next()) {
@@ -137,6 +137,8 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
 
       if (qdt.toString("MM/yyyy") == date_month) {
         real_return_perc = 100.0 * (net_return_perc - inflation_values[i]) / (100.0 + inflation_values[i]);
+
+        // qDebug(QString::number(inflation_values[i]).toUtf8());
 
         break;
       }
@@ -198,8 +200,8 @@ void TablePortfolio::make_chart2() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
-  add_series_to_chart(chart2, model, "Net Return", "net_return_perc");
-  add_series_to_chart(chart2, model, "Real Return", "real_return_perc");
+  add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
+  add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
 
   // ask the main window class for the benchmarks
 
