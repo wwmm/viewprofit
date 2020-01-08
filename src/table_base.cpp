@@ -277,27 +277,33 @@ void TableBase::on_add_row() {
   // table investment
   rec.setGenerated("deposit", true);
   rec.setGenerated("withdrawal", true);
-  rec.setGenerated("bank_balance", true);
-  rec.setGenerated("total_deposit", true);
-  rec.setGenerated("total_withdrawal", true);
-  rec.setGenerated("gross_return", true);
-  rec.setGenerated("gross_return_perc", true);
+  rec.setGenerated("starting_balance", true);
+  rec.setGenerated("ending_balance", true);
+  rec.setGenerated("accumulated_deposit", true);
+  rec.setGenerated("accumulated_withdrawal", true);
+  rec.setGenerated("net_deposit", true);
+  rec.setGenerated("net_balance", true);
   rec.setGenerated("net_return", true);
   rec.setGenerated("net_return_perc", true);
-  rec.setGenerated("net_bank_balance", true);
+  rec.setGenerated("accumulated_net_return", true);
+  rec.setGenerated("accumulated_net_return_perc", true);
   rec.setGenerated("real_return_perc", true);
+  rec.setGenerated("accumulated_real_return_perc", true);
 
   rec.setValue("deposit", 0.0);
   rec.setValue("withdrawal", 0.0);
-  rec.setValue("bank_balance", 0.0);
-  rec.setValue("total_deposit", 0.0);
-  rec.setValue("total_withdrawal", 0.0);
-  rec.setValue("gross_return", 0.0);
-  rec.setValue("gross_return_perc", 0.0);
+  rec.setValue("starting_balance", 0.0);
+  rec.setValue("ending_balance", 0.0);
+  rec.setValue("accumulated_deposit", 0.0);
+  rec.setValue("accumulated_withdrawal", 0.0);
+  rec.setValue("net_deposit", 0.0);
+  rec.setValue("net_balance", 0.0);
   rec.setValue("net_return", 0.0);
   rec.setValue("net_return_perc", 0.0);
-  rec.setValue("net_bank_balance", 0.0);
+  rec.setValue("accumulated_net_return", 0.0);
+  rec.setValue("accumulated_net_return_perc", 0.0);
   rec.setValue("real_return_perc", 0.0);
+  rec.setValue("accumulated_real_return_perc", 0.0);
 
   if (!model->insertRecord(0, rec)) {
     qDebug("failed to add row to table " + name.toUtf8());

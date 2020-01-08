@@ -31,15 +31,18 @@ void TableInvestments::init_model() {
   model->setHeaderData(1, Qt::Horizontal, "Date");
   model->setHeaderData(2, Qt::Horizontal, "Deposit " + currency);
   model->setHeaderData(3, Qt::Horizontal, "Withdrawal " + currency);
-  model->setHeaderData(4, Qt::Horizontal, "Bank Balance " + currency);
-  model->setHeaderData(5, Qt::Horizontal, "Total Deposits " + currency);
-  model->setHeaderData(6, Qt::Horizontal, "Total Withdrawals " + currency);
-  model->setHeaderData(7, Qt::Horizontal, "Gross Return " + currency);
-  model->setHeaderData(8, Qt::Horizontal, "Gross Return %");
-  model->setHeaderData(9, Qt::Horizontal, "Net Return " + currency);
-  model->setHeaderData(10, Qt::Horizontal, "Net Return %");
-  model->setHeaderData(11, Qt::Horizontal, "Net Bank Balance " + currency);
-  model->setHeaderData(12, Qt::Horizontal, "Real Return %");
+  model->setHeaderData(4, Qt::Horizontal, "Starting\n Balance " + currency);
+  model->setHeaderData(5, Qt::Horizontal, "Ending\n Balance " + currency);
+  model->setHeaderData(6, Qt::Horizontal, "Accumulated\nDeposits " + currency);
+  model->setHeaderData(7, Qt::Horizontal, "Accumulated\nWithdrawals " + currency);
+  model->setHeaderData(8, Qt::Horizontal, "Net\nDeposit " + currency);
+  model->setHeaderData(9, Qt::Horizontal, "Net\nBalance " + currency);
+  model->setHeaderData(10, Qt::Horizontal, "Net\nReturn " + currency);
+  model->setHeaderData(11, Qt::Horizontal, "Net\nReturn %");
+  model->setHeaderData(12, Qt::Horizontal, "Accumulated\nNet Return " + currency);
+  model->setHeaderData(13, Qt::Horizontal, "Accumulated\nNet Return %");
+  model->setHeaderData(14, Qt::Horizontal, "Real\nReturn %");
+  model->setHeaderData(15, Qt::Horizontal, "Accumulated\nReal Return %");
 
   model->select();
 
@@ -55,7 +58,7 @@ void TableInvestments::init_model() {
   qsettings.endGroup();
 }
 
-void TableInvestments::calculate_totals(const QString& column_name) {
+void TableInvestments::calculate_accumulated_values(const QString& column_name) {
   QVector<double> list_values;
 
   for (int n = 0; n < model->rowCount(); n++) {
@@ -74,18 +77,19 @@ void TableInvestments::calculate_totals(const QString& column_name) {
     for (int n = 0; n < model->rowCount(); n++) {
       auto rec = model->record(n);
 
-      rec.setGenerated("total_" + column_name, true);
+      rec.setGenerated("accumulated_" + column_name, true);
 
-      rec.setValue("total_" + column_name, list_values[n]);
+      rec.setValue("accumulated_" + column_name, list_values[n]);
 
       model->setRecord(n, rec);
     }
   }
 }
 
-QPair<QVector<int>, QVector<double>> TableInvestments::process_benchmark(const QString& table_name) const {
+std::tuple<QVector<int>, QVector<double>, QVector<double>> TableInvestments::process_benchmark(
+    const QString& table_name) const {
   QVector<int> dates;
-  QVector<double> values;
+  QVector<double> values, accu;
 
   // Tables are displayed in descending order. This is also the order the data has to be retrieved from the model
 
@@ -116,13 +120,15 @@ QPair<QVector<int>, QVector<double>> TableInvestments::process_benchmark(const Q
 
   // cumulative product
 
-  std::partial_sum(values.begin(), values.end(), values.begin(), std::multiplies<double>());
+  accu.resize(values.size());
 
-  for (auto& v : values) {
+  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+
+  for (auto& v : accu) {
     v = (v - 1.0) * 100;
   }
 
-  return {dates, values};
+  return {dates, values, accu};
 }
 
 void TableInvestments::calculate() {
@@ -130,13 +136,7 @@ void TableInvestments::calculate() {
     return;
   }
 
-  auto p = process_benchmark("inflation");
-
-  QVector<int> inflation_dates = p.first;
-  QVector<double> inflation_values = p.second;
-
-  calculate_totals("deposit");
-  calculate_totals("withdrawal");
+  auto [inflation_dates, inflation_values, inflation_accumulated] = process_benchmark("inflation");
 
   qsettings.beginGroup(name);
 
@@ -144,20 +144,27 @@ void TableInvestments::calculate() {
 
   qsettings.endGroup();
 
+  calculate_accumulated_values("deposit");
+  calculate_accumulated_values("withdrawal");
+
   for (int n = 0; n < model->rowCount(); n++) {
     QString date = model->record(n).value("date").toString();
-    double total_deposit = model->record(n).value("total_deposit").toDouble();
-    double total_withdrawal = model->record(n).value("total_withdrawal").toDouble();
+    double deposit = model->record(n).value("deposit").toDouble();
+    double withdrawal = model->record(n).value("withdrawal").toDouble();
+    double starting_balance = model->record(n).value("starting_balance").toDouble();
+    double ending_balance = model->record(n).value("ending_balance").toDouble();
+    double accumulated_deposit = model->record(n).value("accumulated_deposit").toDouble();
+    double accumulated_withdrawal = model->record(n).value("accumulated_withdrawal").toDouble();
 
-    double gross_return = model->record(n).value("bank_balance").toDouble() - (total_deposit - total_withdrawal);
+    double gross_return = ending_balance - starting_balance - deposit + withdrawal;
 
     double net_return = gross_return * (1.0 - 0.01 * income_tax);
 
-    double net_return_perc = 100 * net_return / (total_deposit - total_withdrawal);
+    double net_return_perc = 100 * net_return / (starting_balance + deposit - withdrawal);
 
     auto qdt = QDateTime();
     auto date_month = QDate::fromString(date, "dd/MM/yyyy").toString("MM/yyyy");
-    double real_return_perc = 0.0;
+    double real_return_perc = net_return_perc;
 
     for (int i = 0; i < inflation_dates.size(); i++) {
       qdt.setSecsSinceEpoch(inflation_dates[i]);
@@ -171,22 +178,26 @@ void TableInvestments::calculate() {
 
     auto rec = model->record(n);
 
-    rec.setGenerated("gross_return", true);
-    rec.setGenerated("gross_return_perc", true);
+    rec.setGenerated("net_deposit", true);
     rec.setGenerated("net_return", true);
     rec.setGenerated("net_return_perc", true);
-    rec.setGenerated("net_bank_balance", true);
+    rec.setGenerated("net_balance", true);
     rec.setGenerated("real_return_perc", true);
 
+    rec.setValue("net_deposit", accumulated_deposit - accumulated_withdrawal);
     rec.setValue("gross_return", gross_return);
     rec.setValue("net_return", net_return);
-    rec.setValue("net_bank_balance", total_deposit + net_return - total_withdrawal);
-    rec.setValue("gross_return_perc", 100 * gross_return / (total_deposit - total_withdrawal));
+    rec.setValue("net_balance", ending_balance - gross_return * 0.01 * income_tax);
+    rec.setValue("gross_return_perc", 100 * gross_return / (starting_balance + deposit - withdrawal));
     rec.setValue("net_return_perc", net_return_perc);
     rec.setValue("real_return_perc", real_return_perc);
 
     model->setRecord(n, rec);
   }
+
+  calculate_accumulated_values("net_return");
+  calculate_accumulated_values("net_return_perc");
+  calculate_accumulated_values("real_return_perc");
 
   clear_charts();
 
@@ -198,32 +209,18 @@ void TableInvestments::make_chart1() {
   chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
-  add_series_to_chart(chart1, model, "Deposits", "total_deposit");
-  add_series_to_chart(chart1, model, "Net Bank Balance", "net_bank_balance");
-
-  bool show_withdrawals = false;
-
-  for (int n = 0; n < model->rowCount(); n++) {
-    double withdrawal = model->record(n).value("total_withdrawal").toDouble();
-
-    if (fabs(withdrawal) > 0) {
-      show_withdrawals = true;
-
-      break;
-    }
-  }
-
-  if (show_withdrawals) {
-    add_series_to_chart(chart1, model, "Withdrawals", "total_withdrawal");
-  }
+  add_series_to_chart(chart1, model, "Net Deposit", "net_deposit");
+  add_series_to_chart(chart1, model, "Net Balance", "net_balance");
+  add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
+  // add_series_to_chart(chart1, model, "Net Return", "net_return");
 }
 
 void TableInvestments::make_chart2() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
-  add_series_to_chart(chart2, model, "Net Return", "net_return_perc");
-  add_series_to_chart(chart2, model, "Real Return", "real_return_perc");
+  add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
+  add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
 
   // ask the main window class for the benchmarks
 
@@ -231,12 +228,7 @@ void TableInvestments::make_chart2() {
 }
 
 void TableInvestments::show_benchmark(const TableBase* btable) {
-  // add_series_to_chart(chart2, btable->model, btable->name, "accumulated");
-
-  auto p = process_benchmark(btable->name);
-
-  QVector<int> dates = p.first;
-  QVector<double> values = p.second;
+  auto [dates, values, accumulated] = process_benchmark(btable->name);
 
   if (chart2->axes().size() == 0) {
     return;
@@ -256,7 +248,7 @@ void TableInvestments::show_benchmark(const TableBase* btable) {
 
     auto epoch_in_ms = qdt.toMSecsSinceEpoch();
 
-    double v = values[n];
+    double v = accumulated[n];
 
     if (chart2->series().size() > 0) {
       vmin = std::min(vmin, v);

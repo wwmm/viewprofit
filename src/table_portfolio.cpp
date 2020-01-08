@@ -19,12 +19,11 @@ void TablePortfolio::init_model() {
   auto currency = QLocale().currencySymbol();
 
   model->setHeaderData(1, Qt::Horizontal, "Date");
-  model->setHeaderData(2, Qt::Horizontal, "Deposit " + currency);
-  model->setHeaderData(3, Qt::Horizontal, "Withdrawal " + currency);
-  model->setHeaderData(4, Qt::Horizontal, "Net Bank Balance " + currency);
-  model->setHeaderData(5, Qt::Horizontal, "Net Return " + currency);
-  model->setHeaderData(6, Qt::Horizontal, "Net Return %");
-  model->setHeaderData(7, Qt::Horizontal, "Real Return %");
+  model->setHeaderData(2, Qt::Horizontal, "Investment " + currency);
+  model->setHeaderData(3, Qt::Horizontal, "Net\nBalance " + currency);
+  model->setHeaderData(4, Qt::Horizontal, "Net\nReturn " + currency);
+  model->setHeaderData(5, Qt::Horizontal, "Net\nReturn %");
+  model->setHeaderData(6, Qt::Horizontal, "Real\nReturn %");
 
   model->select();
 
@@ -122,7 +121,7 @@ void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables
     auto query = QSqlQuery(db);
 
     query.prepare("insert or replace into " + name + " values ((select id from " + name +
-                  " where date == ?),?,?,?,?,?,?,?)");
+                  " where date == ?),?,?,?,?,?,?)");
 
     query.addBindValue(date);
     query.addBindValue(date);

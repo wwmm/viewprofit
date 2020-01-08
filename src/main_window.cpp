@@ -112,8 +112,10 @@ TablePortfolio* MainWindow::load_portfolio_table() {
   auto query = QSqlQuery(db);
 
   query.prepare(
-      "create table if not exists portfolio (id integer primary key, date int, deposit real, withdrawal real,"
-      " net_bank_balance real, net_return real, net_return_perc real, real_return_perc real)");
+      "create table if not exists portfolio (id integer primary key, date int, net_deposit real, net_balance real,"
+      " net_return real, net_return_perc real, accumulated_net_return real default 0.0,"
+      " accumulated_net_return_perc real default 0.0, real_return_perc real,"
+      " accumulated_real_return_perc real default 0.0)");
 
   if (!query.exec()) {
     qDebug("Failed to create table portfolio. Maybe it already exists.");
@@ -205,10 +207,12 @@ void MainWindow::add_investment_table() {
 
   query.prepare(
       "create table " + name + " (id integer primary key, date int default (cast(strftime('%s','now') as int))," +
-      " deposit real default 0.0, withdrawal real default 0.0, bank_balance real default 0.0," +
-      " total_deposit real default 0.0, total_withdrawal real default 0.0, gross_return real default 0.0," +
-      " gross_return_perc real default 0.0," + " net_return real default 0.0, net_return_perc real default 0.0," +
-      " net_bank_balance real default 0.0," + " real_return_perc real default 0.0)");
+      " deposit real default 0.0, withdrawal real default 0.0, starting_balance real default 0.0," +
+      " ending_balance real default 0.0, accumulated_deposit real default 0.0, accumulated_withdrawal real default 0.0,"
+      " net_deposit real default 0.0, net_balance real default 0.0, net_return real default 0.0," +
+      " net_return_perc real default 0.0, accumulated_net_return real default 0.0, "
+      " accumulated_net_return_perc real default 0.0, real_return_perc real default 0.0," +
+      " accumulated_real_return_perc real default 0.0)");
 
   if (query.exec()) {
     auto table = load_table<TableInvestments>(name);
