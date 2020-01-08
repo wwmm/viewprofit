@@ -311,3 +311,31 @@ void TableBase::on_add_row() {
     qDebug(model->lastError().text().toUtf8());
   }
 }
+
+void TableBase::calculate_accumulated_values(const QString& column_name) {
+  QVector<double> list_values;
+
+  for (int n = 0; n < model->rowCount(); n++) {
+    list_values.append(model->record(n).value(column_name).toDouble());
+  }
+
+  if (list_values.size() > 0) {
+    std::reverse(list_values.begin(), list_values.end());
+
+    // cumulative sum
+
+    std::partial_sum(list_values.begin(), list_values.end(), list_values.begin());
+
+    std::reverse(list_values.begin(), list_values.end());
+
+    for (int n = 0; n < model->rowCount(); n++) {
+      auto rec = model->record(n);
+
+      rec.setGenerated("accumulated_" + column_name, true);
+
+      rec.setValue("accumulated_" + column_name, list_values[n]);
+
+      model->setRecord(n, rec);
+    }
+  }
+}
