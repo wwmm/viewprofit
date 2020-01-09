@@ -54,7 +54,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -65,7 +65,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0">
-         <widget class="QFrame" name="frame_portfolio_activities">
+         <widget class="QFrame" name="frame_portfolio_pages">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
             <horstretch>0</horstretch>
@@ -88,7 +88,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Activities</string>
+              <string>Pages</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>

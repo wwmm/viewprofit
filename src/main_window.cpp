@@ -17,7 +17,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
   // shadow effects
 
-  frame_portfolio_activities->setGraphicsEffect(card_shadow());
+  frame_portfolio_pages->setGraphicsEffect(card_shadow());
   button_calculate_table_portfolio->setGraphicsEffect(button_shadow());
   button_clear_table_portfolio->setGraphicsEffect(button_shadow());
   button_save_table_portfolio->setGraphicsEffect(button_shadow());
@@ -201,7 +201,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
 
   stackedwidget_portfolio->addWidget(table);
 
-  listwidget_portfolio->addItem(table->name.toUpper());
+  listwidget_portfolio->addItem("TABLE");
   listwidget_portfolio->setCurrentRow(0);
 
   return table;
