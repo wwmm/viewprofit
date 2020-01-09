@@ -53,14 +53,18 @@ class TableBase : public QWidget, protected Ui::TableBase {
   void add_axes_to_chart(T* chart, const QString& ytitle) const {
     auto axis_x = new QDateTimeAxis();
 
+    QFont serif_font("Sans");
+
     axis_x->setTitleText("Date");
     axis_x->setFormat("dd/MM/yyyy");
     axis_x->setLabelsAngle(-10);
+    axis_x->setTitleFont(serif_font);
 
     auto axis_y = new QValueAxis();
 
     axis_y->setTitleText(ytitle);
     axis_y->setLabelFormat("%.2f");
+    axis_y->setTitleFont(serif_font);
 
     chart->addAxis(axis_x, Qt::AlignBottom);
     chart->addAxis(axis_y, Qt::AlignLeft);

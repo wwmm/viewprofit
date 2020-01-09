@@ -189,7 +189,7 @@ void TablePortfolio::make_chart1() {
   chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
-  add_series_to_chart(chart1, model, "Deposits", "net_deposit");
+  add_series_to_chart(chart1, model, "Net Deposit", "net_deposit");
   add_series_to_chart(chart1, model, "Net Balance", "net_balance");
   add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
 }
