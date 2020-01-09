@@ -179,7 +179,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
   table->set_database(db);
   table->init_model();
 
-  connect(table, &TablePortfolio::getInvestmentTablesName, this, [=]() {
+  connect(table, &TablePortfolio::getFundTablesName, this, [=]() {
     auto tables = QVector<TableBase*>();
 
     for (int n = 0; n < stackedwidget_funds->count(); n++) {
@@ -188,7 +188,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
       tables.append(btable);
     }
 
-    table->process_investment_tables(tables);
+    table->process_fund_tables(tables);
   });
 
   connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {

@@ -9,13 +9,13 @@ class TablePortfolio : public TableBase {
   explicit TablePortfolio(QWidget* parent = nullptr);
 
   void show_benchmark(const TableBase* btable);
-  void process_investment_tables(const QVector<TableBase*>& tables);
+  void process_fund_tables(const QVector<TableBase*>& tables);
 
   void init_model() override;
   void calculate() override;
 
  signals:
-  void getInvestmentTablesName();
+  void getFundTablesName();
   void getBenchmarkTables();
 
  private:

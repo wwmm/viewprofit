@@ -41,10 +41,10 @@ void TablePortfolio::init_model() {
 }
 
 void TablePortfolio::calculate() {
-  emit getInvestmentTablesName();
+  emit getFundTablesName();
 }
 
-void TablePortfolio::process_investment_tables(const QVector<TableBase*>& tables) {
+void TablePortfolio::process_fund_tables(const QVector<TableBase*>& tables) {
   // get date values in each investment tables
 
   QSet<int> list_set;
