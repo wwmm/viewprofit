@@ -31,17 +31,14 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   void clear_table(const QStackedWidget* sw);
   void remove_table(QListWidget* lw, QStackedWidget* sw);
 
-  void on_calculate_table_fund();
   void on_save_table_fund();
   void on_clear_table_fund();
   void on_remove_table_fund();
 
-  void on_calculate_table_benchmark();
   void on_save_table_benchmark();
   void on_clear_table_benchmark();
   void on_remove_table_benchmark();
 
-  void on_calculate_table_portfolio();
   void on_save_table_portfolio();
   void on_clear_table_portfolio();
 

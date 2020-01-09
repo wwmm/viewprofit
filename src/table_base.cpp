@@ -14,7 +14,6 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
   // shadow effects
 
   button_add_row->setGraphicsEffect(button_shadow());
-  button_calculate->setGraphicsEffect(button_shadow());
   chart_cfg_frame->setGraphicsEffect(card_shadow());
   frame_chart->setGraphicsEffect(card_shadow());
   frame_tableview->setGraphicsEffect(card_shadow());
@@ -24,7 +23,6 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
   // signals
 
   connect(button_add_row, &QPushButton::clicked, this, &TableBase::on_add_row);
-  connect(button_calculate, &QPushButton::clicked, this, &TableBase::calculate);
   connect(button_save_image, &QPushButton::clicked, this, &TableBase::save_image);
   connect(button_reset_zoom, &QPushButton::clicked, this, &TableBase::reset_zoom);
   connect(radio_chart1, &QRadioButton::toggled, this, &TableBase::on_chart_selection);

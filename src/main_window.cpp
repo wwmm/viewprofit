@@ -27,18 +27,24 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   button_remove_table_fund->setGraphicsEffect(button_shadow());
   button_clear_table_fund->setGraphicsEffect(button_shadow());
   button_save_table_fund->setGraphicsEffect(button_shadow());
+  button_calculate_table_fund->setGraphicsEffect(button_shadow());
 
   button_add_benchmark->setGraphicsEffect(button_shadow());
   frame_table_selection_benchmark->setGraphicsEffect(card_shadow());
   button_remove_table_benchmark->setGraphicsEffect(button_shadow());
   button_clear_table_benchmark->setGraphicsEffect(button_shadow());
   button_save_table_benchmark->setGraphicsEffect(button_shadow());
+  button_calculate_table_benchmark->setGraphicsEffect(button_shadow());
 
   button_database_file->setGraphicsEffect(button_shadow());
 
   // signals
 
-  connect(button_calculate_table_portfolio, &QPushButton::clicked, this, &MainWindow::on_calculate_table_portfolio);
+  connect(button_calculate_table_portfolio, &QPushButton::clicked, this, [&]() {
+    auto table = dynamic_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
+
+    table->calculate();
+  });
   connect(button_save_table_portfolio, &QPushButton::clicked, this, &MainWindow::on_save_table_portfolio);
   connect(button_clear_table_portfolio, &QPushButton::clicked, this, &MainWindow::on_clear_table_portfolio);
 
@@ -46,11 +52,22 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   connect(button_remove_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_remove_table_benchmark);
   connect(button_clear_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_clear_table_benchmark);
   connect(button_save_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_save_table_benchmark);
+  connect(button_calculate_table_benchmark, &QPushButton::clicked, this, [&]() {
+    auto table =
+        dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(stackedwidget_benchmarks->currentIndex()));
+
+    table->calculate();
+  });
 
   connect(button_add_fund, &QPushButton::clicked, this, &MainWindow::add_fund_table);
   connect(button_remove_table_fund, &QPushButton::clicked, this, &MainWindow::on_remove_table_fund);
   connect(button_clear_table_fund, &QPushButton::clicked, this, &MainWindow::on_clear_table_fund);
   connect(button_save_table_fund, &QPushButton::clicked, this, &MainWindow::on_save_table_fund);
+  connect(button_calculate_table_fund, &QPushButton::clicked, this, [&]() {
+    auto table = dynamic_cast<TableFund*>(stackedwidget_funds->widget(stackedwidget_funds->currentIndex()));
+
+    table->calculate();
+  });
 
   connect(button_database_file, &QPushButton::clicked, this, [&]() {
     auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -458,12 +475,6 @@ void MainWindow::on_clear_table_fund() {
 
 void MainWindow::on_clear_table_benchmark() {
   clear_table(stackedwidget_benchmarks);
-}
-
-void MainWindow::on_calculate_table_portfolio() {
-  auto table = dynamic_cast<TableBase*>(stackedwidget_portfolio->widget(0));
-
-  table->calculate();
 }
 
 void MainWindow::on_clear_table_portfolio() {
