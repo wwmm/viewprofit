@@ -13,29 +13,61 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
   setupUi(this);
 
+  tab_widget->setCurrentIndex(0);
+
   // shadow effects
 
-  frame_table_selection->setGraphicsEffect(card_shadow());
+  frame_portfolio_activities->setGraphicsEffect(card_shadow());
+  button_calculate_table_portfolio->setGraphicsEffect(button_shadow());
+  button_clear_table_portfolio->setGraphicsEffect(button_shadow());
+  button_save_table_portfolio->setGraphicsEffect(button_shadow());
+
+  frame_table_selection_fund->setGraphicsEffect(card_shadow());
   button_add_fund->setGraphicsEffect(button_shadow());
+  button_remove_table_fund->setGraphicsEffect(button_shadow());
+  button_clear_table_fund->setGraphicsEffect(button_shadow());
+  button_save_table_fund->setGraphicsEffect(button_shadow());
+
   button_add_benchmark->setGraphicsEffect(button_shadow());
+  frame_table_selection_benchmark->setGraphicsEffect(card_shadow());
+  button_remove_table_benchmark->setGraphicsEffect(button_shadow());
+  button_clear_table_benchmark->setGraphicsEffect(button_shadow());
+  button_save_table_benchmark->setGraphicsEffect(button_shadow());
+
   button_database_file->setGraphicsEffect(button_shadow());
-  button_remove_table->setGraphicsEffect(button_shadow());
-  button_clear_table->setGraphicsEffect(button_shadow());
-  button_save_table->setGraphicsEffect(button_shadow());
 
   // signals
 
+  connect(button_calculate_table_portfolio, &QPushButton::clicked, this, &MainWindow::on_calculate_table_portfolio);
+  connect(button_save_table_portfolio, &QPushButton::clicked, this, &MainWindow::on_save_table_portfolio);
+  connect(button_clear_table_portfolio, &QPushButton::clicked, this, &MainWindow::on_clear_table_portfolio);
+
   connect(button_add_benchmark, &QPushButton::clicked, this, &MainWindow::add_benchmark_table);
-  connect(button_add_fund, &QPushButton::clicked, this, &MainWindow::add_investment_table);
+  connect(button_remove_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_remove_table_benchmark);
+  connect(button_clear_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_clear_table_benchmark);
+  connect(button_save_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_save_table_benchmark);
+
+  connect(button_add_fund, &QPushButton::clicked, this, &MainWindow::add_fund_table);
+  connect(button_remove_table_fund, &QPushButton::clicked, this, &MainWindow::on_remove_table_fund);
+  connect(button_clear_table_fund, &QPushButton::clicked, this, &MainWindow::on_clear_table_fund);
+  connect(button_save_table_fund, &QPushButton::clicked, this, &MainWindow::on_save_table_fund);
+
   connect(button_database_file, &QPushButton::clicked, this, [&]() {
     auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDesktopServices::openUrl(path);
   });
-  connect(listwidget_tables, &QListWidget::currentRowChanged, this, &MainWindow::on_listwidget_item_clicked);
-  connect(listwidget_tables, &QListWidget::itemChanged, this, &MainWindow::on_listwidget_item_changed);
-  connect(button_remove_table, &QPushButton::clicked, this, &MainWindow::on_remove_table);
-  connect(button_clear_table, &QPushButton::clicked, this, &MainWindow::on_clear_table);
-  connect(button_save_table, &QPushButton::clicked, this, &MainWindow::on_save_table_to_database);
+
+  connect(listwidget_tables_benchmarks, &QListWidget::currentRowChanged, this,
+          [&](int currentRow) { stackedwidget_benchmarks->setCurrentIndex(currentRow); });
+  connect(listwidget_tables_benchmarks, &QListWidget::itemChanged, this, [&](QListWidgetItem* item) {
+    on_listwidget_item_changed(item, listwidget_tables_benchmarks, stackedwidget_benchmarks);
+  });
+
+  connect(listwidget_tables_funds, &QListWidget::currentRowChanged, this,
+          [&](int currentRow) { stackedwidget_funds->setCurrentIndex(currentRow); });
+  connect(listwidget_tables_funds, &QListWidget::itemChanged, this, [&](QListWidgetItem* item) {
+    on_listwidget_item_changed(item, listwidget_tables_funds, stackedwidget_funds);
+  });
 
   // apply custom stylesheet
 
@@ -133,31 +165,27 @@ TablePortfolio* MainWindow::load_portfolio_table() {
   connect(table, &TablePortfolio::getInvestmentTablesName, this, [=]() {
     auto tables = QVector<TableBase*>();
 
-    for (int n = 0; n < stackedwidget->count(); n++) {
-      auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+    for (int n = 0; n < stackedwidget_funds->count(); n++) {
+      auto btable = dynamic_cast<TableFund*>(stackedwidget_funds->widget(n));
 
-      if (btable->type == TableType::Investment) {
-        tables.append(btable);
-      }
+      tables.append(btable);
     }
 
     table->process_investment_tables(tables);
   });
 
   connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
-    for (int n = 0; n < stackedwidget->count(); n++) {
-      auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+    for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
+      auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
-      if (btable->type == TableType::Benchmark) {
-        table->show_benchmark(btable);
-      }
+      table->show_benchmark(btable);
     }
   });
 
-  stackedwidget->addWidget(table);
+  stackedwidget_portfolio->addWidget(table);
 
-  listwidget_tables->addItem(table->name.toUpper());
-  listwidget_tables->setCurrentRow(0);
+  listwidget_portfolio->addItem(table->name.toUpper());
+  listwidget_portfolio->setCurrentRow(0);
 
   return table;
 }
@@ -176,16 +204,16 @@ void MainWindow::load_inflation_table() {
     table->name = "inflation";
     table->init_model();
 
-    stackedwidget->addWidget(table);
+    stackedwidget_benchmarks->addWidget(table);
 
-    listwidget_tables->addItem("INFLATION");
+    listwidget_tables_benchmarks->addItem("INFLATION");
   } else {
     qDebug("Failed to create table inflation. Maybe it already exists.");
   }
 }
 
 void MainWindow::add_benchmark_table() {
-  auto name = QString("Benchmark%1").arg(stackedwidget->count());
+  auto name = QString("Benchmark%1").arg(stackedwidget_benchmarks->count());
 
   auto query = QSqlQuery(db);
 
@@ -194,18 +222,18 @@ void MainWindow::add_benchmark_table() {
                 " accumulated real default 0.0)");
 
   if (query.exec()) {
-    load_table<TableBenchmarks>(name);
+    load_table<TableBenchmarks>(name, stackedwidget_benchmarks, listwidget_tables_benchmarks);
 
-    stackedwidget->setCurrentIndex(stackedwidget->count() - 1);
+    stackedwidget_benchmarks->setCurrentIndex(stackedwidget_benchmarks->count() - 1);
 
-    listwidget_tables->setCurrentRow(listwidget_tables->count() - 1);
+    listwidget_tables_benchmarks->setCurrentRow(listwidget_tables_benchmarks->count() - 1);
   } else {
     qDebug("Failed to create table " + name.toUtf8() + ". Maybe it already exists.");
   }
 }
 
-void MainWindow::add_investment_table() {
-  auto name = QString("Investment%1").arg(stackedwidget->count());
+void MainWindow::add_fund_table() {
+  auto name = QString("Investment%1").arg(stackedwidget_funds->count());
 
   auto query = QSqlQuery(db);
 
@@ -219,19 +247,17 @@ void MainWindow::add_investment_table() {
       " accumulated_real_return_perc real default 0.0)");
 
   if (query.exec()) {
-    auto table = load_table<TableFund>(name);
+    auto table = load_table<TableFund>(name, stackedwidget_funds, listwidget_tables_funds);
 
-    stackedwidget->setCurrentIndex(stackedwidget->count() - 1);
+    stackedwidget_funds->setCurrentIndex(stackedwidget_funds->count() - 1);
 
-    listwidget_tables->setCurrentRow(listwidget_tables->count() - 1);
+    listwidget_tables_funds->setCurrentRow(listwidget_tables_funds->count() - 1);
 
     connect(table, &TableFund::getBenchmarkTables, this, [=]() {
-      for (int n = 0; n < stackedwidget->count(); n++) {
-        auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+      for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
+        auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
-        if (btable->type == TableType::Benchmark) {
-          table->show_benchmark(btable);
-        }
+        table->show_benchmark(btable);
       }
     });
   } else {
@@ -278,45 +304,51 @@ void MainWindow::load_saved_tables() {
       }
     }
 
-    // put investment tables first
-
     for (auto& name : investments) {
-      auto table = load_table<TableFund>(name);
+      auto table = load_table<TableFund>(name, stackedwidget_funds, listwidget_tables_funds);
 
       connect(table, &TableFund::getBenchmarkTables, this, [=]() {
-        for (int n = 0; n < stackedwidget->count(); n++) {
-          auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+        for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
+          auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
-          if (btable->type == TableType::Benchmark) {
-            table->show_benchmark(btable);
-          }
+          table->show_benchmark(btable);
         }
       });
     }
 
     for (auto& name : benchmarks) {
-      load_table<TableBenchmarks>(name);
+      load_table<TableBenchmarks>(name, stackedwidget_benchmarks, listwidget_tables_benchmarks);
     }
 
-    for (int n = 0; n < stackedwidget->count(); n++) {
-      auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
+    for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
+      auto table = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
-      btable->calculate();
+      table->calculate();
+    }
+
+    for (int n = 0; n < stackedwidget_funds->count(); n++) {
+      auto table = dynamic_cast<TableFund*>(stackedwidget_funds->widget(n));
+
+      table->calculate();
+    }
+
+    if (listwidget_tables_funds->count() > 0) {
+      listwidget_tables_funds->setCurrentRow(0);
+    }
+
+    if (listwidget_tables_benchmarks->count() > 0) {
+      listwidget_tables_benchmarks->setCurrentRow(0);
     }
   } else {
     qDebug("Failed to get table names!");
   }
 }
 
-void MainWindow::on_listwidget_item_clicked(int currentRow) {
-  stackedwidget->setCurrentIndex(currentRow);
-}
-
-void MainWindow::on_listwidget_item_changed(QListWidgetItem* item) {
-  if (item == listwidget_tables->currentItem()) {
+void MainWindow::on_listwidget_item_changed(QListWidgetItem* item, QListWidget* lw, QStackedWidget* sw) {
+  if (item == lw->currentItem()) {
     QString new_name = item->text();
 
-    auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+    auto table = dynamic_cast<TableBase*>(sw->widget(sw->currentIndex()));
 
     // finish any pending operation before changing the table name
 
@@ -329,7 +361,7 @@ void MainWindow::on_listwidget_item_changed(QListWidgetItem* item) {
     if (query.exec()) {
       table->name = new_name;
 
-      listwidget_tables->currentItem()->setText(new_name.toUpper());
+      lw->currentItem()->setText(new_name.toUpper());
 
       table->init_model();
 
@@ -341,8 +373,8 @@ void MainWindow::on_listwidget_item_changed(QListWidgetItem* item) {
   }
 }
 
-void MainWindow::on_remove_table() {
-  if (listwidget_tables->currentRow() < 2) {
+void MainWindow::remove_table(QListWidget* lw, QStackedWidget* sw) {
+  if (lw->currentRow() < 1) {
     return;
   }
 
@@ -356,11 +388,11 @@ void MainWindow::on_remove_table() {
   auto r = box.exec();
 
   if (r == QMessageBox::Yes) {
-    auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+    auto table = dynamic_cast<TableBase*>(sw->widget(sw->currentIndex()));
 
-    stackedwidget->removeWidget(stackedwidget->widget(stackedwidget->currentIndex()));
+    sw->removeWidget(sw->widget(sw->currentIndex()));
 
-    auto it = listwidget_tables->takeItem(listwidget_tables->currentRow());
+    auto it = lw->takeItem(lw->currentRow());
 
     if (it != nullptr) {
       delete it;
@@ -382,8 +414,16 @@ void MainWindow::on_remove_table() {
   }
 }
 
-void MainWindow::on_clear_table() {
-  if (listwidget_tables->count() == 0) {
+void MainWindow::on_remove_table_fund() {
+  remove_table(listwidget_tables_funds, stackedwidget_funds);
+}
+
+void MainWindow::on_remove_table_benchmark() {
+  remove_table(listwidget_tables_benchmarks, stackedwidget_benchmarks);
+}
+
+void MainWindow::clear_table(const QStackedWidget* sw) {
+  if (sw->count() < 1) {
     return;
   }
 
@@ -396,7 +436,7 @@ void MainWindow::on_clear_table() {
   auto r = box.exec();
 
   if (r == QMessageBox::Yes) {
-    auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+    auto table = dynamic_cast<TableBase*>(sw->widget(sw->currentIndex()));
 
     auto query = QSqlQuery(db);
 
@@ -412,12 +452,70 @@ void MainWindow::on_clear_table() {
   }
 }
 
-void MainWindow::on_save_table_to_database() {
-  auto table = dynamic_cast<TableBase*>(stackedwidget->widget(stackedwidget->currentIndex()));
+void MainWindow::on_clear_table_fund() {
+  clear_table(stackedwidget_funds);
+}
+
+void MainWindow::on_clear_table_benchmark() {
+  clear_table(stackedwidget_benchmarks);
+}
+
+void MainWindow::on_calculate_table_portfolio() {
+  auto table = dynamic_cast<TableBase*>(stackedwidget_portfolio->widget(0));
+
+  table->calculate();
+}
+
+void MainWindow::on_clear_table_portfolio() {
+  auto box = QMessageBox(this);
+
+  box.setText("Clear the portfolio table?");
+  box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  box.setDefaultButton(QMessageBox::Yes);
+
+  auto r = box.exec();
+
+  if (r == QMessageBox::Yes) {
+    auto table = dynamic_cast<TableBase*>(stackedwidget_portfolio->widget(stackedwidget_portfolio->currentIndex()));
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("delete from " + table->name);
+
+    if (query.exec()) {
+      table->model->select();
+
+      table->clear_charts();
+    } else {
+      qDebug(table->model->lastError().text().toUtf8());
+    }
+  }
+}
+
+void MainWindow::on_save_table_portfolio() {
+  auto table = dynamic_cast<TableBase*>(stackedwidget_portfolio->widget(0));
 
   if (!table->model->submitAll()) {
     qDebug("failed to save table " + table->name.toUtf8() + " to the database");
 
     qDebug(table->model->lastError().text().toUtf8());
   }
+}
+
+void MainWindow::save_table(const QStackedWidget* sw) {
+  auto table = dynamic_cast<TableBase*>(sw->widget(sw->currentIndex()));
+
+  if (!table->model->submitAll()) {
+    qDebug("failed to save table " + table->name.toUtf8() + " to the database");
+
+    qDebug(table->model->lastError().text().toUtf8());
+  }
+}
+
+void MainWindow::on_save_table_fund() {
+  save_table(stackedwidget_funds);
+}
+
+void MainWindow::on_save_table_benchmark() {
+  save_table(stackedwidget_benchmarks);
 }
