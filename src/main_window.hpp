@@ -24,6 +24,8 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
 
   TablePortfolio* load_portfolio_table();
   void load_inflation_table();
+  void load_compare_funds();
+
   void add_benchmark_table();
   void add_fund_table();
   void load_saved_tables();

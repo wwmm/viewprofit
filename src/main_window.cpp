@@ -4,6 +4,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QStandardPaths>
+#include "compare_funds.hpp"
 #include "table_benchmarks.hpp"
 #include "table_fund.hpp"
 
@@ -41,7 +42,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   // signals
 
   connect(button_calculate_table_portfolio, &QPushButton::clicked, this, [&]() {
-    auto table = dynamic_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
+    auto table = static_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
 
     table->calculate();
   });
@@ -54,7 +55,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   connect(button_save_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_save_table_benchmark);
   connect(button_calculate_table_benchmark, &QPushButton::clicked, this, [&]() {
     auto table =
-        dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(stackedwidget_benchmarks->currentIndex()));
+        static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(stackedwidget_benchmarks->currentIndex()));
 
     table->calculate();
   });
@@ -64,7 +65,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   connect(button_clear_table_fund, &QPushButton::clicked, this, &MainWindow::on_clear_table_fund);
   connect(button_save_table_fund, &QPushButton::clicked, this, &MainWindow::on_save_table_fund);
   connect(button_calculate_table_fund, &QPushButton::clicked, this, [&]() {
-    auto table = dynamic_cast<TableFund*>(stackedwidget_funds->widget(stackedwidget_funds->currentIndex()));
+    auto table = static_cast<TableFund*>(stackedwidget_funds->widget(stackedwidget_funds->currentIndex()));
 
     table->calculate();
   });
@@ -73,6 +74,9 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
     auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDesktopServices::openUrl(path);
   });
+
+  connect(listwidget_portfolio, &QListWidget::currentRowChanged, this,
+          [&](int currentRow) { stackedwidget_portfolio->setCurrentIndex(currentRow); });
 
   connect(listwidget_tables_benchmarks, &QListWidget::currentRowChanged, this,
           [&](int currentRow) { stackedwidget_benchmarks->setCurrentIndex(currentRow); });
@@ -127,6 +131,8 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       load_saved_tables();
 
       portfolio_table->calculate();  // it has to be called after loading the other tables
+
+      load_compare_funds();
     } else {
       qCritical("Failed to open the database file!");
     }
@@ -183,7 +189,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
     auto tables = QVector<TableBase*>();
 
     for (int n = 0; n < stackedwidget_funds->count(); n++) {
-      auto btable = dynamic_cast<TableFund*>(stackedwidget_funds->widget(n));
+      auto btable = static_cast<TableFund*>(stackedwidget_funds->widget(n));
 
       tables.append(btable);
     }
@@ -193,7 +199,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
 
   connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
     for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-      auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+      auto btable = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
       table->show_benchmark(btable);
     }
@@ -205,6 +211,14 @@ TablePortfolio* MainWindow::load_portfolio_table() {
   listwidget_portfolio->setCurrentRow(0);
 
   return table;
+}
+
+void MainWindow::load_compare_funds() {
+  auto fc = new CompareFunds(db);
+
+  stackedwidget_portfolio->addWidget(fc);
+
+  listwidget_portfolio->addItem("COMPARE FUNDS");
 }
 
 void MainWindow::load_inflation_table() {
@@ -272,7 +286,7 @@ void MainWindow::add_fund_table() {
 
     connect(table, &TableFund::getBenchmarkTables, this, [=]() {
       for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-        auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+        auto btable = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
         table->show_benchmark(btable);
       }
@@ -326,7 +340,7 @@ void MainWindow::load_saved_tables() {
 
       connect(table, &TableFund::getBenchmarkTables, this, [=]() {
         for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-          auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+          auto btable = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
           table->show_benchmark(btable);
         }
@@ -338,13 +352,13 @@ void MainWindow::load_saved_tables() {
     }
 
     for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-      auto table = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+      auto table = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
       table->calculate();
     }
 
     for (int n = 0; n < stackedwidget_funds->count(); n++) {
-      auto table = dynamic_cast<TableFund*>(stackedwidget_funds->widget(n));
+      auto table = static_cast<TableFund*>(stackedwidget_funds->widget(n));
 
       table->calculate();
     }

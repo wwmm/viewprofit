@@ -1,8 +1,18 @@
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql', 'Charts'])
 
-mheaders = ['main_window.hpp', 'table_base.hpp', 'table_fund.hpp', 'table_portfolio.hpp']
+mheaders = [
+    'main_window.hpp', 
+    'table_base.hpp', 
+    'table_fund.hpp', 
+    'table_portfolio.hpp',
+    'compare_funds.hpp'
+]
 
-mui_files = ['ui/main_window.ui', 'ui/table_base.ui']
+mui_files = [
+    'ui/main_window.ui', 
+    'ui/table_base.ui', 
+    'ui/compare_funds.ui'
+]
 
 moc_files = qt5.preprocess(moc_headers : mheaders, ui_files: mui_files,
                            moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'],
@@ -16,6 +26,7 @@ mysources = [
     'table_fund.cpp',
     'table_portfolio.cpp',
     'model.cpp',
+    'compare_funds.cpp',
     moc_files, 
     resources
 ]
