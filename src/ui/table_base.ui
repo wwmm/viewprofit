@@ -154,7 +154,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="investment_cfg_frame">
+       <widget class="QFrame" name="fund_cfg_frame">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>

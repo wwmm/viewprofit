@@ -3,7 +3,7 @@
 TableBenchmarks::TableBenchmarks(QWidget* parent) : TableBase(parent) {
   type = TableType::Benchmark;
 
-  investment_cfg_frame->hide();
+  fund_cfg_frame->hide();
 
   radio_chart2->setText("Accumulated");
   radio_chart1->setText("Monthly Value");

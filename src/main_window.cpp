@@ -5,7 +5,7 @@
 #include <QSqlRecord>
 #include <QStandardPaths>
 #include "table_benchmarks.hpp"
-#include "table_investments.hpp"
+#include "table_fund.hpp"
 
 MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSettings()) {
   QCoreApplication::setOrganizationName("wwmm");
@@ -16,7 +16,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   // shadow effects
 
   frame_table_selection->setGraphicsEffect(card_shadow());
-  button_add_investment->setGraphicsEffect(button_shadow());
+  button_add_fund->setGraphicsEffect(button_shadow());
   button_add_benchmark->setGraphicsEffect(button_shadow());
   button_database_file->setGraphicsEffect(button_shadow());
   button_remove_table->setGraphicsEffect(button_shadow());
@@ -26,7 +26,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   // signals
 
   connect(button_add_benchmark, &QPushButton::clicked, this, &MainWindow::add_benchmark_table);
-  connect(button_add_investment, &QPushButton::clicked, this, &MainWindow::add_investment_table);
+  connect(button_add_fund, &QPushButton::clicked, this, &MainWindow::add_investment_table);
   connect(button_database_file, &QPushButton::clicked, this, [&]() {
     auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDesktopServices::openUrl(path);
@@ -219,13 +219,13 @@ void MainWindow::add_investment_table() {
       " accumulated_real_return_perc real default 0.0)");
 
   if (query.exec()) {
-    auto table = load_table<TableInvestments>(name);
+    auto table = load_table<TableFund>(name);
 
     stackedwidget->setCurrentIndex(stackedwidget->count() - 1);
 
     listwidget_tables->setCurrentRow(listwidget_tables->count() - 1);
 
-    connect(table, &TableInvestments::getBenchmarkTables, this, [=]() {
+    connect(table, &TableFund::getBenchmarkTables, this, [=]() {
       for (int n = 0; n < stackedwidget->count(); n++) {
         auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 
@@ -281,9 +281,9 @@ void MainWindow::load_saved_tables() {
     // put investment tables first
 
     for (auto& name : investments) {
-      auto table = load_table<TableInvestments>(name);
+      auto table = load_table<TableFund>(name);
 
-      connect(table, &TableInvestments::getBenchmarkTables, this, [=]() {
+      connect(table, &TableFund::getBenchmarkTables, this, [=]() {
         for (int n = 0; n < stackedwidget->count(); n++) {
           auto btable = dynamic_cast<TableBase*>(stackedwidget->widget(n));
 

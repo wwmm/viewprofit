@@ -88,7 +88,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QPushButton" name="button_add_investment">
+        <widget class="QPushButton" name="button_add_fund">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -96,7 +96,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Add Investment</string>
+          <string>Add Fund</string>
          </property>
         </widget>
        </item>

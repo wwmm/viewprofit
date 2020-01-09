@@ -1,6 +1,6 @@
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql', 'Charts'])
 
-mheaders = ['main_window.hpp', 'table_base.hpp', 'table_investments.hpp', 'table_portfolio.hpp']
+mheaders = ['main_window.hpp', 'table_base.hpp', 'table_fund.hpp', 'table_portfolio.hpp']
 
 mui_files = ['ui/main_window.ui', 'ui/table_base.ui']
 
@@ -13,7 +13,7 @@ mysources = [
     'main_window.cpp', 
     'table_base.cpp',
     'table_benchmarks.cpp',
-    'table_investments.cpp',
+    'table_fund.cpp',
     'table_portfolio.cpp',
     'model.cpp',
     moc_files, 

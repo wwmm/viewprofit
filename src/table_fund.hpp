@@ -1,12 +1,12 @@
-#ifndef TABLE_INVESTMENTS_HPP
-#define TABLE_INVESTMENTS_HPP
+#ifndef TABLE_FUND_HPP
+#define TABLE_FUND_HPP
 
 #include "table_base.hpp"
 
-class TableInvestments : public TableBase {
+class TableFund : public TableBase {
   Q_OBJECT
  public:
-  explicit TableInvestments(QWidget* parent = nullptr);
+  explicit TableFund(QWidget* parent = nullptr);
 
   void show_benchmark(const TableBase* btable);
 

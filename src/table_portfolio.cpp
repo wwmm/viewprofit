@@ -7,7 +7,7 @@ TablePortfolio::TablePortfolio(QWidget* parent) {
 
   name = "portfolio";
 
-  investment_cfg_frame->hide();
+  fund_cfg_frame->hide();
   button_add_row->hide();
 }
 

@@ -1,12 +1,12 @@
-#include "table_investments.hpp"
+#include "table_fund.hpp"
 #include <QSqlQuery>
 
-TableInvestments::TableInvestments(QWidget* parent) : TableBase(parent), qsettings(QSettings()) {
+TableFund::TableFund(QWidget* parent) : TableBase(parent), qsettings(QSettings()) {
   type = TableType::Investment;
 
   // shadow effects
 
-  investment_cfg_frame->setGraphicsEffect(card_shadow());
+  fund_cfg_frame->setGraphicsEffect(card_shadow());
 
   // signals
 
@@ -21,7 +21,7 @@ TableInvestments::TableInvestments(QWidget* parent) : TableBase(parent), qsettin
   });
 }
 
-void TableInvestments::init_model() {
+void TableFund::init_model() {
   model->setTable(name);
   model->setEditStrategy(QSqlTableModel::OnManualSubmit);
   model->setSort(1, Qt::DescendingOrder);
@@ -58,7 +58,7 @@ void TableInvestments::init_model() {
   qsettings.endGroup();
 }
 
-std::tuple<QVector<int>, QVector<double>, QVector<double>> TableInvestments::process_benchmark(
+std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_benchmark(
     const QString& table_name) const {
   QVector<int> dates;
   QVector<double> values, accu;
@@ -107,7 +107,7 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TableInvestments::pro
   return {dates, values, accu};
 }
 
-void TableInvestments::calculate() {
+void TableFund::calculate() {
   if (model->rowCount() == 0) {
     return;
   }
@@ -181,7 +181,7 @@ void TableInvestments::calculate() {
   make_chart2();
 }
 
-void TableInvestments::make_chart1() {
+void TableFund::make_chart1() {
   chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
@@ -191,7 +191,7 @@ void TableInvestments::make_chart1() {
   // add_series_to_chart(chart1, model, "Net Return", "net_return");
 }
 
-void TableInvestments::make_chart2() {
+void TableFund::make_chart2() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
@@ -203,7 +203,7 @@ void TableInvestments::make_chart2() {
   emit getBenchmarkTables();
 }
 
-void TableInvestments::show_benchmark(const TableBase* btable) {
+void TableFund::show_benchmark(const TableBase* btable) {
   auto [dates, values, accumulated] = process_benchmark(btable->name);
 
   if (chart2->axes().size() == 0) {
@@ -214,7 +214,7 @@ void TableInvestments::show_benchmark(const TableBase* btable) {
 
   series->setName(btable->name.toLower());
 
-  connect(series, &QLineSeries::hovered, this, &TableInvestments::on_chart_mouse_hover);
+  connect(series, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
 
   double vmin = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
   double vmax = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();
