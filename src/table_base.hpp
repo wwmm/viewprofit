@@ -40,7 +40,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
 
   bool eventFilter(QObject* object, QEvent* event);
   void remove_selected_rows();
-  void save_image();
   void reset_zoom();
   void calculate_accumulated_sum(const QString& column_name);
   void calculate_accumulated_product(const QString& column_name);

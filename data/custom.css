@@ -88,7 +88,9 @@ QFrame#frame_tableview,
 QFrame#frame_table_selection_fund,
 QFrame#frame_table_selection_benchmark,
 QFrame#frame_portfolio_pages,
-QFrame#frame_chart {
+QFrame#frame_chart,
+QFrame#frame_chart1,
+QFrame#frame_chart2 {
   background-color: #fff;
 }
 

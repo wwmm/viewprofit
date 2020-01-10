@@ -18,12 +18,10 @@ TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), c
   frame_chart->setGraphicsEffect(card_shadow());
   frame_tableview->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
-  button_save_image->setGraphicsEffect(button_shadow());
 
   // signals
 
   connect(button_add_row, &QPushButton::clicked, this, &TableBase::on_add_row);
-  connect(button_save_image, &QPushButton::clicked, this, &TableBase::save_image);
   connect(button_reset_zoom, &QPushButton::clicked, this, &TableBase::reset_zoom);
   connect(radio_chart1, &QRadioButton::toggled, this, &TableBase::on_chart_selection);
   connect(radio_chart2, &QRadioButton::toggled, this, &TableBase::on_chart_selection);
@@ -215,26 +213,6 @@ void TableBase::on_chart_mouse_hover(const QPointF& point, bool state) {
     qdt.setMSecsSinceEpoch(point.x());
 
     label_mouse_xy->setText(QString("x = %1, y = %2").arg(qdt.toString("dd/MM/yyyy"), QString::number(point.y())));
-  }
-}
-
-void TableBase::save_image() {
-  auto home = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-
-  auto path = QFileDialog::getSaveFileName(this, "Save Image", home, "PNG (*.png)");
-
-  if (path != "") {
-    if (!path.endsWith(".png")) {
-      path += ".png";
-    }
-
-    if (radio_chart1->isChecked()) {
-      chart_view1->grab().save(path);
-    }
-
-    if (radio_chart2->isChecked()) {
-      chart_view2->grab().save(path);
-    }
   }
 }
 

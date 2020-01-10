@@ -204,11 +204,19 @@ TablePortfolio* MainWindow::load_portfolio_table() {
 }
 
 void MainWindow::load_compare_funds() {
-  auto fc = new CompareFunds(db);
+  auto cf = new CompareFunds(db);
 
-  stackedwidget_portfolio->addWidget(fc);
+  stackedwidget_portfolio->addWidget(cf);
 
   listwidget_portfolio->addItem("COMPARE FUNDS");
+
+  auto fund_tables = QVector<TableFund*>();
+
+  for (int n = 0; n < stackedwidget_funds->count(); n++) {
+    fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
+  }
+
+  cf->process_fund_tables(fund_tables);
 }
 
 void MainWindow::load_inflation_table() {
