@@ -23,6 +23,8 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   QGraphicsDropShadowEffect* button_shadow();
   QGraphicsDropShadowEffect* card_shadow();
+
+  void on_chart_selection(const bool& state);
 };
 
 #endif
