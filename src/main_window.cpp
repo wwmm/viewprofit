@@ -126,7 +126,13 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
       load_saved_tables();
 
-      portfolio_table->calculate();  // it has to be called after loading the other tables
+      auto fund_tables = QVector<TableFund*>();
+
+      for (int n = 0; n < stackedwidget_funds->count(); n++) {
+        fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
+      }
+
+      portfolio_table->process_fund_tables(fund_tables);  // it has to be called after loading the other tables
 
       load_compare_funds();
     } else {
@@ -180,18 +186,6 @@ TablePortfolio* MainWindow::load_portfolio_table() {
 
   table->set_database(db);
   table->init_model();
-
-  connect(table, &TablePortfolio::getFundTablesName, this, [=]() {
-    auto tables = QVector<TableFund*>();
-
-    for (int n = 0; n < stackedwidget_funds->count(); n++) {
-      auto btable = static_cast<TableFund*>(stackedwidget_funds->widget(n));
-
-      tables.append(btable);
-    }
-
-    table->process_fund_tables(tables);
-  });
 
   connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
     for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
@@ -548,11 +542,11 @@ void MainWindow::on_calculate_portfolio() {
     fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
   }
 
-  auto table = static_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
+  auto portfolio_table = static_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
 
-  table->calculate();
+  portfolio_table->process_fund_tables(fund_tables);
 
   auto cf = static_cast<CompareFunds*>(stackedwidget_portfolio->widget(1));
 
-  cf->calculate();
+  cf->process_fund_tables(fund_tables);
 }

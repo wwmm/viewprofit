@@ -10,7 +10,6 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  public:
   explicit CompareFunds(const QSqlDatabase& database, QWidget* parent = nullptr);
 
-  void calculate();
   void process_fund_tables(const QVector<TableFund*>& tables);
 
  signals:
@@ -18,6 +17,9 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
  private:
   QSqlDatabase db;
+
+  QChart* chart1;
+  QChart* chart2;
 
   QGraphicsDropShadowEffect* button_shadow();
   QGraphicsDropShadowEffect* card_shadow();

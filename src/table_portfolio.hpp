@@ -13,10 +13,8 @@ class TablePortfolio : public TableBase {
   void process_fund_tables(const QVector<TableFund*>& tables);
 
   void init_model() override;
-  void calculate();
 
  signals:
-  void getFundTablesName();
   void getBenchmarkTables();
 
  private:

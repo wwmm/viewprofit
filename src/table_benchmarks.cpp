@@ -1,4 +1,5 @@
 #include "table_benchmarks.hpp"
+#include "chart_funcs.hpp"
 
 TableBenchmarks::TableBenchmarks(QWidget* parent) : TableBase(parent) {
   type = TableType::Benchmark;
@@ -69,8 +70,14 @@ void TableBenchmarks::show_chart() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, "%");
-  add_series_to_chart(chart1, model, "Monthly Value", "value");
+
+  auto s1 = add_series_to_chart(chart1, model, "Monthly Value", "value");
+
+  connect(s1, &QLineSeries::hovered, this, &TableBenchmarks::on_chart_mouse_hover);
 
   add_axes_to_chart(chart2, "%");
-  add_series_to_chart(chart2, model, "Accumulated", "accumulated");
+
+  auto s2 = add_series_to_chart(chart2, model, "Accumulated", "accumulated");
+
+  connect(s2, &QLineSeries::hovered, this, &TableBenchmarks::on_chart_mouse_hover);
 }

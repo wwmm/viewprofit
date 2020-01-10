@@ -1,6 +1,7 @@
 #include "table_portfolio.hpp"
 #include <QSqlError>
 #include <QSqlQuery>
+#include "chart_funcs.hpp"
 
 TablePortfolio::TablePortfolio(QWidget* parent) {
   type = TableType::Portfolio;
@@ -38,10 +39,6 @@ void TablePortfolio::init_model() {
 
   table_view->setModel(model);
   table_view->setColumnHidden(0, true);
-}
-
-void TablePortfolio::calculate() {
-  emit getFundTablesName();
 }
 
 void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
@@ -189,17 +186,26 @@ void TablePortfolio::make_chart1() {
   chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
-  add_series_to_chart(chart1, model, "Net Deposit", "net_deposit");
-  add_series_to_chart(chart1, model, "Net Balance", "net_balance");
-  add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
+
+  auto s1 = add_series_to_chart(chart1, model, "Net Deposit", "net_deposit");
+  auto s2 = add_series_to_chart(chart1, model, "Net Balance", "net_balance");
+  auto s3 = add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
+
+  connect(s1, &QLineSeries::hovered, this, &TablePortfolio::on_chart_mouse_hover);
+  connect(s2, &QLineSeries::hovered, this, &TablePortfolio::on_chart_mouse_hover);
+  connect(s3, &QLineSeries::hovered, this, &TablePortfolio::on_chart_mouse_hover);
 }
 
 void TablePortfolio::make_chart2() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
-  add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
-  add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
+
+  auto s1 = add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
+  auto s2 = add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
+
+  connect(s1, &QLineSeries::hovered, this, &TablePortfolio::on_chart_mouse_hover);
+  connect(s2, &QLineSeries::hovered, this, &TablePortfolio::on_chart_mouse_hover);
 
   // ask the main window class for the benchmarks
 
@@ -207,5 +213,7 @@ void TablePortfolio::make_chart2() {
 }
 
 void TablePortfolio::show_benchmark(const TableBenchmarks* btable) {
-  add_series_to_chart(chart2, btable->model, btable->name, "accumulated");
+  auto s1 = add_series_to_chart(chart2, btable->model, btable->name, "accumulated");
+
+  connect(s1, &QLineSeries::hovered, this, &TablePortfolio::on_chart_mouse_hover);
 }

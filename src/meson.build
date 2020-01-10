@@ -27,6 +27,7 @@ mysources = [
     'table_portfolio.cpp',
     'model.cpp',
     'compare_funds.cpp',
+    'chart_funcs.cpp',
     moc_files, 
     resources
 ]

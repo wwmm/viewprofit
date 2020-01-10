@@ -1,5 +1,6 @@
 #include "table_fund.hpp"
 #include <QSqlQuery>
+#include "chart_funcs.hpp"
 
 TableFund::TableFund(QWidget* parent) : TableBase(parent), qsettings(QSettings()) {
   type = TableType::Investment;
@@ -185,18 +186,26 @@ void TableFund::make_chart1() {
   chart1->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, QLocale().currencySymbol());
-  add_series_to_chart(chart1, model, "Net Deposit", "net_deposit");
-  add_series_to_chart(chart1, model, "Net Balance", "net_balance");
-  add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
-  // add_series_to_chart(chart1, model, "Net Return", "net_return");
+
+  auto s1 = add_series_to_chart(chart1, model, "Net Deposit", "net_deposit");
+  auto s2 = add_series_to_chart(chart1, model, "Net Balance", "net_balance");
+  auto s3 = add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
+
+  connect(s1, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
+  connect(s2, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
+  connect(s3, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
 }
 
 void TableFund::make_chart2() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart2, "%");
-  add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
-  add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
+
+  auto s1 = add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
+  auto s2 = add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
+
+  connect(s1, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
+  connect(s2, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
 
   // ask the main window class for the benchmarks
 
