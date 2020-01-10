@@ -8,7 +8,7 @@ class TableBenchmarks : public TableBase {
   explicit TableBenchmarks(QWidget* parent = nullptr);
 
   void init_model() override;
-  void calculate() override;
+  void calculate();
 
  private:
   void show_chart();

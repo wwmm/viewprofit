@@ -41,6 +41,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   void on_clear_table_benchmark();
   void on_remove_table_benchmark();
 
+  void on_calculate_portfolio();
   void on_save_table_portfolio();
   void on_clear_table_portfolio();
 

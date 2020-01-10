@@ -25,7 +25,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
   void clear_charts();
 
   virtual void init_model() = 0;
-  virtual void calculate() = 0;
 
  signals:
   void hideProgressBar();

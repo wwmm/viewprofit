@@ -11,7 +11,7 @@ class TableFund : public TableBase {
   void show_benchmark(const TableBase* btable);
 
   void init_model() override;
-  void calculate() override;
+  void calculate();
 
  signals:
   void getBenchmarkTables();

@@ -44,7 +44,7 @@ void TablePortfolio::calculate() {
   emit getFundTablesName();
 }
 
-void TablePortfolio::process_fund_tables(const QVector<TableBase*>& tables) {
+void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
   // get date values in each investment tables
 
   QSet<int> list_set;
@@ -206,6 +206,6 @@ void TablePortfolio::make_chart2() {
   emit getBenchmarkTables();
 }
 
-void TablePortfolio::show_benchmark(const TableBase* btable) {
+void TablePortfolio::show_benchmark(const TableBenchmarks* btable) {
   add_series_to_chart(chart2, btable->model, btable->name, "accumulated");
 }
