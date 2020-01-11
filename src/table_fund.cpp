@@ -1,6 +1,7 @@
 #include "table_fund.hpp"
 #include <QSqlQuery>
 #include "chart_funcs.hpp"
+#include "effects.hpp"
 
 TableFund::TableFund(QWidget* parent) : TableBase(parent), qsettings(QSettings()) {
   type = TableType::Investment;

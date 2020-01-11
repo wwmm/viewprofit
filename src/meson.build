@@ -29,6 +29,7 @@ mysources = [
     'compare_funds.cpp',
     'chart_funcs.cpp',
     'callout.cpp',
+    'effects.cpp',
     moc_files, 
     resources
 ]

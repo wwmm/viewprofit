@@ -37,9 +37,6 @@ class TableBase : public QWidget, protected Ui::TableBase {
 
   Callout *callout1, *callout2;
 
-  QGraphicsDropShadowEffect* button_shadow();
-  QGraphicsDropShadowEffect* card_shadow();
-
   bool eventFilter(QObject* object, QEvent* event);
   void remove_selected_rows();
   void reset_zoom();

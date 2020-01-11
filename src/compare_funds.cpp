@@ -1,5 +1,6 @@
 #include "compare_funds.hpp"
 #include "chart_funcs.hpp"
+#include "effects.hpp"
 
 CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
     : db(database),
@@ -61,28 +62,6 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   } else if (radio_chart2->isChecked()) {
     stackedwidget->setCurrentIndex(1);
   }
-}
-
-QGraphicsDropShadowEffect* CompareFunds::button_shadow() {
-  auto effect = new QGraphicsDropShadowEffect(this);
-
-  effect->setColor(QColor(0, 0, 0, 100));
-  effect->setXOffset(1);
-  effect->setYOffset(1);
-  effect->setBlurRadius(5);
-
-  return effect;
-}
-
-QGraphicsDropShadowEffect* CompareFunds::card_shadow() {
-  auto effect = new QGraphicsDropShadowEffect(this);
-
-  effect->setColor(QColor(0, 0, 0, 100));
-  effect->setXOffset(2);
-  effect->setYOffset(2);
-  effect->setBlurRadius(5);
-
-  return effect;
 }
 
 void CompareFunds::process_fund_tables(const QVector<TableFund*>& tables) {

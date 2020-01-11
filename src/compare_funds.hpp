@@ -23,9 +23,6 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   Callout *callout1, *callout2;
 
-  QGraphicsDropShadowEffect* button_shadow();
-  QGraphicsDropShadowEffect* card_shadow();
-
   void on_chart_selection(const bool& state);
   void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
 };

@@ -3,6 +3,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include "effects.hpp"
 
 TableBase::TableBase(QWidget* parent)
     : QWidget(parent),
@@ -73,28 +74,6 @@ void TableBase::set_chart1_title(const QString& title) {
 
 void TableBase::set_chart2_title(const QString& title) {
   chart2->setTitle(title);
-}
-
-QGraphicsDropShadowEffect* TableBase::button_shadow() {
-  auto effect = new QGraphicsDropShadowEffect(this);
-
-  effect->setColor(QColor(0, 0, 0, 100));
-  effect->setXOffset(1);
-  effect->setYOffset(1);
-  effect->setBlurRadius(5);
-
-  return effect;
-}
-
-QGraphicsDropShadowEffect* TableBase::card_shadow() {
-  auto effect = new QGraphicsDropShadowEffect(this);
-
-  effect->setColor(QColor(0, 0, 0, 100));
-  effect->setXOffset(2);
-  effect->setYOffset(2);
-  effect->setBlurRadius(5);
-
-  return effect;
 }
 
 bool TableBase::eventFilter(QObject* object, QEvent* event) {

@@ -1,7 +1,6 @@
 #ifndef MAIN_WINDOW_HPP
 #define MAIN_WINDOW_HPP
 
-#include <QGraphicsDropShadowEffect>
 #include <QMainWindow>
 #include <QSettings>
 #include <QSqlDatabase>
@@ -19,9 +18,6 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   QSettings qsettings;
 
   QSqlDatabase db;
-
-  QGraphicsDropShadowEffect* button_shadow();
-  QGraphicsDropShadowEffect* card_shadow();
 
   TablePortfolio* load_portfolio_table();
   void load_inflation_table();

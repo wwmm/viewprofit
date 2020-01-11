@@ -4,6 +4,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QStandardPaths>
+#include "effects.hpp"
 #include "table_benchmarks.hpp"
 #include "table_fund.hpp"
 
@@ -144,28 +145,6 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   }
 
   show();
-}
-
-QGraphicsDropShadowEffect* MainWindow::button_shadow() {
-  auto effect = new QGraphicsDropShadowEffect(this);
-
-  effect->setColor(QColor(0, 0, 0, 100));
-  effect->setXOffset(1);
-  effect->setYOffset(1);
-  effect->setBlurRadius(5);
-
-  return effect;
-}
-
-QGraphicsDropShadowEffect* MainWindow::card_shadow() {
-  auto effect = new QGraphicsDropShadowEffect(this);
-
-  effect->setColor(QColor(0, 0, 0, 100));
-  effect->setXOffset(2);
-  effect->setYOffset(2);
-  effect->setBlurRadius(5);
-
-  return effect;
 }
 
 TablePortfolio* MainWindow::load_portfolio_table() {
