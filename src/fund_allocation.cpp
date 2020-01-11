@@ -216,7 +216,7 @@ void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
 
   connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
     if (status) {
-      callout2->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
+      callout2->setText(QString("Fund: %1\nDate: %2\nReturn: " + QLocale().currencySymbol() + " %3")
                             .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
 
       double v = barset->at(index);
