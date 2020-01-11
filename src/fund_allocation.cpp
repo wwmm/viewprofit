@@ -19,6 +19,7 @@ FundAllocation::FundAllocation(const QSqlDatabase& database, QWidget* parent)
 
   frame_chart->setGraphicsEffect(card_shadow());
   chart_cfg_frame->setGraphicsEffect(card_shadow());
+  button_reset_zoom->setGraphicsEffect(button_shadow());
 
   // chart 1 settings
 
@@ -27,16 +28,29 @@ FundAllocation::FundAllocation(const QSqlDatabase& database, QWidget* parent)
 
   chart_view1->setChart(chart1);
   chart_view1->setRenderHint(QPainter::Antialiasing);
+  chart_view1->setRubberBand(QChartView::RectangleRubberBand);
 
   // chart 2 settings
 
   chart2->setTheme(QChart::ChartThemeLight);
+  chart2->setAcceptHoverEvents(true);
   chart2->legend()->setAlignment(Qt::AlignRight);
 
   chart_view2->setChart(chart2);
   chart_view2->setRenderHint(QPainter::Antialiasing);
+  chart_view2->setRubberBand(QChartView::RectangleRubberBand);
 
   // signals
+
+  connect(button_reset_zoom, &QPushButton::clicked, this, [&]() {
+    if (radio_chart1->isChecked()) {
+      chart1->zoomReset();
+    }
+
+    if (radio_chart2->isChecked()) {
+      chart2->zoomReset();
+    }
+  });
 
   connect(radio_chart1, &QRadioButton::toggled, this, &FundAllocation::on_chart_selection);
   connect(radio_chart2, &QRadioButton::toggled, this, &FundAllocation::on_chart_selection);
@@ -170,38 +184,62 @@ void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
     }
   }
 
-  auto series = new QPercentBarSeries();
+  auto series = new QStackedBarSeries();
 
   for (auto& bs : barsets) {
     series->append(bs);
   }
 
+  QFont serif_font("Sans");
+
   chart2->setTitle("Net Balance History");
 
   chart2->addSeries(series);
 
-  auto axisX = new QBarCategoryAxis();
+  auto axis_x = new QBarCategoryAxis();
 
-  axisX->append(categories);
+  axis_x->append(categories);
 
-  chart2->addAxis(axisX, Qt::AlignBottom);
+  chart2->addAxis(axis_x, Qt::AlignBottom);
 
-  series->attachAxis(axisX);
+  series->attachAxis(axis_x);
 
-  auto axisY = new QValueAxis();
+  auto axis_y = new QValueAxis();
 
-  chart2->addAxis(axisY, Qt::AlignLeft);
+  axis_y->setTitleText(QLocale().currencySymbol());
+  axis_y->setTitleFont(serif_font);
+  axis_y->setLabelFormat("%.2f");
 
-  series->attachAxis(axisY);
+  chart2->addAxis(axis_y, Qt::AlignLeft);
 
-  // for (auto& table : tables) {
-  //   auto s1 = add_series_to_chart(chart1, table->model, table->name.toUpper(), "net_return_perc");
-  //   auto s2 = add_series_to_chart(chart2, table->model, table->name.toUpper(), "accumulated_net_return_perc");
+  series->attachAxis(axis_y);
 
-  //   connect(s1, &QLineSeries::hovered, this,
-  //           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s1->name()); });
+  connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
+    if (status) {
+      callout2->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
+                            .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
 
-  //   connect(s2, &QLineSeries::hovered, this,
-  //           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
-  // }
+      double v = barset->at(index);
+
+      for (int n = 1; n < barsets.size(); n++) {
+        if (barsets[n] == barset) {
+          for (int m = 0; m < n; m++) {
+            v += barsets[m]->at(index);
+          }
+
+          break;
+        }
+      }
+
+      callout2->setAnchor(QPointF(index, v));
+
+      callout2->setZValue(11);
+
+      callout2->updateGeometry();
+
+      callout2->show();
+    } else {
+      callout2->hide();
+    }
+  });
 }
