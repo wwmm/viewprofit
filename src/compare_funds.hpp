@@ -2,6 +2,7 @@
 #define COMPARE_FUNDS_HPP
 
 #include <QSqlDatabase>
+#include "callout.hpp"
 #include "table_fund.hpp"
 #include "ui_compare_funds.h"
 
@@ -18,13 +19,15 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  private:
   QSqlDatabase db;
 
-  QChart* chart1;
-  QChart* chart2;
+  QChart *chart1, *chart2;
+
+  Callout *callout1, *callout2;
 
   QGraphicsDropShadowEffect* button_shadow();
   QGraphicsDropShadowEffect* card_shadow();
 
   void on_chart_selection(const bool& state);
+  void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
 };
 
 #endif
