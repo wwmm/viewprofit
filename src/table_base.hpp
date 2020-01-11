@@ -6,6 +6,7 @@
 #include <QSqlTableModel>
 #include <QTableView>
 #include <QtCharts>
+#include "callout.hpp"
 #include "model.hpp"
 #include "table_type.hpp"
 #include "ui_table_base.h"
@@ -32,8 +33,9 @@ class TableBase : public QWidget, protected Ui::TableBase {
 
  protected:
   QSqlDatabase db;
-  QChart* chart1;
-  QChart* chart2;
+  QChart *chart1, *chart2;
+
+  Callout *callout1, *callout2;
 
   QGraphicsDropShadowEffect* button_shadow();
   QGraphicsDropShadowEffect* card_shadow();
@@ -44,7 +46,7 @@ class TableBase : public QWidget, protected Ui::TableBase {
   void calculate_accumulated_sum(const QString& column_name);
   void calculate_accumulated_product(const QString& column_name);
 
-  void on_chart_mouse_hover(const QPointF& point, bool state);
+  void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
   void on_chart_selection(const bool& state);
 
  private:

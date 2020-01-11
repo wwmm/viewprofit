@@ -9,6 +9,9 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
       callout2(new Callout(chart2)) {
   setupUi(this);
 
+  callout1->hide();
+  callout2->hide();
+
   // shadow effects
 
   frame_chart->setGraphicsEffect(card_shadow());
@@ -19,6 +22,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   chart1->setTheme(QChart::ChartThemeLight);
   chart1->setAcceptHoverEvents(true);
+  chart1->legend()->setAlignment(Qt::AlignRight);
 
   chart_view1->setChart(chart1);
   chart_view1->setRenderHint(QPainter::Antialiasing);
@@ -29,8 +33,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   chart2->setTheme(QChart::ChartThemeLight);
   chart2->setAcceptHoverEvents(true);
   chart2->legend()->setShowToolTips(true);
-  // chart2->legend()->detachFromChart();
-  // chart2->legend()->setAlignment(Qt::AlignTop);
+  chart2->legend()->setAlignment(Qt::AlignRight);
 
   chart_view2->setChart(chart2);
   chart_view2->setRenderHint(QPainter::Antialiasing);
@@ -97,10 +100,10 @@ void CompareFunds::process_fund_tables(const QVector<TableFund*>& tables) {
     auto s2 = add_series_to_chart(chart2, table->model, table->name.toUpper(), "accumulated_net_return_perc");
 
     connect(s1, &QLineSeries::hovered, this,
-            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, table->name); });
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s1->name()); });
 
     connect(s2, &QLineSeries::hovered, this,
-            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, table->name); });
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
   }
 }
 
@@ -120,7 +123,8 @@ void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callou
 
     qdt.setMSecsSinceEpoch(point.x());
 
-    c->setText(QString("%1\n\nDate: %2\ny: %3").arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y())));
+    c->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
+                   .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
 
     c->setAnchor(point);
 

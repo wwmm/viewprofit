@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include "compare_funds.hpp"
 #include "table_portfolio.hpp"
 #include "ui_main_window.h"
 
@@ -24,7 +25,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
 
   TablePortfolio* load_portfolio_table();
   void load_inflation_table();
-  void load_compare_funds();
+  CompareFunds* load_compare_funds();
 
   void add_benchmark_table();
   void add_fund_table();

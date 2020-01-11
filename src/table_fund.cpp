@@ -191,9 +191,12 @@ void TableFund::make_chart1() {
   auto s2 = add_series_to_chart(chart1, model, "Net Balance", "net_balance");
   auto s3 = add_series_to_chart(chart1, model, "Net Return", "accumulated_net_return");
 
-  connect(s1, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
-  connect(s2, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
-  connect(s3, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
+  connect(s1, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s1->name()); });
+  connect(s2, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s2->name()); });
+  connect(s3, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s3->name()); });
 }
 
 void TableFund::make_chart2() {
@@ -204,8 +207,10 @@ void TableFund::make_chart2() {
   auto s1 = add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
   auto s2 = add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
 
-  connect(s1, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
-  connect(s2, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
+  connect(s1, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s1->name()); });
+  connect(s2, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
 
   // ask the main window class for the benchmarks
 
@@ -223,7 +228,8 @@ void TableFund::show_benchmark(const TableBase* btable) {
 
   series->setName(btable->name.toLower());
 
-  connect(series, &QLineSeries::hovered, this, &TableFund::on_chart_mouse_hover);
+  connect(series, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, series->name()); });
 
   double vmin = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
   double vmax = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();

@@ -4,7 +4,6 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QStandardPaths>
-#include "compare_funds.hpp"
 #include "table_benchmarks.hpp"
 #include "table_fund.hpp"
 
@@ -120,11 +119,9 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
     if (db.open()) {
       qDebug("The database file was opened!");
 
-      auto portfolio_table = load_portfolio_table();
+      load_saved_tables();
 
       load_inflation_table();
-
-      load_saved_tables();
 
       auto fund_tables = QVector<TableFund*>();
 
@@ -132,9 +129,15 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
         fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
       }
 
-      portfolio_table->process_fund_tables(fund_tables);  // it has to be called after loading the other tables
+      auto portfolio_table = load_portfolio_table();
 
-      load_compare_funds();
+      auto cf = load_compare_funds();
+
+      // This has to be done after loading the other tables
+
+      portfolio_table->process_fund_tables(fund_tables);
+
+      cf->process_fund_tables(fund_tables);
     } else {
       qCritical("Failed to open the database file!");
     }
@@ -203,20 +206,14 @@ TablePortfolio* MainWindow::load_portfolio_table() {
   return table;
 }
 
-void MainWindow::load_compare_funds() {
+CompareFunds* MainWindow::load_compare_funds() {
   auto cf = new CompareFunds(db);
 
   stackedwidget_portfolio->addWidget(cf);
 
   listwidget_portfolio->addItem("COMPARE FUNDS");
 
-  auto fund_tables = QVector<TableFund*>();
-
-  for (int n = 0; n < stackedwidget_funds->count(); n++) {
-    fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
-  }
-
-  cf->process_fund_tables(fund_tables);
+  return cf;
 }
 
 void MainWindow::load_inflation_table() {
@@ -236,6 +233,8 @@ void MainWindow::load_inflation_table() {
     stackedwidget_benchmarks->addWidget(table);
 
     listwidget_tables_benchmarks->addItem("INFLATION");
+
+    table->calculate();
   } else {
     qDebug("Failed to create table inflation. Maybe it already exists.");
   }

@@ -4,8 +4,16 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 
-TableBase::TableBase(QWidget* parent) : QWidget(parent), chart1(new QChart()), chart2(new QChart()) {
+TableBase::TableBase(QWidget* parent)
+    : QWidget(parent),
+      chart1(new QChart()),
+      chart2(new QChart()),
+      callout1(new Callout(chart1)),
+      callout2(new Callout(chart2)) {
   setupUi(this);
+
+  callout1->hide();
+  callout2->hide();
 
   table_view->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   table_view->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -206,13 +214,24 @@ void TableBase::clear_charts() {
   }
 }
 
-void TableBase::on_chart_mouse_hover(const QPointF& point, bool state) {
+void TableBase::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
   if (state) {
     auto qdt = QDateTime();
 
     qdt.setMSecsSinceEpoch(point.x());
 
-    label_mouse_xy->setText(QString("x = %1, y = %2").arg(qdt.toString("dd/MM/yyyy"), QString::number(point.y())));
+    c->setText(QString("Curve: %1\nDate: %2\nReturn: %3")
+                   .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+
+    c->setAnchor(point);
+
+    c->setZValue(11);
+
+    c->updateGeometry();
+
+    c->show();
+  } else {
+    c->hide();
   }
 }
 

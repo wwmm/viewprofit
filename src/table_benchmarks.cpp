@@ -73,11 +73,13 @@ void TableBenchmarks::show_chart() {
 
   auto s1 = add_series_to_chart(chart1, model, "Monthly Value", "value");
 
-  connect(s1, &QLineSeries::hovered, this, &TableBenchmarks::on_chart_mouse_hover);
+  connect(s1, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s1->name()); });
 
   add_axes_to_chart(chart2, "%");
 
   auto s2 = add_series_to_chart(chart2, model, "Accumulated", "accumulated");
 
-  connect(s2, &QLineSeries::hovered, this, &TableBenchmarks::on_chart_mouse_hover);
+  connect(s2, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
 }
