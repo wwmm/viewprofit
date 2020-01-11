@@ -1,4 +1,6 @@
 #include "fund_allocation.hpp"
+#include <QSqlError>
+#include <QSqlQuery>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -66,7 +68,7 @@ void FundAllocation::on_chart_selection(const bool& state) {
 void FundAllocation::make_chart1(const QVector<TableFund*>& tables) {
   clear_chart(chart1);
 
-  chart1->setTitle("Net Balance");
+  chart1->setTitle("Net Balance Contribution");
 
   auto series = new QPieSeries();
 
@@ -96,10 +98,101 @@ void FundAllocation::make_chart1(const QVector<TableFund*>& tables) {
 void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
   clear_chart(chart2);
 
+  // get date values in each investment tables
+
+  QSet<int> list_set;
+
+  for (auto& table : tables) {
+    // making sure all the latest data was saved to the database
+
+    table->model->submitAll();
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("select distinct date from " + table->name + " order by date");
+
+    if (query.exec()) {
+      while (query.next()) {
+        list_set.insert(query.value(0).toInt());
+      }
+    } else {
+      qDebug(table->model->lastError().text().toUtf8());
+    }
+  }
+
+  if (list_set.size() == 0) {
+    return;
+  }
+
+  QList<int> list_dates = list_set.values();
+
+  std::sort(list_dates.begin(), list_dates.end());
+
+  // initialize the barsets
+
+  QVector<QBarSet*> barsets;
+
+  for (auto& table : tables) {
+    barsets.append(new QBarSet(table->name));
+  }
+
+  auto qdt = QDateTime();
+
+  QStringList categories;
+
+  for (auto& date : list_dates) {
+    qdt.setSecsSinceEpoch(date);
+
+    QString date_month = qdt.toString("MM/yyyy");
+
+    categories.append(date_month);
+
+    for (int m = 0; m < tables.size(); m++) {
+      bool has_date = false;
+
+      for (int n = tables[m]->model->rowCount() - 1; n >= 0; n--) {
+        QString tdate = tables[m]->model->record(n).value("date").toString();
+
+        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
+          double v = tables[m]->model->record(n).value("net_balance").toDouble();
+
+          barsets[m]->append(v);
+
+          has_date = true;
+
+          break;
+        }
+      }
+
+      if (!has_date) {
+        barsets[m]->append(0.0);
+      }
+    }
+  }
+
+  auto series = new QPercentBarSeries();
+
+  for (auto& bs : barsets) {
+    series->append(bs);
+  }
+
   chart2->setTitle("Net Balance History");
 
-  // add_axes_to_chart(chart1, "%");
-  // add_axes_to_chart(chart2, "%");
+  chart2->addSeries(series);
+
+  auto axisX = new QBarCategoryAxis();
+
+  axisX->append(categories);
+
+  chart2->addAxis(axisX, Qt::AlignBottom);
+
+  series->attachAxis(axisX);
+
+  auto axisY = new QValueAxis();
+
+  chart2->addAxis(axisY, Qt::AlignLeft);
+
+  series->attachAxis(axisY);
 
   // for (auto& table : tables) {
   //   auto s1 = add_series_to_chart(chart1, table->model, table->name.toUpper(), "net_return_perc");

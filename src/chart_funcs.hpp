@@ -14,7 +14,7 @@ void add_axes_to_chart(T* chart, const QString& ytitle) {
   QFont serif_font("Sans");
 
   axis_x->setTitleText("Date");
-  axis_x->setFormat("dd/MM/yyyy");
+  axis_x->setFormat("MM/yyyy");
   axis_x->setLabelsAngle(-10);
   axis_x->setTitleFont(serif_font);
 

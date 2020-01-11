@@ -106,10 +106,10 @@
         </widget>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="2" column="0" alignment="Qt::AlignHCenter">
        <widget class="QFrame" name="chart_cfg_frame">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>

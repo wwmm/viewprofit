@@ -56,7 +56,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
 
     sw->addWidget(table);
 
-    lw->addItem(name.toUpper());
+    lw->addItem(name);
 
     auto added_item = lw->item(lw->count() - 1);
 

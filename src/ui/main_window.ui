@@ -54,7 +54,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -197,7 +197,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>TABLES</string>
+              <string>Tables</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -317,7 +317,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>TABLES</string>
+              <string>Tables</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>

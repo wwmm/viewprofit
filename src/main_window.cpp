@@ -120,9 +120,9 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
     if (db.open()) {
       qDebug("The database file was opened!");
 
-      load_saved_tables();
-
       load_inflation_table();
+
+      load_saved_tables();
 
       auto fund_tables = QVector<TableFund*>();
 
@@ -179,7 +179,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
 
   stackedwidget_portfolio->addWidget(table);
 
-  listwidget_portfolio->addItem("TABLE");
+  listwidget_portfolio->addItem("Table");
   listwidget_portfolio->setCurrentRow(0);
 
   return table;
@@ -190,7 +190,7 @@ CompareFunds* MainWindow::load_compare_funds() {
 
   stackedwidget_portfolio->addWidget(cf);
 
-  listwidget_portfolio->addItem("COMPARE FUNDS");
+  listwidget_portfolio->addItem("Compare Funds");
 
   return cf;
 }
@@ -200,7 +200,7 @@ FundAllocation* MainWindow::load_fund_allocation() {
 
   stackedwidget_portfolio->addWidget(fa);
 
-  listwidget_portfolio->addItem("FUND ALLOCATION");
+  listwidget_portfolio->addItem("Fund Allocation");
 
   return fa;
 }
@@ -221,7 +221,7 @@ void MainWindow::load_inflation_table() {
 
     stackedwidget_benchmarks->addWidget(table);
 
-    listwidget_tables_benchmarks->addItem("INFLATION");
+    listwidget_tables_benchmarks->addItem("inflation");
 
     table->calculate();
   } else {
