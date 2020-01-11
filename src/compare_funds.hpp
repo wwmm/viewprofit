@@ -13,9 +13,6 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   void process_fund_tables(const QVector<TableFund*>& tables);
 
- signals:
-  void getFundTablesName();
-
  private:
   QSqlDatabase db;
 

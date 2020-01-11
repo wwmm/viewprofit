@@ -5,13 +5,15 @@ mheaders = [
     'table_base.hpp', 
     'table_fund.hpp', 
     'table_portfolio.hpp',
-    'compare_funds.hpp'
+    'compare_funds.hpp',
+    'fund_allocation.hpp'
 ]
 
 mui_files = [
     'ui/main_window.ui', 
     'ui/table_base.ui', 
-    'ui/compare_funds.ui'
+    'ui/compare_funds.ui',
+    'ui/fund_allocation.ui'
 ]
 
 moc_files = qt5.preprocess(moc_headers : mheaders, ui_files: mui_files,
@@ -30,6 +32,7 @@ mysources = [
     'chart_funcs.cpp',
     'callout.cpp',
     'effects.cpp',
+    'fund_allocation.cpp',
     moc_files, 
     resources
 ]

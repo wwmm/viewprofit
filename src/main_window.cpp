@@ -131,14 +131,14 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       }
 
       auto portfolio_table = load_portfolio_table();
-
       auto cf = load_compare_funds();
+      auto fa = load_fund_allocation();
 
       // This has to be done after loading the other tables
 
       portfolio_table->process_fund_tables(fund_tables);
-
       cf->process_fund_tables(fund_tables);
+      fa->process_fund_tables(fund_tables);
     } else {
       qCritical("Failed to open the database file!");
     }
@@ -193,6 +193,16 @@ CompareFunds* MainWindow::load_compare_funds() {
   listwidget_portfolio->addItem("COMPARE FUNDS");
 
   return cf;
+}
+
+FundAllocation* MainWindow::load_fund_allocation() {
+  auto fa = new FundAllocation(db);
+
+  stackedwidget_portfolio->addWidget(fa);
+
+  listwidget_portfolio->addItem("FUND ALLOCATION");
+
+  return fa;
 }
 
 void MainWindow::load_inflation_table() {
