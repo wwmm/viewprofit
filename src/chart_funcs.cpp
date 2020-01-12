@@ -1,4 +1,5 @@
 #include "chart_funcs.hpp"
+#include <QSqlQuery>
 
 void clear_chart(QChart* chart) {
   chart->removeAllSeries();
@@ -70,4 +71,85 @@ QLineSeries* add_series_to_chart(QChart* chart,
   chart->axes(Qt::Vertical)[0]->setRange(vmin - 0.05 * fabs(vmin), vmax + 0.05 * fabs(vmax));
 
   return series;
+}
+
+std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barseries_to_chart(
+    QChart* chart,
+    const QVector<TableFund*>& tables,
+    const QList<int>& list_dates,
+    const QString& series_name,
+    const QString& column_name) {
+  QVector<QBarSet*> barsets;
+
+  for (auto& table : tables) {
+    barsets.append(new QBarSet(table->name));
+  }
+
+  auto qdt = QDateTime();
+
+  QStringList categories;
+
+  for (auto& date : list_dates) {
+    qdt.setSecsSinceEpoch(date);
+
+    QString date_month = qdt.toString("MM/yyyy");
+
+    categories.append(date_month);
+
+    for (int m = 0; m < tables.size(); m++) {
+      bool has_date = false;
+
+      for (int n = tables[m]->model->rowCount() - 1; n >= 0; n--) {
+        QString tdate = tables[m]->model->record(n).value("date").toString();
+
+        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
+          double v = tables[m]->model->record(n).value(column_name).toDouble();
+
+          barsets[m]->append(v);
+
+          has_date = true;
+
+          break;
+        }
+      }
+
+      if (!has_date) {
+        barsets[m]->append(0.0);
+      }
+    }
+  }
+
+  auto series = new QStackedBarSeries();
+
+  for (auto& bs : barsets) {
+    series->append(bs);
+  }
+
+  QFont serif_font("Sans");
+
+  chart->setTitle(series_name);
+  chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->show();
+
+  chart->addSeries(series);
+
+  auto axis_x = new QBarCategoryAxis();
+
+  axis_x->append(categories);
+
+  chart->addAxis(axis_x, Qt::AlignBottom);
+
+  series->attachAxis(axis_x);
+
+  auto axis_y = new QValueAxis();
+
+  axis_y->setTitleText(QLocale().currencySymbol());
+  axis_y->setTitleFont(serif_font);
+  axis_y->setLabelFormat("%.2f");
+
+  chart->addAxis(axis_y, Qt::AlignLeft);
+
+  series->attachAxis(axis_y);
+
+  return {series, barsets, categories};
 }

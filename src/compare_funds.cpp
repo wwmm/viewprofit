@@ -151,77 +151,12 @@ void CompareFunds::make_chart_net_balance() {
 
   // initialize the barsets
 
+  QStackedBarSeries* series;
   QVector<QBarSet*> barsets;
-
-  for (auto& table : tables) {
-    barsets.append(new QBarSet(table->name));
-  }
-
-  auto qdt = QDateTime();
-
   QStringList categories;
 
-  for (auto& date : list_dates) {
-    qdt.setSecsSinceEpoch(date);
-
-    QString date_month = qdt.toString("MM/yyyy");
-
-    categories.append(date_month);
-
-    for (int m = 0; m < tables.size(); m++) {
-      bool has_date = false;
-
-      for (int n = tables[m]->model->rowCount() - 1; n >= 0; n--) {
-        QString tdate = tables[m]->model->record(n).value("date").toString();
-
-        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
-          double v = tables[m]->model->record(n).value("net_balance").toDouble();
-
-          barsets[m]->append(v);
-
-          has_date = true;
-
-          break;
-        }
-      }
-
-      if (!has_date) {
-        barsets[m]->append(0.0);
-      }
-    }
-  }
-
-  auto series = new QStackedBarSeries();
-
-  for (auto& bs : barsets) {
-    series->append(bs);
-  }
-
-  QFont serif_font("Sans");
-
-  chart->setTitle("Net Balance");
-  chart->legend()->setAlignment(Qt::AlignRight);
-  chart->legend()->show();
-
-  chart->addSeries(series);
-
-  auto axis_x = new QBarCategoryAxis();
-
-  axis_x->append(categories);
-
-  chart->addAxis(axis_x, Qt::AlignBottom);
-
-  series->attachAxis(axis_x);
-
-  auto axis_y = new QValueAxis();
-
-  axis_y->setTitleText(QLocale().currencySymbol());
-  axis_y->setTitleFont(serif_font);
-  axis_y->setLabelFormat("%.2f");
-
-  chart->addAxis(axis_y, Qt::AlignLeft);
-
-  series->attachAxis(axis_y);
+  std::tie(series, barsets, categories) =
+      add_tables_barseries_to_chart(chart, tables, list_dates, "Net Balance", "net_balance");
 
   connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
     if (status) {
