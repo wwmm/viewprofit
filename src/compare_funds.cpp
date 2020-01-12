@@ -3,15 +3,10 @@
 #include "effects.hpp"
 
 CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
-    : db(database),
-      chart1(new QChart()),
-      chart2(new QChart()),
-      callout1(new Callout(chart1)),
-      callout2(new Callout(chart2)) {
+    : db(database), chart(new QChart()), callout(new Callout(chart)) {
   setupUi(this);
 
-  callout1->hide();
-  callout2->hide();
+  callout->hide();
 
   // shadow effects
 
@@ -19,80 +14,57 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   chart_cfg_frame->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
 
-  // chart 1 settings
+  // chart settings
 
-  chart1->setTheme(QChart::ChartThemeLight);
-  chart1->setAcceptHoverEvents(true);
-  chart1->legend()->setAlignment(Qt::AlignRight);
+  chart->setTheme(QChart::ChartThemeLight);
+  chart->setAcceptHoverEvents(true);
+  chart->legend()->setAlignment(Qt::AlignRight);
 
-  chart_view1->setChart(chart1);
-  chart_view1->setRenderHint(QPainter::Antialiasing);
-  chart_view1->setRubberBand(QChartView::RectangleRubberBand);
-
-  // chart 2 settings
-
-  chart2->setTheme(QChart::ChartThemeLight);
-  chart2->setAcceptHoverEvents(true);
-  chart2->legend()->setShowToolTips(true);
-  chart2->legend()->setAlignment(Qt::AlignRight);
-
-  chart_view2->setChart(chart2);
-  chart_view2->setRenderHint(QPainter::Antialiasing);
-  chart_view2->setRubberBand(QChartView::RectangleRubberBand);
+  chart_view->setChart(chart);
+  chart_view->setRenderHint(QPainter::Antialiasing);
+  chart_view->setRubberBand(QChartView::RectangleRubberBand);
 
   // signals
 
-  connect(button_reset_zoom, &QPushButton::clicked, this, [&]() {
-    if (radio_chart1->isChecked()) {
-      chart1->zoomReset();
-    }
+  connect(button_reset_zoom, &QPushButton::clicked, this, [&]() { chart->zoomReset(); });
 
-    if (radio_chart2->isChecked()) {
-      chart2->zoomReset();
-    }
-  });
-
-  connect(radio_chart1, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
-  connect(radio_chart2, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
-
-  // select the default chart
-
-  if (radio_chart1->isChecked()) {
-    stackedwidget->setCurrentIndex(0);
-  } else if (radio_chart2->isChecked()) {
-    stackedwidget->setCurrentIndex(1);
-  }
+  connect(radio_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
 }
 
 void CompareFunds::process_fund_tables(const QVector<TableFund*>& tables) {
-  clear_chart(chart1);
-  clear_chart(chart2);
+  last_tables = tables;
 
-  chart1->setTitle("Monthly Net Return");
-  chart2->setTitle("Accumulated Net Return");
+  clear_chart(chart);
 
-  add_axes_to_chart(chart1, "%");
-  add_axes_to_chart(chart2, "%");
+  if (radio_net_return_perc->isChecked()) {
+    chart->setTitle("Monthly Net Return");
 
-  for (auto& table : tables) {
-    auto s1 = add_series_to_chart(chart1, table->model, table->name.toUpper(), "net_return_perc");
-    auto s2 = add_series_to_chart(chart2, table->model, table->name.toUpper(), "accumulated_net_return_perc");
+    add_axes_to_chart(chart, "%");
 
-    connect(s1, &QLineSeries::hovered, this,
-            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s1->name()); });
+    for (auto& table : tables) {
+      auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
 
-    connect(s2, &QLineSeries::hovered, this,
-            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
+      connect(s, &QLineSeries::hovered, this,
+              [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+    }
+  } else if (radio_accumulated_net_return_perc->isChecked()) {
+    chart->setTitle("Accumulated Net Return");
+
+    add_axes_to_chart(chart, "%");
+
+    for (auto& table : tables) {
+      auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "accumulated_net_return_perc");
+
+      connect(s, &QLineSeries::hovered, this,
+              [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+    }
   }
 }
 
 void CompareFunds::on_chart_selection(const bool& state) {
   if (state) {
-    if (radio_chart1->isChecked()) {
-      stackedwidget->setCurrentIndex(0);
-    } else if (radio_chart2->isChecked()) {
-      stackedwidget->setCurrentIndex(1);
-    }
+    process_fund_tables(last_tables);
   }
 }
 
@@ -102,8 +74,10 @@ void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callou
 
     qdt.setMSecsSinceEpoch(point.x());
 
-    c->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
-                   .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+    if (radio_net_return_perc->isChecked() || radio_accumulated_net_return_perc->isChecked()) {
+      c->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
+                     .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+    }
 
     c->setAnchor(point);
 

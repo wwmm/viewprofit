@@ -16,9 +16,11 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  private:
   QSqlDatabase db;
 
-  QChart *chart1, *chart2;
+  QChart* chart;
 
-  Callout *callout1, *callout2;
+  Callout* callout;
+
+  QVector<TableFund*> last_tables;
 
   void on_chart_selection(const bool& state);
   void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
