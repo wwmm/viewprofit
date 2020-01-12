@@ -1,4 +1,5 @@
 #include "chart_funcs.hpp"
+#include <QSqlError>
 #include <QSqlQuery>
 
 void clear_chart(QChart* chart) {
@@ -152,4 +153,34 @@ std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barser
   series->attachAxis(axis_y);
 
   return {series, barsets, categories};
+}
+
+QList<int> get_unique_dates_from_db(const QSqlDatabase& db,
+                                    const QVector<TableFund*>& tables,
+                                    const int& last_n_months) {
+  QSet<int> list_set;
+
+  for (auto& table : tables) {
+    // making sure all the latest data was saved to the database
+
+    table->model->submitAll();
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("select distinct date from " + table->name + " order by date desc");
+
+    if (query.exec()) {
+      while (query.next() && list_set.size() < last_n_months) {  // show only the last 12 months
+        list_set.insert(query.value(0).toInt());
+      }
+    } else {
+      qDebug(table->model->lastError().text().toUtf8());
+    }
+  }
+
+  QList<int> list_dates = list_set.values();
+
+  std::sort(list_dates.begin(), list_dates.end());
+
+  return list_dates;
 }

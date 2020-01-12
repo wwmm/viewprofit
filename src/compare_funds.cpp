@@ -119,35 +119,11 @@ void CompareFunds::make_chart_resource_allocation() {
 }
 
 void CompareFunds::make_chart_net_balance() {
-  // get date values in each investment tables
+  auto list_dates = get_unique_dates_from_db(db, tables, 13);
 
-  QSet<int> list_set;
-
-  for (auto& table : tables) {
-    // making sure all the latest data was saved to the database
-
-    table->model->submitAll();
-
-    auto query = QSqlQuery(db);
-
-    query.prepare("select distinct date from " + table->name + " order by date desc");
-
-    if (query.exec()) {
-      while (query.next() && list_set.size() < 13) {  // show only the last 12 months
-        list_set.insert(query.value(0).toInt());
-      }
-    } else {
-      qDebug(table->model->lastError().text().toUtf8());
-    }
-  }
-
-  if (list_set.size() == 0) {
+  if (list_dates.size() == 0) {
     return;
   }
-
-  QList<int> list_dates = list_set.values();
-
-  std::sort(list_dates.begin(), list_dates.end());
 
   // initialize the barsets
 

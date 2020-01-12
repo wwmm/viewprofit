@@ -1,6 +1,7 @@
 #ifndef CHART_FUNCS_HPP
 #define CHART_FUNCS_HPP
 
+#include <QSqlDatabase>
 #include <QSqlRecord>
 #include <QtCharts>
 #include <tuple>
@@ -22,5 +23,9 @@ std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barser
     const QList<int>& list_dates,
     const QString& series_name,
     const QString& column_name);
+
+QList<int> get_unique_dates_from_db(const QSqlDatabase& db,
+                                    const QVector<TableFund*>& tables,
+                                    const int& last_n_months);
 
 #endif
