@@ -32,33 +32,41 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
 }
 
+void CompareFunds::make_chart_net_return(const QVector<TableFund*>& tables) {
+  chart->setTitle("Monthly Net Return");
+
+  add_axes_to_chart(chart, "%");
+
+  for (auto& table : tables) {
+    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
+
+    connect(s, &QLineSeries::hovered, this,
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+  }
+}
+
+void CompareFunds::make_chart_accumulated_net_return(const QVector<TableFund*>& tables) {
+  chart->setTitle("Accumulated Net Return");
+
+  add_axes_to_chart(chart, "%");
+
+  for (auto& table : tables) {
+    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "accumulated_net_return_perc");
+
+    connect(s, &QLineSeries::hovered, this,
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+  }
+}
+
 void CompareFunds::process_fund_tables(const QVector<TableFund*>& tables) {
   last_tables = tables;
 
   clear_chart(chart);
 
   if (radio_net_return_perc->isChecked()) {
-    chart->setTitle("Monthly Net Return");
-
-    add_axes_to_chart(chart, "%");
-
-    for (auto& table : tables) {
-      auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
-
-      connect(s, &QLineSeries::hovered, this,
-              [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
-    }
+    make_chart_net_return(tables);
   } else if (radio_accumulated_net_return_perc->isChecked()) {
-    chart->setTitle("Accumulated Net Return");
-
-    add_axes_to_chart(chart, "%");
-
-    for (auto& table : tables) {
-      auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "accumulated_net_return_perc");
-
-      connect(s, &QLineSeries::hovered, this,
-              [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
-    }
+    make_chart_accumulated_net_return(tables);
   }
 }
 
