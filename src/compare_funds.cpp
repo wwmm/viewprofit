@@ -1,4 +1,6 @@
 #include "compare_funds.hpp"
+#include <QSqlError>
+#include <QSqlQuery>
 #include <deque>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
@@ -19,7 +21,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   chart->setTheme(QChart::ChartThemeLight);
   chart->setAcceptHoverEvents(true);
-  chart->setAnimationOptions(QChart::AllAnimations);
+  chart->setAnimationOptions(QChart::SeriesAnimations);
 
   chart_view->setChart(chart);
   chart_view->setRenderHint(QPainter::Antialiasing);
@@ -30,13 +32,12 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   connect(button_reset_zoom, &QPushButton::clicked, this, [&]() { chart->zoomReset(); });
 
   connect(radio_resource_allocation, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_net_balance, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
 }
 
 void CompareFunds::make_chart_resource_allocation() {
-  clear_chart(chart);
-
   chart->setTitle("Net Balance");
   chart->legend()->hide();
 
@@ -116,6 +117,141 @@ void CompareFunds::make_chart_resource_allocation() {
   chart->addSeries(series);
 }
 
+void CompareFunds::make_chart_net_balance() {
+  // get date values in each investment tables
+
+  QSet<int> list_set;
+
+  for (auto& table : tables) {
+    // making sure all the latest data was saved to the database
+
+    table->model->submitAll();
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("select distinct date from " + table->name + " order by date desc");
+
+    if (query.exec()) {
+      while (query.next() && list_set.size() < 13) {  // show only the last 12 months
+        list_set.insert(query.value(0).toInt());
+      }
+    } else {
+      qDebug(table->model->lastError().text().toUtf8());
+    }
+  }
+
+  if (list_set.size() == 0) {
+    return;
+  }
+
+  QList<int> list_dates = list_set.values();
+
+  std::sort(list_dates.begin(), list_dates.end());
+
+  // initialize the barsets
+
+  QVector<QBarSet*> barsets;
+
+  for (auto& table : tables) {
+    barsets.append(new QBarSet(table->name));
+  }
+
+  auto qdt = QDateTime();
+
+  QStringList categories;
+
+  for (auto& date : list_dates) {
+    qdt.setSecsSinceEpoch(date);
+
+    QString date_month = qdt.toString("MM/yyyy");
+
+    categories.append(date_month);
+
+    for (int m = 0; m < tables.size(); m++) {
+      bool has_date = false;
+
+      for (int n = tables[m]->model->rowCount() - 1; n >= 0; n--) {
+        QString tdate = tables[m]->model->record(n).value("date").toString();
+
+        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
+          double v = tables[m]->model->record(n).value("net_balance").toDouble();
+
+          barsets[m]->append(v);
+
+          has_date = true;
+
+          break;
+        }
+      }
+
+      if (!has_date) {
+        barsets[m]->append(0.0);
+      }
+    }
+  }
+
+  auto series = new QStackedBarSeries();
+
+  for (auto& bs : barsets) {
+    series->append(bs);
+  }
+
+  QFont serif_font("Sans");
+
+  chart->setTitle("Net Balance History");
+  chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->show();
+
+  chart->addSeries(series);
+
+  auto axis_x = new QBarCategoryAxis();
+
+  axis_x->append(categories);
+
+  chart->addAxis(axis_x, Qt::AlignBottom);
+
+  series->attachAxis(axis_x);
+
+  auto axis_y = new QValueAxis();
+
+  axis_y->setTitleText(QLocale().currencySymbol());
+  axis_y->setTitleFont(serif_font);
+  axis_y->setLabelFormat("%.2f");
+
+  chart->addAxis(axis_y, Qt::AlignLeft);
+
+  series->attachAxis(axis_y);
+
+  connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
+    if (status) {
+      double v = 0.5 * barset->at(index);
+
+      for (int n = 1; n < barsets.size(); n++) {
+        if (barsets[n] == barset) {
+          for (int m = 0; m < n; m++) {
+            v += barsets[m]->at(index);
+          }
+
+          break;
+        }
+      }
+
+      callout->setText(QString("Fund: %1\nDate: %2\nBalance: " + QLocale().currencySymbol() + " %3")
+                           .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
+
+      callout->setAnchor(QPointF(index, v));
+
+      callout->setZValue(11);
+
+      callout->updateGeometry();
+
+      callout->show();
+    } else {
+      callout->hide();
+    }
+  });
+}
+
 void CompareFunds::make_chart_net_return() {
   chart->setTitle("Monthly Net Return");
   chart->legend()->setAlignment(Qt::AlignRight);
@@ -157,6 +293,8 @@ void CompareFunds::process_tables() {
 
   if (radio_resource_allocation->isChecked()) {
     make_chart_resource_allocation();
+  } else if (radio_net_balance->isChecked()) {
+    make_chart_net_balance();
   } else if (radio_net_return_perc->isChecked()) {
     make_chart_net_return();
   } else if (radio_accumulated_net_return_perc->isChecked()) {

@@ -73,6 +73,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QRadioButton" name="radio_net_balance">
+           <property name="text">
+            <string>Net Balance</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QRadioButton" name="radio_net_return_perc">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
