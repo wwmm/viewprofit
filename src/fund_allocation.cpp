@@ -6,15 +6,10 @@
 #include "effects.hpp"
 
 FundAllocation::FundAllocation(const QSqlDatabase& database, QWidget* parent)
-    : db(database),
-      chart1(new QChart()),
-      chart2(new QChart()),
-      callout1(new Callout(chart1)),
-      callout2(new Callout(chart2)) {
+    : db(database), chart1(new QChart()), chart2(new QChart()), callout(new Callout(chart2)) {
   setupUi(this);
 
-  callout1->hide();
-  callout2->hide();
+  callout->hide();
 
   // shadow effects
 
@@ -29,7 +24,6 @@ FundAllocation::FundAllocation(const QSqlDatabase& database, QWidget* parent)
 
   chart_view1->setChart(chart1);
   chart_view1->setRenderHint(QPainter::Antialiasing);
-  chart_view1->setRubberBand(QChartView::RectangleRubberBand);
 
   // chart 2 settings
 
@@ -268,9 +262,6 @@ void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
 
   connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
     if (status) {
-      callout2->setText(QString("Fund: %1\nDate: %2\nBalance: " + QLocale().currencySymbol() + " %3")
-                            .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
-
       double v = 0.5 * barset->at(index);
 
       for (int n = 1; n < barsets.size(); n++) {
@@ -283,15 +274,18 @@ void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
         }
       }
 
-      callout2->setAnchor(QPointF(index, v));
+      callout->setText(QString("Fund: %1\nDate: %2\nBalance: " + QLocale().currencySymbol() + " %3")
+                           .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
 
-      callout2->setZValue(11);
+      callout->setAnchor(QPointF(index, v));
 
-      callout2->updateGeometry();
+      callout->setZValue(11);
 
-      callout2->show();
+      callout->updateGeometry();
+
+      callout->show();
     } else {
-      callout2->hide();
+      callout->hide();
     }
   });
 }

@@ -18,7 +18,7 @@ class FundAllocation : public QWidget, protected Ui::FundAllocation {
 
   QChart *chart1, *chart2;
 
-  Callout *callout1, *callout2;
+  Callout* callout;
 
   void make_chart1(const QVector<TableFund*>& tables);
   void make_chart2(const QVector<TableFund*>& tables);
