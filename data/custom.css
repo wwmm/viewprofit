@@ -93,6 +93,7 @@ QFrame#frame_chart {
 }
 
 QFrame#fund_cfg_frame,
+QFrame#frame_resource_allocation,
 QFrame#chart_cfg_frame {
   background-color: #f5f5f5;
 }

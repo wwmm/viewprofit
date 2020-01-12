@@ -14,6 +14,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   // shadow effects
 
   frame_chart->setGraphicsEffect(card_shadow());
+  frame_resource_allocation->setGraphicsEffect(card_shadow());
   chart_cfg_frame->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
 
@@ -38,7 +39,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 }
 
 void CompareFunds::make_chart_resource_allocation() {
-  chart->setTitle("Net Balance");
+  chart->setTitle("");
   chart->legend()->hide();
 
   auto series = new QPieSeries();
@@ -198,7 +199,7 @@ void CompareFunds::make_chart_net_balance() {
 
   QFont serif_font("Sans");
 
-  chart->setTitle("Net Balance History");
+  chart->setTitle("Net Balance");
   chart->legend()->setAlignment(Qt::AlignRight);
   chart->legend()->show();
 
