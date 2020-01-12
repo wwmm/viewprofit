@@ -63,6 +63,16 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
+          <widget class="QRadioButton" name="radio_resource_allocation">
+           <property name="text">
+            <string>Resource Allocation</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QRadioButton" name="radio_net_return_perc">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -74,7 +84,7 @@
             <string>Net Return</string>
            </property>
            <property name="checked">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
          </item>
