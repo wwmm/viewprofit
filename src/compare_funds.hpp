@@ -25,9 +25,9 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
   void process_tables();
 
   void make_chart_resource_allocation();
-  void make_chart_net_balance();
   void make_chart_net_return();
   void make_chart_accumulated_net_return();
+  void make_chart_barseries(const QString& series_name, const QString& column_name);
 
   void on_chart_selection(const bool& state);
   void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);

@@ -15,14 +15,15 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   frame_chart->setGraphicsEffect(card_shadow());
   frame_resource_allocation->setGraphicsEffect(card_shadow());
-  chart_cfg_frame->setGraphicsEffect(card_shadow());
+  frame_net_return->setGraphicsEffect(card_shadow());
+  frame_accumulated_net_return->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
 
   // chart settings
 
   chart->setTheme(QChart::ChartThemeLight);
   chart->setAcceptHoverEvents(true);
-  chart->setAnimationOptions(QChart::SeriesAnimations);
+  // chart->setAnimationOptions(QChart::SeriesAnimations);
 
   chart_view->setChart(chart);
   chart_view->setRenderHint(QPainter::Antialiasing);
@@ -34,7 +35,9 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   connect(radio_resource_allocation, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_balance, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_net_return, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_accumulated_net_return, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
 }
 
@@ -118,7 +121,37 @@ void CompareFunds::make_chart_resource_allocation() {
   chart->addSeries(series);
 }
 
-void CompareFunds::make_chart_net_balance() {
+void CompareFunds::make_chart_net_return() {
+  chart->setTitle("Net Return");
+  chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->show();
+
+  add_axes_to_chart(chart, "%");
+
+  for (auto& table : tables) {
+    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
+
+    connect(s, &QLineSeries::hovered, this,
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+  }
+}
+
+void CompareFunds::make_chart_accumulated_net_return() {
+  chart->setTitle("Net Return");
+  chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->show();
+
+  add_axes_to_chart(chart, "%");
+
+  for (auto& table : tables) {
+    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "accumulated_net_return_perc");
+
+    connect(s, &QLineSeries::hovered, this,
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+  }
+}
+
+void CompareFunds::make_chart_barseries(const QString& series_name, const QString& column_name) {
   auto list_dates = get_unique_dates_from_db(db, tables, 13);
 
   if (list_dates.size() == 0) {
@@ -132,7 +165,7 @@ void CompareFunds::make_chart_net_balance() {
   QStringList categories;
 
   std::tie(series, barsets, categories) =
-      add_tables_barseries_to_chart(chart, tables, list_dates, "Net Balance", "net_balance");
+      add_tables_barseries_to_chart(chart, tables, list_dates, series_name, column_name);
 
   connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
     if (status) {
@@ -148,7 +181,7 @@ void CompareFunds::make_chart_net_balance() {
         }
       }
 
-      callout->setText(QString("Fund: %1\nDate: %2\nBalance: " + QLocale().currencySymbol() + " %3")
+      callout->setText(QString(" Fund: %1\n Date: %2 \n Value: " + QLocale().currencySymbol() + " %3")
                            .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
 
       callout->setAnchor(QPointF(index, v));
@@ -164,36 +197,6 @@ void CompareFunds::make_chart_net_balance() {
   });
 }
 
-void CompareFunds::make_chart_net_return() {
-  chart->setTitle("Monthly Net Return");
-  chart->legend()->setAlignment(Qt::AlignRight);
-  chart->legend()->show();
-
-  add_axes_to_chart(chart, "%");
-
-  for (auto& table : tables) {
-    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
-
-    connect(s, &QLineSeries::hovered, this,
-            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
-  }
-}
-
-void CompareFunds::make_chart_accumulated_net_return() {
-  chart->setTitle("Accumulated Net Return");
-  chart->legend()->setAlignment(Qt::AlignRight);
-  chart->legend()->show();
-
-  add_axes_to_chart(chart, "%");
-
-  for (auto& table : tables) {
-    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "accumulated_net_return_perc");
-
-    connect(s, &QLineSeries::hovered, this,
-            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
-  }
-}
-
 void CompareFunds::process(const QVector<TableFund*>& tables) {
   this->tables = tables;
 
@@ -206,9 +209,13 @@ void CompareFunds::process_tables() {
   if (radio_resource_allocation->isChecked()) {
     make_chart_resource_allocation();
   } else if (radio_net_balance->isChecked()) {
-    make_chart_net_balance();
+    make_chart_barseries("Net Balance", "net_balance");
+  } else if (radio_net_return->isChecked()) {
+    make_chart_barseries("Net Return", "net_return");
   } else if (radio_net_return_perc->isChecked()) {
     make_chart_net_return();
+  } else if (radio_accumulated_net_return->isChecked()) {
+    make_chart_barseries("Acumulated Net Return", "accumulated_net_return");
   } else if (radio_accumulated_net_return_perc->isChecked()) {
     make_chart_accumulated_net_return();
   }
