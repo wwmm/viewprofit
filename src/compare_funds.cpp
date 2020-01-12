@@ -32,7 +32,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
 }
 
-void CompareFunds::make_chart_net_return(const QVector<TableFund*>& tables) {
+void CompareFunds::make_chart_net_return() {
   chart->setTitle("Monthly Net Return");
 
   add_axes_to_chart(chart, "%");
@@ -45,7 +45,7 @@ void CompareFunds::make_chart_net_return(const QVector<TableFund*>& tables) {
   }
 }
 
-void CompareFunds::make_chart_accumulated_net_return(const QVector<TableFund*>& tables) {
+void CompareFunds::make_chart_accumulated_net_return() {
   chart->setTitle("Accumulated Net Return");
 
   add_axes_to_chart(chart, "%");
@@ -58,21 +58,25 @@ void CompareFunds::make_chart_accumulated_net_return(const QVector<TableFund*>& 
   }
 }
 
-void CompareFunds::process_fund_tables(const QVector<TableFund*>& tables) {
-  last_tables = tables;
+void CompareFunds::process(const QVector<TableFund*>& tables) {
+  this->tables = tables;
 
+  process_tables();
+}
+
+void CompareFunds::process_tables() {
   clear_chart(chart);
 
   if (radio_net_return_perc->isChecked()) {
-    make_chart_net_return(tables);
+    make_chart_net_return();
   } else if (radio_accumulated_net_return_perc->isChecked()) {
-    make_chart_accumulated_net_return(tables);
+    make_chart_accumulated_net_return();
   }
 }
 
 void CompareFunds::on_chart_selection(const bool& state) {
   if (state) {
-    process_fund_tables(last_tables);
+    process_tables();
   }
 }
 

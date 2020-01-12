@@ -137,7 +137,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       // This has to be done after loading the other tables
 
       portfolio_table->process_fund_tables(fund_tables);
-      cf->process_fund_tables(fund_tables);
+      cf->process(fund_tables);
       fa->process_fund_tables(fund_tables);
     } else {
       qCritical("Failed to open the database file!");
@@ -544,5 +544,5 @@ void MainWindow::on_calculate_portfolio() {
 
   auto cf = static_cast<CompareFunds*>(stackedwidget_portfolio->widget(1));
 
-  cf->process_fund_tables(fund_tables);
+  cf->process(fund_tables);
 }

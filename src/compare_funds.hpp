@@ -11,7 +11,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  public:
   explicit CompareFunds(const QSqlDatabase& database, QWidget* parent = nullptr);
 
-  void process_fund_tables(const QVector<TableFund*>& tables);
+  void process(const QVector<TableFund*>& tables);
 
  private:
   QSqlDatabase db;
@@ -20,10 +20,12 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   Callout* callout;
 
-  QVector<TableFund*> last_tables;
+  QVector<TableFund*> tables;
 
-  void make_chart_net_return(const QVector<TableFund*>& tables);
-  void make_chart_accumulated_net_return(const QVector<TableFund*>& tables);
+  void process_tables();
+
+  void make_chart_net_return();
+  void make_chart_accumulated_net_return();
 
   void on_chart_selection(const bool& state);
   void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
