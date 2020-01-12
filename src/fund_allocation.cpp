@@ -25,7 +25,7 @@ FundAllocation::FundAllocation(const QSqlDatabase& database, QWidget* parent)
   // chart 1 settings
 
   chart1->setTheme(QChart::ChartThemeLight);
-  chart1->legend()->setAlignment(Qt::AlignRight);
+  chart1->legend()->hide();
 
   chart_view1->setChart(chart1);
   chart_view1->setRenderHint(QPainter::Antialiasing);
@@ -102,6 +102,7 @@ void FundAllocation::make_chart1(const QVector<TableFund*>& tables) {
 
   bool pop_front = true;
   QVector<QString> names_added;
+  double max_value = deque[deque.size() - 1];
 
   while (deque.size() > 0) {
     double d;
@@ -151,6 +152,10 @@ void FundAllocation::make_chart1(const QVector<TableFund*>& tables) {
     auto label = slice->label();
 
     slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
+
+    if (slice->value() == max_value) {
+      slice->setExploded(true);
+    }
   }
 
   chart1->addSeries(series);
