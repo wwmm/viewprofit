@@ -97,5 +97,5 @@ void Callout::setAnchor(QPointF point) {
 void Callout::updateGeometry() {
   prepareGeometryChange();
 
-  setPos(chart->mapToPosition(anchor) + QPoint(-80, -125));
+  setPos(chart->mapToPosition(anchor) + QPoint(-80, -100));
 }

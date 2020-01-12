@@ -1,6 +1,7 @@
 #include "fund_allocation.hpp"
 #include <QSqlError>
 #include <QSqlQuery>
+#include <deque>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -86,16 +87,62 @@ void FundAllocation::make_chart1(const QVector<TableFund*>& tables) {
 
   auto series = new QPieSeries();
 
+  /*
+    The code below appends data to the chart alternating the biggestand the smallest slices. THis helps to avoid label
+    overlap.
+  */
+
+  std::deque<double> deque;
+
   for (auto& table : tables) {
-    double max_net_balance = 0.0;
+    deque.push_back(table->model->record(0).value("net_balance").toDouble());
+  }
 
-    for (int n = 0; n < table->model->rowCount(); n++) {
-      double v = table->model->record(n).value("net_balance").toDouble();
+  std::sort(deque.begin(), deque.end());
 
-      max_net_balance = std::max(max_net_balance, v);
+  bool pop_front = true;
+  QVector<QString> names_added;
+
+  while (deque.size() > 0) {
+    double d;
+
+    if (pop_front) {
+      d = deque[0];
+
+      deque.pop_front();
+
+      pop_front = false;
+    } else {
+      d = deque[deque.size() - 1];
+
+      deque.pop_back();
+
+      pop_front = true;
     }
 
-    series->append(table->name, max_net_balance);
+    for (auto& table : tables) {
+      bool skip = false;
+
+      for (auto& name : names_added) {
+        if (name == table->name) {
+          skip = true;
+
+          break;
+        }
+      }
+
+      if (!skip) {
+        double v = table->model->record(0).value("net_balance").toDouble();
+
+        if (v == d) {
+          series->append(table->name, v);
+
+          names_added.push_back(table->name);
+
+          break;
+        }
+      }
+    }
   }
 
   for (auto& slice : series->slices()) {
@@ -123,10 +170,10 @@ void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
 
     auto query = QSqlQuery(db);
 
-    query.prepare("select distinct date from " + table->name + " order by date");
+    query.prepare("select distinct date from " + table->name + " order by date desc");
 
     if (query.exec()) {
-      while (query.next()) {
+      while (query.next() && list_set.size() < 13) {  // show only the last 12 months
         list_set.insert(query.value(0).toInt());
       }
     } else {
@@ -216,10 +263,10 @@ void FundAllocation::make_chart2(const QVector<TableFund*>& tables) {
 
   connect(series, &QStackedBarSeries::hovered, this, [=](bool status, int index, QBarSet* barset) {
     if (status) {
-      callout2->setText(QString("Fund: %1\nDate: %2\nReturn: " + QLocale().currencySymbol() + " %3")
+      callout2->setText(QString("Fund: %1\nDate: %2\nBalance: " + QLocale().currencySymbol() + " %3")
                             .arg(barset->label(), categories[index], QString::number(barset->at(index), 'f', 2)));
 
-      double v = barset->at(index);
+      double v = 0.5 * barset->at(index);
 
       for (int n = 1; n < barsets.size(); n++) {
         if (barsets[n] == barset) {

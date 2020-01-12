@@ -130,7 +130,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Current Values</string>
+            <string>Current Allocation</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -146,7 +146,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>History</string>
+            <string>Allocation History</string>
            </property>
            <property name="checked">
             <bool>false</bool>
