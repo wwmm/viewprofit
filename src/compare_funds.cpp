@@ -19,6 +19,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   chart->setTheme(QChart::ChartThemeLight);
   chart->setAcceptHoverEvents(true);
+  chart->setAnimationOptions(QChart::AllAnimations);
 
   chart_view->setChart(chart);
   chart_view->setRenderHint(QPainter::Antialiasing);
