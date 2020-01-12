@@ -36,7 +36,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 void CompareFunds::make_chart_resource_allocation() {
   clear_chart(chart);
 
-  chart->setTitle("Net Balance Contribution");
+  chart->setTitle("Net Balance");
   chart->legend()->hide();
 
   auto series = new QPieSeries();
@@ -118,6 +118,7 @@ void CompareFunds::make_chart_resource_allocation() {
 void CompareFunds::make_chart_net_return() {
   chart->setTitle("Monthly Net Return");
   chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->show();
 
   add_axes_to_chart(chart, "%");
 
@@ -132,6 +133,7 @@ void CompareFunds::make_chart_net_return() {
 void CompareFunds::make_chart_accumulated_net_return() {
   chart->setTitle("Accumulated Net Return");
   chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->show();
 
   add_axes_to_chart(chart, "%");
 
