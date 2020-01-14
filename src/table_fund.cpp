@@ -125,7 +125,9 @@ void TableFund::calculate() {
   calculate_accumulated_sum("deposit");
   calculate_accumulated_sum("withdrawal");
 
-  for (int n = 0; n < model->rowCount(); n++) {
+  double gross_return_sum = 0.0;
+
+  for (int n = model->rowCount() - 1; n >= 0; n--) {
     QString date = model->record(n).value("date").toString();
     double deposit = model->record(n).value("deposit").toDouble();
     double withdrawal = model->record(n).value("withdrawal").toDouble();
@@ -135,6 +137,8 @@ void TableFund::calculate() {
     double accumulated_withdrawal = model->record(n).value("accumulated_withdrawal").toDouble();
 
     double gross_return = ending_balance - starting_balance - deposit + withdrawal;
+
+    gross_return_sum += gross_return;
 
     double net_return = gross_return * (1.0 - 0.01 * income_tax);
 
@@ -165,7 +169,7 @@ void TableFund::calculate() {
     rec.setValue("net_deposit", accumulated_deposit - accumulated_withdrawal);
     rec.setValue("gross_return", gross_return);
     rec.setValue("net_return", net_return);
-    rec.setValue("net_balance", ending_balance - gross_return * 0.01 * income_tax);
+    rec.setValue("net_balance", ending_balance - gross_return_sum * 0.01 * income_tax);
     rec.setValue("gross_return_perc", 100 * gross_return / (starting_balance + deposit - withdrawal));
     rec.setValue("net_return_perc", net_return_perc);
     rec.setValue("real_return_perc", real_return_perc);
