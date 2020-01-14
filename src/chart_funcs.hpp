@@ -17,6 +17,11 @@ QLineSeries* add_series_to_chart(QChart* chart,
                                  const QString& series_name,
                                  const QString& column_name);
 
+QLineSeries* add_series_to_chart(QChart* chart,
+                                 const QVector<int>& dates,
+                                 const QVector<double>& values,
+                                 const QString& series_name);
+
 std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barseries_to_chart(
     QChart* chart,
     const QVector<TableFund*>& tables,

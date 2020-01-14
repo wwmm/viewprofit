@@ -41,6 +41,11 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   connect(radio_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+
+  connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) {
+    clear_chart(chart);
+    make_chart_accumulated_net_return();
+  });
 }
 
 void CompareFunds::make_chart_resource_allocation() {
@@ -146,7 +151,42 @@ void CompareFunds::make_chart_accumulated_net_return() {
   add_axes_to_chart(chart, "%");
 
   for (auto& table : tables) {
-    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "accumulated_net_return_perc");
+    QVector<int> dates;
+    QVector<double> values, accu;
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("select distinct date,net_return_perc from " + table->name + " order by date desc");
+
+    if (query.exec()) {
+      while (query.next() && dates.size() < spinbox_months->value()) {
+        dates.append(query.value(0).toInt());
+        values.append(query.value(1).toDouble());
+      }
+    }
+
+    if (dates.size() == 0) {
+      break;
+    }
+
+    std::reverse(dates.begin(), dates.end());
+    std::reverse(values.begin(), values.end());
+
+    for (auto& v : values) {
+      v = v * 0.01 + 1.0;
+    }
+
+    // cumulative product
+
+    accu.resize(values.size());
+
+    std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+
+    for (auto& v : accu) {
+      v = (v - 1.0) * 100;
+    }
+
+    auto s = add_series_to_chart(chart, dates, accu, table->name.toUpper());
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });

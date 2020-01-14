@@ -74,6 +74,46 @@ QLineSeries* add_series_to_chart(QChart* chart,
   return series;
 }
 
+QLineSeries* add_series_to_chart(QChart* chart,
+                                 const QVector<int>& dates,
+                                 const QVector<double>& values,
+                                 const QString& series_name) {
+  auto series = new QLineSeries();
+
+  series->setName(series_name.toLower());
+
+  double vmin = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
+  double vmax = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+
+  for (int n = 0; n < dates.size(); n++) {
+    double v = values[n];
+
+    if (chart->series().size() > 0) {
+      vmin = std::min(vmin, v);
+      vmax = std::max(vmax, v);
+    } else {
+      if (n == 0) {
+        vmin = v;
+        vmax = v;
+      } else {
+        vmin = std::min(vmin, v);
+        vmax = std::max(vmax, v);
+      }
+    }
+
+    series->append((long long)(dates[n]) * 1000, v);
+  }
+
+  chart->addSeries(series);
+
+  series->attachAxis(chart->axes(Qt::Horizontal)[0]);
+  series->attachAxis(chart->axes(Qt::Vertical)[0]);
+
+  chart->axes(Qt::Vertical)[0]->setRange(vmin - 0.05 * fabs(vmin), vmax + 0.05 * fabs(vmax));
+
+  return series;
+}
+
 std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barseries_to_chart(
     QChart* chart,
     const QVector<TableFund*>& tables,
