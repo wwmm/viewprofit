@@ -10,6 +10,8 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   setupUi(this);
 
   callout->hide();
+  label_months->hide();
+  spinbox_months->hide();
 
   // shadow effects
 
@@ -223,6 +225,14 @@ void CompareFunds::process_tables() {
 
 void CompareFunds::on_chart_selection(const bool& state) {
   if (state) {
+    if (radio_accumulated_net_return_perc->isChecked()) {
+      label_months->show();
+      spinbox_months->show();
+    } else {
+      label_months->hide();
+      spinbox_months->hide();
+    }
+
     process_tables();
   }
 }

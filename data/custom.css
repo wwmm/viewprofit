@@ -292,6 +292,32 @@ QRadioButton::indicator::unchecked {
 }
 
 /*
+  QSpinBox
+*/
+
+QSpinBox {
+  color: rgba(0, 0, 0, 0.6);
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  font-size: 16px;
+}
+
+QSpinBox::up-button {
+  image: url(:/add.svg);
+  width: 16px;
+  subcontrol-origin: border;
+  subcontrol-position: top right; /* position at the top right corner */
+}
+
+QSpinBox::down-button {
+  image: url(:/remove.svg);
+  width: 16px;
+  subcontrol-origin: border;
+  subcontrol-position: bottom right; /* position at bottom right corner */
+}
+
+/*
   QGroupBox
 */
 

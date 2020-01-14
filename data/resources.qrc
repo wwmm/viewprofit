@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
     <file>custom.css</file>
+    <file>add.svg</file>
+    <file>remove.svg</file>
 </qresource>
 </RCC>

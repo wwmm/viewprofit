@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>921</width>
-    <height>592</height>
+    <width>963</width>
+    <height>595</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -159,22 +159,6 @@
          <enum>QFrame::Plain</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="2" column="0">
-          <widget class="QRadioButton" name="radio_accumulated_net_return">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Absolute</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">chart_radio_group</string>
-           </attribute>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QRadioButton" name="radio_accumulated_net_return_perc">
            <property name="sizePolicy">
@@ -194,7 +178,40 @@
            </attribute>
           </widget>
          </item>
-         <item row="1" column="0" colspan="2" alignment="Qt::AlignHCenter">
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="radio_accumulated_net_return">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Absolute</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">chart_radio_group</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QLabel" name="label_months">
+           <property name="text">
+            <string>Months</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QSpinBox" name="spinbox_months">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="value">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="4" alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label_3">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
