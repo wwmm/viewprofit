@@ -1,15 +1,16 @@
 #include "table_benchmarks.hpp"
+#include <QSqlQuery>
 #include "chart_funcs.hpp"
 
 TableBenchmarks::TableBenchmarks(QWidget* parent) : TableBase(parent) {
   type = TableType::Benchmark;
 
   fund_cfg_frame->hide();
-  label_months->hide();
-  spinbox_months->hide();
 
   radio_chart2->setText("Accumulated");
   radio_chart1->setText("Monthly Value");
+
+  connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { show_chart(); });
 }
 
 void TableBenchmarks::init_model() {
@@ -72,15 +73,54 @@ void TableBenchmarks::show_chart() {
   chart2->setTitle(name.toUpper());
 
   add_axes_to_chart(chart1, "%");
+  add_axes_to_chart(chart2, "%");
 
   auto s1 = add_series_to_chart(chart1, model, "Monthly Value", "value");
 
   connect(s1, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout1, s1->name()); });
 
-  add_axes_to_chart(chart2, "%");
+  model->submitAll();
 
-  auto s2 = add_series_to_chart(chart2, model, "Accumulated", "accumulated");
+  QVector<int> dates;
+  QVector<double> values, accu;
+
+  auto query = QSqlQuery(db);
+
+  query.prepare("select distinct date,value from " + name + " order by date desc");
+
+  if (query.exec()) {
+    while (query.next() && dates.size() < spinbox_months->value()) {
+      dates.append(query.value(0).toInt());
+      values.append(query.value(1).toDouble());
+    }
+  } else {
+    qDebug("Failed to get inflation table values!");
+  }
+
+  if (dates.size() == 0) {
+    qDebug("oi");
+    return;
+  }
+
+  std::reverse(dates.begin(), dates.end());
+  std::reverse(values.begin(), values.end());
+
+  for (auto& v : values) {
+    v = v * 0.01 + 1.0;
+  }
+
+  // cumulative product
+
+  accu.resize(values.size());
+
+  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+
+  for (auto& v : accu) {
+    v = (v - 1.0) * 100;
+  }
+
+  auto s2 = add_series_to_chart(chart2, dates, accu, "Accumulated");
 
   connect(s2, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
