@@ -19,10 +19,10 @@ class TableFund : public TableBase {
  private:
   QSettings qsettings;
 
-  double chart2_vmin = 0.0, chart2_vmax = 0.0;
+  int perc_chart_oldest_date = 0;
 
   std::tuple<QVector<int>, QVector<double>, QVector<double>> process_benchmark(const QString& table_name,
-                                                                               const qint64& oldest_date) const;
+                                                                               const int& oldest_date) const;
   void make_chart1();
   void make_chart2();
 };

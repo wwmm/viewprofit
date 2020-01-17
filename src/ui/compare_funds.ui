@@ -196,6 +196,12 @@
          </item>
          <item row="2" column="2">
           <widget class="QLabel" name="label_months">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>Months</string>
            </property>
@@ -205,6 +211,9 @@
           <widget class="QSpinBox" name="spinbox_months">
            <property name="minimum">
             <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
            </property>
            <property name="value">
             <number>12</number>

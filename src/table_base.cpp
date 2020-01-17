@@ -57,8 +57,14 @@ TableBase::TableBase(QWidget* parent)
 
   if (radio_chart1->isChecked()) {
     stackedwidget->setCurrentIndex(0);
+
+    label_months->hide();
+    spinbox_months->hide();
   } else if (radio_chart2->isChecked()) {
     stackedwidget->setCurrentIndex(1);
+
+    label_months->show();
+    spinbox_months->show();
   }
 }
 
@@ -228,8 +234,14 @@ void TableBase::on_chart_selection(const bool& state) {
   if (state) {
     if (radio_chart1->isChecked()) {
       stackedwidget->setCurrentIndex(0);
+
+      label_months->hide();
+      spinbox_months->hide();
     } else if (radio_chart2->isChecked()) {
       stackedwidget->setCurrentIndex(1);
+
+      label_months->show();
+      spinbox_months->show();
     }
   }
 }

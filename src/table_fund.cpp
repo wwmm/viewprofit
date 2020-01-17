@@ -21,6 +21,11 @@ TableFund::TableFund(QWidget* parent) : TableBase(parent), qsettings(QSettings()
 
     qsettings.sync();
   });
+
+  connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) {
+    clear_chart(chart2);
+    make_chart2();
+  });
 }
 
 void TableFund::init_model() {
@@ -60,9 +65,8 @@ void TableFund::init_model() {
   qsettings.endGroup();
 }
 
-std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_benchmark(
-    const QString& table_name,
-    const qint64& oldest_date) const {
+std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_benchmark(const QString& table_name,
+                                                                                        const int& oldest_date) const {
   QVector<int> dates;
   QVector<double> values, accu;
 
@@ -210,11 +214,56 @@ void TableFund::make_chart2() {
 
   add_axes_to_chart(chart2, "%");
 
-  auto s1 = add_series_to_chart(chart2, model, "Net Return", "accumulated_net_return_perc");
-  auto s2 = add_series_to_chart(chart2, model, "Real Return", "accumulated_real_return_perc");
+  QVector<int> dates;
+  QVector<double> net_return, real_return, accumulated_net_return, accumulated_real_return;
+
+  auto query = QSqlQuery(db);
+
+  query.prepare("select distinct date,net_return_perc,real_return_perc from " + name + " order by date desc");
+
+  if (query.exec()) {
+    while (query.next() && dates.size() < spinbox_months->value()) {
+      dates.append(query.value(0).toInt());
+      net_return.append(query.value(1).toDouble());
+      real_return.append(query.value(2).toDouble());
+    }
+  }
+
+  if (dates.size() == 0) {
+    return;
+  }
+
+  perc_chart_oldest_date = dates[dates.size() - 1];
+
+  std::reverse(dates.begin(), dates.end());
+  std::reverse(net_return.begin(), net_return.end());
+  std::reverse(real_return.begin(), real_return.end());
+
+  for (int n = 0; n < dates.size(); n++) {
+    net_return[n] = net_return[n] * 0.01 + 1.0;
+    real_return[n] = real_return[n] * 0.01 + 1.0;
+  }
+
+  // cumulative product
+
+  accumulated_net_return.resize(net_return.size());
+  accumulated_real_return.resize(real_return.size());
+
+  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<double>());
+  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<double>());
+
+  for (int n = 0; n < dates.size(); n++) {
+    accumulated_net_return[n] = (accumulated_net_return[n] - 1.0) * 100;
+    accumulated_real_return[n] = (accumulated_real_return[n] - 1.0) * 100;
+  }
+
+  auto s1 = add_series_to_chart(chart2, dates, accumulated_net_return, "Net Return");
 
   connect(s1, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s1->name()); });
+
+  auto s2 = add_series_to_chart(chart2, dates, accumulated_real_return, "Real Return");
+
   connect(s2, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, s2->name()); });
 
@@ -224,7 +273,7 @@ void TableFund::make_chart2() {
 }
 
 void TableFund::show_benchmark(const TableBase* btable) {
-  auto [dates, values, accumulated] = process_benchmark(btable->name, 0);
+  auto [dates, values, accumulated] = process_benchmark(btable->name, perc_chart_oldest_date);
 
   if (chart2->axes().size() == 0) {
     return;
