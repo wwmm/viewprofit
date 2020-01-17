@@ -21,7 +21,8 @@ class TableFund : public TableBase {
 
   double chart2_vmin = 0.0, chart2_vmax = 0.0;
 
-  std::tuple<QVector<int>, QVector<double>, QVector<double>> process_benchmark(const QString& table_name) const;
+  std::tuple<QVector<int>, QVector<double>, QVector<double>> process_benchmark(const QString& table_name,
+                                                                               const qint64& oldest_date) const;
   void make_chart1();
   void make_chart2();
 };

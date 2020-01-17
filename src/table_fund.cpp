@@ -61,23 +61,16 @@ void TableFund::init_model() {
 }
 
 std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_benchmark(
-    const QString& table_name) const {
+    const QString& table_name,
+    const qint64& oldest_date) const {
   QVector<int> dates;
   QVector<double> values, accu;
-
-  // Tables are displayed in descending order. This is also the order the data has to be retrieved from the model
-
-  QString oldest_investment_date = model->record(model->rowCount() - 1).value("date").toString();
-
-  auto date_month = QDate::fromString(oldest_investment_date, "dd/MM/yyyy").toString("MM/yyyy");
-
-  auto qdt = QDateTime::fromString(date_month, "MM/yyyy");
 
   auto query = QSqlQuery(db);
 
   query.prepare("select distinct date,value from " + table_name + " where date >= ? order by date");
 
-  query.addBindValue(qdt.toSecsSinceEpoch());
+  query.addBindValue(oldest_date);
 
   if (query.exec()) {
     while (query.next()) {
@@ -114,7 +107,16 @@ void TableFund::calculate() {
     return;
   }
 
-  auto [inflation_dates, inflation_values, inflation_accumulated] = process_benchmark("inflation");
+  // Tables are displayed in descending order. This is also the order the data has to be retrieved from the model
+
+  QString oldest_investment_date = model->record(model->rowCount() - 1).value("date").toString();
+
+  auto date_month = QDate::fromString(oldest_investment_date, "dd/MM/yyyy").toString("MM/yyyy");
+
+  auto qdt = QDateTime::fromString(date_month, "MM/yyyy");
+
+  auto [inflation_dates, inflation_values, inflation_accumulated] =
+      process_benchmark("inflation", qdt.toSecsSinceEpoch());
 
   qsettings.beginGroup(name);
 
@@ -144,7 +146,6 @@ void TableFund::calculate() {
 
     double net_return_perc = 100 * net_return / (starting_balance + deposit - withdrawal);
 
-    auto qdt = QDateTime();
     auto date_month = QDate::fromString(date, "dd/MM/yyyy").toString("MM/yyyy");
     double real_return_perc = net_return_perc;
 
@@ -223,7 +224,7 @@ void TableFund::make_chart2() {
 }
 
 void TableFund::show_benchmark(const TableBase* btable) {
-  auto [dates, values, accumulated] = process_benchmark(btable->name);
+  auto [dates, values, accumulated] = process_benchmark(btable->name, 0);
 
   if (chart2->axes().size() == 0) {
     return;
