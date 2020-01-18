@@ -74,7 +74,13 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_be
 
   query.prepare("select distinct date,value from " + table_name + " where date >= ? order by date");
 
-  query.addBindValue(oldest_date);
+  auto qdt = QDateTime();
+
+  qdt.setSecsSinceEpoch(oldest_date);
+
+  qdt = QDateTime::fromString(qdt.toString("MM/yyyy"), "MM/yyyy");
+
+  query.addBindValue(qdt.toSecsSinceEpoch());
 
   if (query.exec()) {
     while (query.next()) {
