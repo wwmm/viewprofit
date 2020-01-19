@@ -26,7 +26,7 @@ QVariant Model::data(const QModelIndex& index, int role) const {
       if (v.userType() == QMetaType::LongLong || v.userType() == QMetaType::Int) {
         auto qdt = QDateTime::fromSecsSinceEpoch(v.toInt());
 
-        return qdt.toString(Qt::SystemLocaleDate).split(" ")[0];
+        return qdt.toString("dd/MM/yyyy");
       } else {
         return v;
       }
