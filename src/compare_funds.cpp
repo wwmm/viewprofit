@@ -54,8 +54,10 @@ void CompareFunds::make_chart_resource_allocation() {
 
   auto series = new QPieSeries();
 
+  series->setPieSize(0.6);
+
   /*
-    The code below appends data to the chart alternating the biggestand the smallest slices. THis helps to avoid label
+    The code below appends data to the chart alternating the biggest and the smallest slices. THis helps to avoid label
     overlap.
   */
 
@@ -70,6 +72,7 @@ void CompareFunds::make_chart_resource_allocation() {
   bool pop_front = true;
   QVector<QString> names_added;
   double max_value = deque[deque.size() - 1];
+  double min_value = deque[0];
 
   while (deque.size() > 0) {
     double d;
@@ -120,7 +123,7 @@ void CompareFunds::make_chart_resource_allocation() {
 
     slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
 
-    if (slice->value() == max_value) {
+    if (slice->value() == max_value || slice->value() == min_value) {
       slice->setExploded(true);
     }
   }
