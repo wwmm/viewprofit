@@ -56,65 +56,45 @@ void CompareFunds::make_chart_resource_allocation() {
 
   series->setPieSize(0.6);
 
-  /*
-    The code below appends data to the chart alternating the biggest and the smallest slices. THis helps to avoid label
-    overlap.
-  */
-
-  std::deque<double> deque;
+  std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
-    deque.push_back(table->model->record(0).value("net_balance").toDouble());
+    deque.push_back(QPair(table->name, table->model->record(0).value("net_balance").toDouble()));
   }
 
-  std::sort(deque.begin(), deque.end());
+  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
+
+  /*
+    Now we alternate the slices. This will help to avoid label overlap.
+  */
 
   bool pop_front = true;
   QVector<QString> names_added;
-  double max_value = deque[deque.size() - 1];
-  double min_value = deque[0];
 
   while (deque.size() > 0) {
     double d;
+    QString name;
 
     if (pop_front) {
-      d = deque[0];
+      name = deque[0].first;
+      d = deque[0].second;
 
       deque.pop_front();
 
       pop_front = false;
     } else {
-      d = deque[deque.size() - 1];
+      name = deque[deque.size() - 1].first;
+      d = deque[deque.size() - 1].second;
 
       deque.pop_back();
 
       pop_front = true;
     }
 
-    for (auto& table : tables) {
-      bool skip = false;
-
-      for (auto& name : names_added) {
-        if (name == table->name) {
-          skip = true;
-
-          break;
-        }
-      }
-
-      if (!skip) {
-        double v = table->model->record(0).value("net_balance").toDouble();
-
-        if (v == d) {
-          series->append(table->name, v);
-
-          names_added.push_back(table->name);
-
-          break;
-        }
-      }
-    }
+    series->append(name, d);
   }
+
+  bool explode = true;
 
   for (auto& slice : series->slices()) {
     slice->setLabelVisible(true);
@@ -123,8 +103,11 @@ void CompareFunds::make_chart_resource_allocation() {
 
     slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
 
-    if (slice->value() == max_value || slice->value() == min_value) {
+    if (explode) {
       slice->setExploded(true);
+      explode = false;
+    } else {
+      explode = true;
     }
   }
 
