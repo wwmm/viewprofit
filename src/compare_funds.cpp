@@ -134,13 +134,19 @@ void CompareFunds::make_chart_net_return_volatility() {
 
   add_axes_to_chart(chart, "%");
 
+  QVector<QString> names{"portfolio"};
+
   for (auto& table : tables) {
+    names.push_back(table->name);
+  }
+
+  for (auto& name : names) {
     QVector<int> dates;
     QVector<double> values, accu, stddev;
 
     auto query = QSqlQuery(db);
 
-    query.prepare("select distinct date,net_return_perc from " + table->name + " order by date desc");
+    query.prepare("select distinct date,net_return_perc from " + name + " order by date desc");
 
     if (query.exec()) {
       while (query.next() && dates.size() < spinbox_months->value()) {
@@ -181,7 +187,7 @@ void CompareFunds::make_chart_net_return_volatility() {
       stddev[n] = std::sqrt(sum);
     }
 
-    auto s = add_series_to_chart(chart, dates, stddev, table->name.toUpper());
+    auto s = add_series_to_chart(chart, dates, stddev, name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
