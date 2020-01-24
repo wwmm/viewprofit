@@ -26,6 +26,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   void make_chart_resource_allocation();
   void make_chart_net_return();
+  void make_chart_net_return_volatility();
   void make_chart_accumulated_net_return();
   void make_chart_barseries(const QString& series_name, const QString& column_name);
 

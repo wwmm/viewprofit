@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>963</width>
+    <width>1305</width>
     <height>595</height>
    </rect>
   </property>
@@ -50,35 +50,10 @@
       <property name="horizontalSpacing">
        <number>18</number>
       </property>
-      <item row="2" column="4" alignment="Qt::AlignVCenter">
-       <widget class="QPushButton" name="button_reset_zoom">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Reset Zoom</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0" alignment="Qt::AlignLeft">
        <widget class="QFrame" name="frame_resource_allocation">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -147,7 +122,7 @@
       <item row="2" column="2" alignment="Qt::AlignLeft">
        <widget class="QFrame" name="frame_accumulated_net_return">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -159,6 +134,9 @@
          <enum>QFrame::Plain</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
+         <property name="horizontalSpacing">
+          <number>12</number>
+         </property>
          <item row="2" column="1">
           <widget class="QRadioButton" name="radio_accumulated_net_return_perc">
            <property name="sizePolicy">
@@ -194,32 +172,6 @@
            </attribute>
           </widget>
          </item>
-         <item row="2" column="2">
-          <widget class="QLabel" name="label_months">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Months</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="3">
-          <widget class="QSpinBox" name="spinbox_months">
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>1000</number>
-           </property>
-           <property name="value">
-            <number>12</number>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0" colspan="4" alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label_3">
            <property name="sizePolicy">
@@ -236,7 +188,7 @@
         </layout>
        </widget>
       </item>
-      <item row="0" column="0" colspan="5">
+      <item row="0" column="0" colspan="8">
        <widget class="QChartView" name="chart_view">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -258,10 +210,108 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="3">
+       <widget class="QFrame" name="frame_time_window">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <property name="horizontalSpacing">
+          <number>12</number>
+         </property>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_months">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Months</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2" alignment="Qt::AlignHCenter">
+          <widget class="QLabel" name="label_4">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Time Window</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="spinbox_months">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="7" alignment="Qt::AlignVCenter">
+       <widget class="QPushButton" name="button_reset_zoom">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Reset Zoom</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="1" alignment="Qt::AlignLeft">
        <widget class="QFrame" name="frame_net_return">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -273,6 +323,9 @@
          <enum>QFrame::Plain</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
+         <property name="horizontalSpacing">
+          <number>12</number>
+         </property>
          <item row="1" column="1">
           <widget class="QRadioButton" name="radio_net_return_perc">
            <property name="sizePolicy">
@@ -315,21 +368,18 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="2">
+          <widget class="QRadioButton" name="radio_net_return_volatility">
+           <property name="text">
+            <string>Volatility</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">chart_radio_group</string>
+           </attribute>
+          </widget>
+         </item>
         </layout>
        </widget>
-      </item>
-      <item row="2" column="3">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>
