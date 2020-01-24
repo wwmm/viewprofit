@@ -132,7 +132,7 @@ void CompareFunds::make_chart_net_return_volatility() {
   chart->legend()->setAlignment(Qt::AlignRight);
   chart->legend()->show();
 
-  add_axes_to_chart(chart, "");
+  add_axes_to_chart(chart, "%");
 
   for (auto& table : tables) {
     QVector<int> dates;
@@ -156,36 +156,29 @@ void CompareFunds::make_chart_net_return_volatility() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(values.begin(), values.end());
 
-    for (auto& v : values) {
-      v = v * 0.01 + 1.0;
-    }
-
-    // cumulative product
+    // cumulative sum
 
     accu.resize(values.size());
 
-    std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+    std::partial_sum(values.begin(), values.end(), accu.begin());
 
     stddev.resize(values.size());
 
     /*
-      Calculating the geometric standard deviation https://en.wikipedia.org/wiki/Geometric_standard_deviation
+      Calculating the standard deviation https://en.wikipedia.org/wiki/Standard_deviation
     */
 
     for (int n = 0; n < stddev.size(); n++) {
       double sum = 0.0;
+      double avg = accu[n] / (n + 1);
 
       for (int m = 0; m < n; m++) {
-        double mu_g = pow(accu[n], 1.0 / (m + 1));
-        double Ai = values[m];
-        double ln = std::log(Ai / mu_g);
-
-        sum += ln * ln;
+        sum += (values[m] - avg) * (values[m] - avg);
       }
 
-      sum /= (n + 1);
+      sum = (n > 0) ? sum / n : sum;
 
-      stddev[n] = 100 * (std::exp(std::sqrt(sum)) - 1.0);
+      stddev[n] = std::sqrt(sum);
     }
 
     auto s = add_series_to_chart(chart, dates, stddev, table->name.toUpper());
@@ -339,7 +332,7 @@ void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callou
       c->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
                      .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
     } else if (radio_net_return_volatility->isChecked()) {
-      c->setText(QString("Fund: %1\nDate: %2\nValue: %3")
+      c->setText(QString("Fund: %1\nDate: %2\nValue: %3%")
                      .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
     }
 
