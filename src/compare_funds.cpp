@@ -128,7 +128,7 @@ void CompareFunds::make_chart_net_return() {
 }
 
 void CompareFunds::make_chart_net_return_volatility() {
-  chart->setTitle("Geometric Standard Deviation");
+  chart->setTitle("Standard Deviation");
   chart->legend()->setAlignment(Qt::AlignRight);
   chart->legend()->show();
 
