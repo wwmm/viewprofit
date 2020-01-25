@@ -69,7 +69,7 @@
           <number>12</number>
          </property>
          <item row="1" column="0">
-          <widget class="QRadioButton" name="radio_resource_allocation">
+          <widget class="QRadioButton" name="radio_net_balance_pie">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -112,7 +112,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Resource Allocation</string>
+            <string>Net Balance</string>
            </property>
           </widget>
          </item>
@@ -137,7 +137,7 @@
          <property name="horizontalSpacing">
           <number>12</number>
          </property>
-         <item row="2" column="1">
+         <item row="2" column="2">
           <widget class="QRadioButton" name="radio_accumulated_net_return_perc">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -156,7 +156,7 @@
            </attribute>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="2" column="1">
           <widget class="QRadioButton" name="radio_accumulated_net_return">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -165,14 +165,24 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Absolute</string>
+            <string>Past</string>
            </property>
            <attribute name="buttonGroup">
             <string notr="true">chart_radio_group</string>
            </attribute>
           </widget>
          </item>
-         <item row="1" column="0" colspan="4" alignment="Qt::AlignHCenter">
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="radio_accumulated_net_return_pie">
+           <property name="text">
+            <string>Present</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">chart_radio_group</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="5" alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label_3">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -326,7 +336,7 @@
          <property name="horizontalSpacing">
           <number>12</number>
          </property>
-         <item row="1" column="1">
+         <item row="1" column="2">
           <widget class="QRadioButton" name="radio_net_return_perc">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -345,17 +355,37 @@
            </attribute>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="1" column="1">
           <widget class="QRadioButton" name="radio_net_return">
            <property name="text">
-            <string>Absolute</string>
+            <string>Past</string>
            </property>
            <attribute name="buttonGroup">
             <string notr="true">chart_radio_group</string>
            </attribute>
           </widget>
          </item>
-         <item row="0" column="0" colspan="3" alignment="Qt::AlignHCenter">
+         <item row="1" column="3">
+          <widget class="QRadioButton" name="radio_net_return_volatility">
+           <property name="text">
+            <string>Volatility</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">chart_radio_group</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QRadioButton" name="radio_net_return_pie">
+           <property name="text">
+            <string>Present</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">chart_radio_group</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="4" alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -366,16 +396,6 @@
            <property name="text">
             <string>Monthly Net Return</string>
            </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QRadioButton" name="radio_net_return_volatility">
-           <property name="text">
-            <string>Volatility</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">chart_radio_group</string>
-           </attribute>
           </widget>
          </item>
         </layout>

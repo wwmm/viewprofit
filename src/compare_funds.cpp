@@ -25,7 +25,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   chart->setTheme(QChart::ChartThemeLight);
   chart->setAcceptHoverEvents(true);
-  // chart->setAnimationOptions(QChart::SeriesAnimations);
+  chart->legend()->setAlignment(Qt::AlignRight);
 
   chart_view->setChart(chart);
   chart_view->setRenderHint(QPainter::Antialiasing);
@@ -35,20 +35,21 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 
   connect(button_reset_zoom, &QPushButton::clicked, this, [&]() { chart->zoomReset(); });
 
-  connect(radio_resource_allocation, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_net_balance_pie, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_balance, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_net_return_pie, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_return, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_net_return_volatility, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_accumulated_net_return_pie, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
 
   connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { process_tables(); });
 }
 
-void CompareFunds::make_chart_resource_allocation() {
+void CompareFunds::make_chart_net_balance_pie() {
   chart->setTitle("");
-  chart->legend()->hide();
 
   auto series = new QPieSeries();
 
@@ -112,10 +113,73 @@ void CompareFunds::make_chart_resource_allocation() {
   chart->addSeries(series);
 }
 
+void CompareFunds::make_chart_net_return_pie() {
+  chart->setTitle("");
+
+  auto series = new QPieSeries();
+
+  series->setPieSize(0.6);
+
+  std::deque<QPair<QString, double>> deque;
+
+  for (auto& table : tables) {
+    deque.push_back(QPair(table->name, table->model->record(0).value("net_return").toDouble()));
+  }
+
+  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
+
+  /*
+    Now we alternate the slices. This will help to avoid label overlap.
+  */
+
+  bool pop_front = true;
+  QVector<QString> names_added;
+
+  while (deque.size() > 0) {
+    double d;
+    QString name;
+
+    if (pop_front) {
+      name = deque[0].first;
+      d = deque[0].second;
+
+      deque.pop_front();
+
+      pop_front = false;
+    } else {
+      name = deque[deque.size() - 1].first;
+      d = deque[deque.size() - 1].second;
+
+      deque.pop_back();
+
+      pop_front = true;
+    }
+
+    series->append(name, d);
+  }
+
+  bool explode = true;
+
+  for (auto& slice : series->slices()) {
+    slice->setLabelVisible(true);
+
+    auto label = slice->label();
+
+    slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
+
+    if (explode) {
+      slice->setExploded(true);
+      explode = false;
+    } else {
+      explode = true;
+    }
+  }
+
+  chart->addSeries(series);
+}
+
 void CompareFunds::make_chart_net_return() {
   chart->setTitle("Net Return");
-  chart->legend()->setAlignment(Qt::AlignRight);
-  chart->legend()->show();
 
   add_axes_to_chart(chart, "%");
 
@@ -129,8 +193,6 @@ void CompareFunds::make_chart_net_return() {
 
 void CompareFunds::make_chart_net_return_volatility() {
   chart->setTitle("Standard Deviation");
-  chart->legend()->setAlignment(Qt::AlignRight);
-  chart->legend()->show();
 
   add_axes_to_chart(chart, "%");
 
@@ -194,10 +256,73 @@ void CompareFunds::make_chart_net_return_volatility() {
   }
 }
 
+void CompareFunds::make_chart_accumulated_net_return_pie() {
+  chart->setTitle("");
+
+  auto series = new QPieSeries();
+
+  series->setPieSize(0.6);
+
+  std::deque<QPair<QString, double>> deque;
+
+  for (auto& table : tables) {
+    deque.push_back(QPair(table->name, table->model->record(0).value("accumulated_net_return").toDouble()));
+  }
+
+  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
+
+  /*
+    Now we alternate the slices. This will help to avoid label overlap.
+  */
+
+  bool pop_front = true;
+  QVector<QString> names_added;
+
+  while (deque.size() > 0) {
+    double d;
+    QString name;
+
+    if (pop_front) {
+      name = deque[0].first;
+      d = deque[0].second;
+
+      deque.pop_front();
+
+      pop_front = false;
+    } else {
+      name = deque[deque.size() - 1].first;
+      d = deque[deque.size() - 1].second;
+
+      deque.pop_back();
+
+      pop_front = true;
+    }
+
+    series->append(name, d);
+  }
+
+  bool explode = true;
+
+  for (auto& slice : series->slices()) {
+    slice->setLabelVisible(true);
+
+    auto label = slice->label();
+
+    slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
+
+    if (explode) {
+      slice->setExploded(true);
+      explode = false;
+    } else {
+      explode = true;
+    }
+  }
+
+  chart->addSeries(series);
+}
+
 void CompareFunds::make_chart_accumulated_net_return() {
   chart->setTitle("Net Return");
-  chart->legend()->setAlignment(Qt::AlignRight);
-  chart->legend()->show();
 
   add_axes_to_chart(chart, "%");
 
@@ -299,16 +424,20 @@ void CompareFunds::process(const QVector<TableFund*>& tables) {
 void CompareFunds::process_tables() {
   clear_chart(chart);
 
-  if (radio_resource_allocation->isChecked()) {
-    make_chart_resource_allocation();
+  if (radio_net_balance_pie->isChecked()) {
+    make_chart_net_balance_pie();
   } else if (radio_net_balance->isChecked()) {
     make_chart_barseries("Net Balance", "net_balance");
+  } else if (radio_net_return_pie->isChecked()) {
+    make_chart_net_return_pie();
   } else if (radio_net_return->isChecked()) {
     make_chart_barseries("Net Return", "net_return");
   } else if (radio_net_return_perc->isChecked()) {
     make_chart_net_return();
   } else if (radio_net_return_volatility->isChecked()) {
     make_chart_net_return_volatility();
+  } else if (radio_accumulated_net_return_pie->isChecked()) {
+    make_chart_accumulated_net_return_pie();
   } else if (radio_accumulated_net_return->isChecked()) {
     make_chart_barseries("Acumulated Net Return", "accumulated_net_return");
   } else if (radio_accumulated_net_return_perc->isChecked()) {
@@ -318,7 +447,8 @@ void CompareFunds::process_tables() {
 
 void CompareFunds::on_chart_selection(const bool& state) {
   if (state) {
-    if (radio_resource_allocation->isChecked()) {
+    if (radio_net_balance_pie->isChecked() || radio_net_return_pie->isChecked() ||
+        radio_accumulated_net_return_pie->isChecked()) {
       spinbox_months->setDisabled(true);
     } else {
       spinbox_months->setDisabled(false);
