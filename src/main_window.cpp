@@ -133,12 +133,14 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       auto portfolio_table = load_portfolio_table();
       auto cf = load_compare_funds();
       auto fc = load_fund_correlation();
+      auto fpca = load_fund_pca();
 
       // This has to be done after loading the other tables
 
       portfolio_table->process_fund_tables(fund_tables);
       cf->process(fund_tables);
       fc->process(fund_tables);
+      fpca->process(fund_tables);
     } else {
       qCritical("Failed to open the database file!");
     }
@@ -203,6 +205,16 @@ FundCorrelation* MainWindow::load_fund_correlation() {
   listwidget_portfolio->addItem("Fund Correlation");
 
   return fc;
+}
+
+FundPCA* MainWindow::load_fund_pca() {
+  auto fpca = new FundPCA(db);
+
+  stackedwidget_portfolio->addWidget(fpca);
+
+  listwidget_portfolio->addItem("Fund PCA");
+
+  return fpca;
 }
 
 void MainWindow::load_inflation_table() {
@@ -549,4 +561,8 @@ void MainWindow::on_calculate_portfolio() {
   auto fc = static_cast<FundCorrelation*>(stackedwidget_portfolio->widget(2));
 
   fc->process(fund_tables);
+
+  auto fpca = static_cast<FundPCA*>(stackedwidget_portfolio->widget(3));
+
+  fpca->process(fund_tables);
 }
