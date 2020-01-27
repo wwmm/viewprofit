@@ -1,4 +1,6 @@
 #include "fund_correlation.hpp"
+#include <QSqlError>
+#include <QSqlQuery>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -7,7 +9,6 @@ FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
   setupUi(this);
 
   callout->hide();
-  spinbox_months->setDisabled(true);
 
   // shadow effects
 
@@ -25,6 +26,10 @@ FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
   chart_view->setChart(chart);
   chart_view->setRenderHint(QPainter::Antialiasing);
   chart_view->setRubberBand(QChartView::RectangleRubberBand);
+
+  // signals
+
+  connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { process_tables(); });
 }
 
 void FundCorrelation::process(const QVector<TableFund*>& tables) {
@@ -55,4 +60,56 @@ void FundCorrelation::process(const QVector<TableFund*>& tables) {
 
 void FundCorrelation::process_tables() {
   clear_chart(chart);
+
+  QVector<int> dates;
+  QVector<double> values;
+
+  auto query = QSqlQuery(db);
+
+  query.prepare("select distinct date,net_return_perc from " + combo_fund->currentText() + " order by date desc");
+
+  if (query.exec()) {
+    while (query.next() && dates.size() < spinbox_months->value()) {
+      dates.append(query.value(0).toInt());
+      values.append(query.value(1).toDouble());
+    }
+  }
+
+  if (dates.size() == 0) {
+    return;
+  }
+
+  std::reverse(dates.begin(), dates.end());
+  std::reverse(values.begin(), values.end());
+
+  for (auto& table : tables) {
+    if (table->name != combo_fund->currentText()) {
+      auto query = QSqlQuery(db);
+      QVector<double> tvalues(dates.size(), 0.0);
+      int count = 0;
+
+      for (auto& date : dates) {
+        auto qdt = QDateTime();
+
+        qdt.setSecsSinceEpoch(date);
+
+        query.prepare("select net_return_perc from " + table->name +
+                      " where strftime('%m/%Y', date(\"date\",'unixepoch'))=?");
+
+        query.addBindValue(qdt.toString("MM/yyyy"));
+
+        if (query.exec()) {
+          if (query.next()) {
+            tvalues[count] = query.value(0).toDouble();
+
+            qDebug(qdt.toString("MM/yyyy").toUtf8());
+          }
+        } else {
+          qDebug(table->model->lastError().text().toUtf8());
+        }
+
+        count++;
+      }
+    }
+  }
 }
