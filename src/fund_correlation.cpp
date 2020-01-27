@@ -61,6 +61,10 @@ void FundCorrelation::process(const QVector<TableFund*>& tables) {
 void FundCorrelation::process_tables() {
   clear_chart(chart);
 
+  chart->setTitle("Cross Correlation Function");
+
+  add_axes_to_chart(chart, "");
+
   QVector<int> dates;
   QVector<double> values;
 
@@ -84,14 +88,16 @@ void FundCorrelation::process_tables() {
 
   for (auto& table : tables) {
     if (table->name != combo_fund->currentText()) {
-      auto query = QSqlQuery(db);
-      QVector<double> tvalues(dates.size(), 0.0);
+      QVector<double> tvalues(values.size(), 0.0);
+      QVector<double> correlation(values.size(), 0.0);
       int count = 0;
 
       for (auto& date : dates) {
         auto qdt = QDateTime();
 
         qdt.setSecsSinceEpoch(date);
+
+        auto query = QSqlQuery(db);
 
         query.prepare("select net_return_perc from " + table->name +
                       " where strftime('%m/%Y', date(\"date\",'unixepoch'))=?");
@@ -101,8 +107,6 @@ void FundCorrelation::process_tables() {
         if (query.exec()) {
           if (query.next()) {
             tvalues[count] = query.value(0).toDouble();
-
-            qDebug(qdt.toString("MM/yyyy").toUtf8());
           }
         } else {
           qDebug(table->model->lastError().text().toUtf8());
@@ -110,6 +114,21 @@ void FundCorrelation::process_tables() {
 
         count++;
       }
+
+      // calculating the cross correlation vector
+
+      for (int n = 0; n < values.size(); n++) {
+        for (int m = 0; m < tvalues.size(); m++) {
+          if (m >= n) {
+            correlation[n] += values[m] * tvalues[m - n];
+          }
+        }
+      }
+
+      auto s = add_series_to_chart(chart, dates, correlation, table->name);
+
+      // connect(s, &QLineSeries::hovered, this,
+      // [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
     }
   }
 }
