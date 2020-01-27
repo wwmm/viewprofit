@@ -24,7 +24,6 @@ class FundCorrelation : public QWidget, protected Ui::FundCorrelation {
 
   void process_tables();
 
-  void on_chart_selection(const bool& state);
   void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
 };
 

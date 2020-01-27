@@ -29,6 +29,7 @@ FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
 
   // signals
 
+  connect(button_reset_zoom, &QPushButton::clicked, this, [&]() { chart->zoomReset(); });
   connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { process_tables(); });
 }
 
@@ -125,10 +126,33 @@ void FundCorrelation::process_tables() {
         }
       }
 
+      std::reverse(correlation.begin(), correlation.end());
+
       auto s = add_series_to_chart(chart, dates, correlation, table->name);
 
-      // connect(s, &QLineSeries::hovered, this,
-      // [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+      connect(s, &QLineSeries::hovered, this,
+              [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
     }
+  }
+}
+
+void FundCorrelation::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
+  if (state) {
+    auto qdt = QDateTime();
+
+    qdt.setMSecsSinceEpoch(point.x());
+
+    c->setText(QString("Fund: %1\nDate: %2\nCorrelation: %3")
+                   .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+
+    c->setAnchor(point);
+
+    c->setZValue(11);
+
+    c->updateGeometry();
+
+    c->show();
+  } else {
+    c->hide();
   }
 }
