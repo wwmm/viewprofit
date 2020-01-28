@@ -62,7 +62,7 @@ void FundCorrelation::process(const QVector<TableFund*>& tables) {
 void FundCorrelation::process_tables() {
   clear_chart(chart);
 
-  chart->setTitle("Cross Correlation Function");
+  chart->setTitle("Normalized Cross Correlation Function");
 
   add_axes_to_chart(chart, "");
 
@@ -123,6 +123,17 @@ void FundCorrelation::process_tables() {
           if (m >= n) {
             correlation[n] += values[m] * tvalues[m - n];
           }
+        }
+      }
+
+      double max_value = *std::max_element(correlation.begin(), correlation.end(),
+                                           [](double a, double b) { return (std::abs(a) < std::abs(b)); });
+
+      max_value = std::abs(max_value);
+
+      if (max_value > 0.001) {
+        for (int n = 0; n < correlation.size(); n++) {
+          correlation[n] /= max_value;
         }
       }
 

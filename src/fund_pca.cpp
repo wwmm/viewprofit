@@ -70,7 +70,7 @@ void FundPCA::process_tables() {
     }
   }
 
-  std::cout << data << std::endl;
+  // std::cout << data << std::endl;
 }
 
 void FundPCA::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
