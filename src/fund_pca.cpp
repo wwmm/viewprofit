@@ -2,7 +2,6 @@
 #include <Eigen/Dense>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <iostream>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -43,9 +42,7 @@ void FundPCA::process(const QVector<TableFund*>& tables) {
 void FundPCA::process_tables() {
   clear_chart(chart);
 
-  chart->setTitle("Pricipal Component Analysis");
-
-  add_axes_to_chart(chart, "");
+  chart->setTitle("Net Return Pricipal Component Analysis");
 
   Eigen::MatrixXd data = Eigen::MatrixXd::Zero(tables.size(), spinbox_months->value());
 
@@ -101,7 +98,69 @@ void FundPCA::process_tables() {
   qDebug(QString("PC1 -> %1%").arg(QString::number(pc1_explained_variance, 'f', 1)).toUtf8());
   qDebug(QString("PC2 -> %1%").arg(QString::number(pc2_explained_variance, 'f', 1)).toUtf8());
 
-  // std::cout << percentage << std::endl;
+  // Projecting the data to the new space
+
+  Eigen::MatrixXd projection_matrix(eigenvectors.rows(), 2);
+
+  projection_matrix.col(0) = eigenvectors.col(eigenvectors.cols() - 1);
+  projection_matrix.col(1) = eigenvectors.col(eigenvectors.cols() - 2);
+
+  auto pdata = data * projection_matrix;
+
+  // Showing the data in the chart
+
+  auto series = new QScatterSeries();
+
+  series->setName("pca");
+
+  QFont serif_font("Sans");
+
+  auto axis_x = new QValueAxis();
+
+  axis_x->setTitleText("PC1");
+  axis_x->setLabelFormat("%.2f");
+  axis_x->setTitleFont(serif_font);
+
+  auto axis_y = new QValueAxis();
+
+  axis_y->setTitleText("PC2");
+  axis_y->setLabelFormat("%.2f");
+  axis_y->setTitleFont(serif_font);
+
+  chart->addAxis(axis_x, Qt::AlignBottom);
+  chart->addAxis(axis_y, Qt::AlignLeft);
+
+  double xmin = 0.0, xmax = 0.0, ymin = 0.0, ymax = 0.0;
+
+  for (int n = 0; n < pdata.rows(); n++) {
+    double x = pdata.col(0)(n);
+    double y = pdata.col(1)(n);
+
+    if (n == 0) {
+      xmin = x;
+      xmax = x;
+      ymin = y;
+      ymax = y;
+    } else {
+      xmin = std::min(xmin, x);
+      xmax = std::max(xmax, x);
+      ymin = std::min(ymin, y);
+      ymax = std::max(ymax, y);
+    }
+
+    series->append(x, y);
+  }
+
+  chart->addSeries(series);
+
+  series->attachAxis(chart->axes(Qt::Horizontal)[0]);
+  series->attachAxis(chart->axes(Qt::Vertical)[0]);
+
+  chart->axes(Qt::Horizontal)[0]->setRange(xmin - 0.05 * fabs(xmin), xmax + 0.05 * fabs(xmax));
+  chart->axes(Qt::Vertical)[0]->setRange(ymin - 0.05 * fabs(ymin), ymax + 0.05 * fabs(ymax));
+
+  // connect(s, &QLineSeries::hovered, this,
+  //         [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
 }
 
 void FundPCA::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
