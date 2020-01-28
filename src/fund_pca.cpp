@@ -68,6 +68,22 @@ void FundPCA::process_tables() {
     }
   }
 
+  // Standardizing the data https://en.wikipedia.org/wiki/Feature_scaling#Standardization_(Z-score_Normalization)
+
+  data = data.rowwise() - data.colwise().mean();
+
+  Eigen::ArrayXd stddev = (data.array() * data.array()).colwise().sum().sqrt() / std::sqrt(data.rows() - 1);
+
+  for (int n = 0; n < data.cols(); n++) {
+    double std = stddev(n);
+
+    for (int m = 0; m < data.rows(); m++) {
+      if (std > 0.0001) {
+        data(m, n) /= std;
+      }
+    }
+  }
+
   // https://en.wikipedia.org/wiki/Sample_mean_and_covariance#Sample_covariance
 
   Eigen::MatrixXd covariance =
