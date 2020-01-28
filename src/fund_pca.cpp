@@ -70,7 +70,38 @@ void FundPCA::process_tables() {
     }
   }
 
-  // std::cout << data << std::endl;
+  // https://en.wikipedia.org/wiki/Sample_mean_and_covariance#Sample_covariance
+
+  Eigen::MatrixXd covariance =
+      (data.rowwise() - data.colwise().mean()).transpose() * (data.rowwise() - data.colwise().mean());
+
+  if (data.rows() > 1) {
+    covariance /= (data.rows() - 1);
+  }
+
+  // Finding eigenvalues and eigenvectors. We use SelfAdjointEigenSolver because the covariance matrix is symmetric.
+
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver;
+
+  solver.compute(covariance);
+
+  Eigen::VectorXd eigenvalues = solver.eigenvalues();
+  Eigen::MatrixXd eigenvectors = solver.eigenvectors();
+
+  // Calculating the explained variance
+
+  double eigenvalues_sum = eigenvalues.sum();
+  Eigen::VectorXd percentage = 100 * eigenvalues / eigenvalues_sum;
+
+  double pc1_explained_variance = percentage[percentage.size() - 1];
+  double pc2_explained_variance = percentage[percentage.size() - 2];
+
+  qDebug(" ");
+  qDebug("Explained variances:");
+  qDebug(QString("PC1 -> %1%").arg(QString::number(pc1_explained_variance, 'f', 1)).toUtf8());
+  qDebug(QString("PC2 -> %1%").arg(QString::number(pc2_explained_variance, 'f', 1)).toUtf8());
+
+  // std::cout << percentage << std::endl;
 }
 
 void FundPCA::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
