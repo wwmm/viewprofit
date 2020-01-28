@@ -1,6 +1,8 @@
 #include "fund_pca.hpp"
+#include <Eigen/Dense>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <iostream>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -44,76 +46,31 @@ void FundPCA::process_tables() {
   chart->setTitle("Pricipal Component Analysis");
 
   add_axes_to_chart(chart, "");
-  /*
-    QVector<int> dates;
+
+  Eigen::MatrixXd data = Eigen::MatrixXd::Zero(tables.size(), spinbox_months->value());
+
+  for (int k = 0; k < tables.size(); k++) {
+    auto query = QSqlQuery(db);
     QVector<double> values;
 
-    auto query = QSqlQuery(db);
-
-    query.prepare("select distinct date,net_return_perc from " + combo_fund->currentText() + " order by date desc");
+    query.prepare("select net_return_perc from " + tables[k]->name + " order by date desc");
 
     if (query.exec()) {
-      while (query.next() && dates.size() < spinbox_months->value()) {
-        dates.append(query.value(0).toInt());
-        values.append(query.value(1).toDouble());
+      while (query.next() && values.size() < spinbox_months->value()) {
+        values.append(query.value(0).toDouble());
       }
     }
 
-    if (dates.size() == 0) {
-      return;
+    if (values.size() == 0) {
+      break;
     }
 
-    std::reverse(dates.begin(), dates.end());
-    std::reverse(values.begin(), values.end());
-
-    for (auto& table : tables) {
-      if (table->name != combo_fund->currentText()) {
-        QVector<double> tvalues(values.size(), 0.0);
-        QVector<double> correlation(values.size(), 0.0);
-        int count = 0;
-
-        for (auto& date : dates) {
-          auto qdt = QDateTime();
-
-          qdt.setSecsSinceEpoch(date);
-
-          auto query = QSqlQuery(db);
-
-          query.prepare("select net_return_perc from " + table->name +
-                        " where strftime('%m/%Y', date(\"date\",'unixepoch'))=?");
-
-          query.addBindValue(qdt.toString("MM/yyyy"));
-
-          if (query.exec()) {
-            if (query.next()) {
-              tvalues[count] = query.value(0).toDouble();
-            }
-          } else {
-            qDebug(table->model->lastError().text().toUtf8());
-          }
-
-          count++;
-        }
-
-        // calculating the cross correlation vector
-
-        for (int n = 0; n < values.size(); n++) {
-          for (int m = 0; m < tvalues.size(); m++) {
-            if (m >= n) {
-              correlation[n] += values[m] * tvalues[m - n];
-            }
-          }
-        }
-
-        std::reverse(correlation.begin(), correlation.end());
-
-        auto s = add_series_to_chart(chart, dates, correlation, table->name);
-
-        connect(s, &QLineSeries::hovered, this,
-                [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
-      }
+    for (int n = 0; n < values.size(); n++) {
+      data(k, n) = values[n];
     }
-    */
+  }
+
+  std::cout << data << std::endl;
 }
 
 void FundPCA::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
