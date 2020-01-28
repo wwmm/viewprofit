@@ -97,6 +97,7 @@ QFrame#frame_resource_allocation,
 QFrame#frame_net_return,
 QFrame#frame_time_window,
 QFrame#frame_fund_selection,
+QFrame#frame_explained_variance,
 QFrame#frame_accumulated_net_return,
 QFrame#chart_cfg_frame {
   background-color: #f5f5f5;

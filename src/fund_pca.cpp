@@ -15,6 +15,7 @@ FundPCA::FundPCA(const QSqlDatabase& database, QWidget* parent)
 
   frame_chart->setGraphicsEffect(card_shadow());
   frame_time_window->setGraphicsEffect(card_shadow());
+  frame_explained_variance->setGraphicsEffect(card_shadow());
   button_reset_zoom->setGraphicsEffect(button_shadow());
 
   // chart settings
@@ -93,10 +94,8 @@ void FundPCA::process_tables() {
   double pc1_explained_variance = percentage[percentage.size() - 1];
   double pc2_explained_variance = percentage[percentage.size() - 2];
 
-  qDebug(" ");
-  qDebug("Explained variances:");
-  qDebug(QString("PC1 -> %1%").arg(QString::number(pc1_explained_variance, 'f', 1)).toUtf8());
-  qDebug(QString("PC2 -> %1%").arg(QString::number(pc2_explained_variance, 'f', 1)).toUtf8());
+  label_pc1->setText(QString("PC1: %1%").arg(QString::number(pc1_explained_variance, 'f', 1)));
+  label_pc2->setText(QString("PC2: %1%").arg(QString::number(pc2_explained_variance, 'f', 1)));
 
   // Projecting the data to the new space
 
@@ -105,13 +104,9 @@ void FundPCA::process_tables() {
   projection_matrix.col(0) = eigenvectors.col(eigenvectors.cols() - 1);
   projection_matrix.col(1) = eigenvectors.col(eigenvectors.cols() - 2);
 
-  auto pdata = data * projection_matrix;
+  Eigen::MatrixXd pdata = data * projection_matrix;
 
   // Showing the data in the chart
-
-  auto series = new QScatterSeries();
-
-  series->setName("pca");
 
   QFont serif_font("Sans");
 
@@ -133,8 +128,8 @@ void FundPCA::process_tables() {
   double xmin = 0.0, xmax = 0.0, ymin = 0.0, ymax = 0.0;
 
   for (int n = 0; n < pdata.rows(); n++) {
-    double x = pdata.col(0)(n);
-    double y = pdata.col(1)(n);
+    double x = pdata(n, 0);
+    double y = pdata(n, 1);
 
     if (n == 0) {
       xmin = x;
@@ -148,37 +143,48 @@ void FundPCA::process_tables() {
       ymax = std::max(ymax, y);
     }
 
+    auto series = new QScatterSeries();
+
+    series->setName(tables[n]->name);
+
     series->append(x, y);
+
+    chart->addSeries(series);
+
+    series->attachAxis(chart->axes(Qt::Horizontal)[0]);
+    series->attachAxis(chart->axes(Qt::Vertical)[0]);
+
+    connect(series, &QLineSeries::hovered, this, [=](const QPointF& point, bool state) {
+      if (state) {
+        auto qdt = QDateTime();
+
+        for (int n = 0; n < pdata.rows(); n++) {
+          double x = pdata(n, 0);
+          double y = pdata(n, 1);
+
+          double dx = std::fabs(x - point.x());
+          double dy = std::fabs(y - point.y());
+
+          if (dx < 0.00001 && dy < 0.00001) {
+            callout->setText(QString("Fund: %1").arg(tables[n]->name));
+
+            break;
+          }
+        }
+
+        callout->setAnchor(point);
+
+        callout->setZValue(11);
+
+        callout->updateGeometry();
+
+        callout->show();
+      } else {
+        callout->hide();
+      }
+    });
   }
-
-  chart->addSeries(series);
-
-  series->attachAxis(chart->axes(Qt::Horizontal)[0]);
-  series->attachAxis(chart->axes(Qt::Vertical)[0]);
 
   chart->axes(Qt::Horizontal)[0]->setRange(xmin - 0.05 * fabs(xmin), xmax + 0.05 * fabs(xmax));
   chart->axes(Qt::Vertical)[0]->setRange(ymin - 0.05 * fabs(ymin), ymax + 0.05 * fabs(ymax));
-
-  // connect(s, &QLineSeries::hovered, this,
-  //         [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
-}
-
-void FundPCA::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
-  if (state) {
-    auto qdt = QDateTime();
-
-    qdt.setMSecsSinceEpoch(point.x());
-
-    c->setText(QString("Fund: %1\nDate: %2").arg(name, qdt.toString("dd/MM/yyyy")));
-
-    c->setAnchor(point);
-
-    c->setZValue(11);
-
-    c->updateGeometry();
-
-    c->show();
-  } else {
-    c->hide();
-  }
 }

@@ -110,7 +110,42 @@
         </layout>
        </widget>
       </item>
-      <item row="2" column="5" alignment="Qt::AlignVCenter">
+      <item row="0" column="0" colspan="7">
+       <widget class="QChartView" name="chart_view">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>640</width>
+          <height>480</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="6" alignment="Qt::AlignVCenter">
        <widget class="QPushButton" name="button_reset_zoom">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -135,19 +170,13 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="6">
-       <widget class="QChartView" name="chart_view">
+      <item row="2" column="2">
+       <widget class="QFrame" name="frame_explained_variance">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>640</width>
-          <height>480</height>
-         </size>
         </property>
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
@@ -155,20 +184,36 @@
         <property name="frameShadow">
          <enum>QFrame::Plain</enum>
         </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <property name="horizontalSpacing">
+          <number>12</number>
+         </property>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_pc1">
+           <property name="text">
+            <string>PC1: 0%</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_pc2">
+           <property name="text">
+            <string>PC2: 0%</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Explained Variance</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-      </item>
-      <item row="2" column="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>

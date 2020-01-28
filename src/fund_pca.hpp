@@ -23,8 +23,6 @@ class FundPCA : public QWidget, protected Ui::FundPCA {
   QVector<TableFund*> tables;
 
   void process_tables();
-
-  void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
 };
 
 #endif
