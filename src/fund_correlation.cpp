@@ -62,46 +62,51 @@ void FundCorrelation::process(const QVector<TableFund*>& tables) {
 void FundCorrelation::process_tables() {
   clear_chart(chart);
 
-  chart->setTitle("Correlation Coefficient");
-
-  add_axes_to_chart(chart, "");
-
-  QVector<int> dates;
-  QVector<double> values;
-
-  auto query = QSqlQuery(db);
-
-  query.prepare("select distinct date,net_return_perc from " + combo_fund->currentText() + " order by date desc");
-
-  if (query.exec()) {
-    while (query.next() && dates.size() < spinbox_months->value()) {
-      dates.append(query.value(0).toInt());
-      values.append(query.value(1).toDouble());
-    }
-  }
+  auto dates = get_unique_months_from_db(db, tables, spinbox_months->value());
 
   if (dates.size() == 0) {
     return;
   }
 
-  std::reverse(dates.begin(), dates.end());
-  std::reverse(values.begin(), values.end());
+  chart->setTitle("Correlation Coefficient");
+
+  add_axes_to_chart(chart, "");
+
+  QVector<double> values(dates.size(), 0.0);
+  int count = 0;
+
+  for (auto& date : dates) {
+    auto query = QSqlQuery(db);
+
+    query.prepare("select net_return_perc from " + combo_fund->currentText() +
+                  " where strftime('%m/%Y', \"date\",'unixepoch')=?");
+
+    auto qdt = QDateTime::fromSecsSinceEpoch(date);
+
+    query.addBindValue(qdt.toString("MM/yyyy"));
+
+    if (query.exec()) {
+      if (query.next()) {
+        values[count] = query.value(0).toDouble();
+      }
+    }
+
+    count++;
+  }
 
   for (auto& table : tables) {
     if (table->name != combo_fund->currentText()) {
-      QVector<double> tvalues(values.size(), 0.0);
-      QVector<double> correlation(values.size(), 0.0);
+      QVector<double> tvalues(dates.size(), 0.0);
+      QVector<double> correlation(dates.size(), 0.0);
       int count = 0;
 
       for (auto& date : dates) {
-        auto qdt = QDateTime();
-
-        qdt.setSecsSinceEpoch(date);
-
         auto query = QSqlQuery(db);
 
         query.prepare("select net_return_perc from " + table->name +
-                      " where strftime('%m/%Y', date(\"date\",'unixepoch'))=?");
+                      " where strftime('%m/%Y', \"date\",'unixepoch')=?");
+
+        auto qdt = QDateTime::fromSecsSinceEpoch(date);
 
         query.addBindValue(qdt.toString("MM/yyyy"));
 

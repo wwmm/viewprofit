@@ -224,3 +224,44 @@ QList<int> get_unique_dates_from_db(const QSqlDatabase& db,
 
   return list_dates;
 }
+
+QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
+                                       const QVector<TableFund*>& tables,
+                                       const int& last_n_months) {
+  QSet<int> set;
+  auto qdt = QDateTime();
+
+  for (auto& table : tables) {
+    if (set.size() == last_n_months) {
+      break;
+    }
+
+    // making sure all the latest data was saved to the database
+
+    table->model->submitAll();
+
+    auto query = QSqlQuery(db);
+
+    query.prepare("select distinct date from " + table->name + " order by date desc");
+
+    if (query.exec()) {
+      while (query.next() && set.size() < last_n_months) {
+        qdt.setSecsSinceEpoch(query.value(0).toInt());
+
+        QString tstring = qdt.toString("MM/yyyy");
+
+        qdt = QDateTime::fromString(tstring, "MM/yyyy");
+
+        set.insert(qdt.toSecsSinceEpoch());
+      }
+    } else {
+      qDebug(table->model->lastError().text().toUtf8());
+    }
+  }
+
+  QVector<int> list = QVector<int>::fromList(set.values());
+
+  std::sort(list.begin(), list.end());
+
+  return list;
+}

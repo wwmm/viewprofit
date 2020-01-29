@@ -33,4 +33,8 @@ QList<int> get_unique_dates_from_db(const QSqlDatabase& db,
                                     const QVector<TableFund*>& tables,
                                     const int& last_n_months);
 
+QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
+                                       const QVector<TableFund*>& tables,
+                                       const int& last_n_months);
+
 #endif
