@@ -93,7 +93,8 @@
       "qobject": "cpp",
       "qvector": "cpp",
       "qcoreapplication": "cpp",
-      "qsqlquery": "cpp"
+      "qsqlquery": "cpp",
+      "core": "cpp"
     },
     "xml.format.joinContentLines": true
   }

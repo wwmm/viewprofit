@@ -40,6 +40,10 @@ mysources = [
     resources
 ]
 
-deps = [qt5_dep, dependency('eigen3', version: '>=3.3.7')]
+deps = [
+    qt5_dep, 
+    dependency('eigen3', version: '>=3.3.7'), 
+    dependency('openmp')
+]
 
 executable(meson.project_name(), mysources,  dependencies : deps)

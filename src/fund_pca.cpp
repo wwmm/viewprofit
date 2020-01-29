@@ -1,5 +1,6 @@
 #include "fund_pca.hpp"
-#include <Eigen/Dense>
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 #include <QSqlError>
 #include <QSqlQuery>
 #include "chart_funcs.hpp"

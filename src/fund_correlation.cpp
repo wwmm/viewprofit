@@ -62,7 +62,7 @@ void FundCorrelation::process(const QVector<TableFund*>& tables) {
 void FundCorrelation::process_tables() {
   clear_chart(chart);
 
-  chart->setTitle("Normalized Cross Correlation Function");
+  chart->setTitle("Correlation Coefficient");
 
   add_axes_to_chart(chart, "");
 
@@ -109,35 +109,42 @@ void FundCorrelation::process_tables() {
           if (query.next()) {
             tvalues[count] = query.value(0).toDouble();
           }
-        } else {
-          qDebug(table->model->lastError().text().toUtf8());
         }
 
         count++;
       }
 
-      // calculating the cross correlation vector
+      // calculating the Pearson correlation coefficient https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
-      for (int n = 0; n < values.size(); n++) {
-        for (int m = 0; m < tvalues.size(); m++) {
-          if (m >= n) {
-            correlation[n] += values[m] * tvalues[m - n];
-          }
+      for (int n = 0; n < correlation.size(); n++) {
+        double avg = 0.0, tavg = 0.0;
+
+        for (int m = 0; m <= n; m++) {
+          avg += values[m];
+          tavg += tvalues[m];
+        }
+
+        avg /= (n + 1);
+        tavg /= (n + 1);
+
+        double variance = 0.0, tvariance = 0.0;
+
+        for (int m = 0; m <= n; m++) {
+          variance += (values[m] - avg) * (values[m] - avg);
+          tvariance += (tvalues[m] - tavg) * (tvalues[m] - tavg);
+        }
+
+        double stddev = std::sqrt(variance);
+        double tstddev = std::sqrt(tvariance);
+
+        for (int m = 0; m <= n; m++) {
+          correlation[n] += (values[m] - avg) * (tvalues[m] - tavg);
+        }
+
+        if (stddev > 0.001 && tstddev > 0.001) {
+          correlation[n] /= (stddev * tstddev);
         }
       }
-
-      double max_value = *std::max_element(correlation.begin(), correlation.end(),
-                                           [](double a, double b) { return (std::abs(a) < std::abs(b)); });
-
-      max_value = std::abs(max_value);
-
-      if (max_value > 0.001) {
-        for (int n = 0; n < correlation.size(); n++) {
-          correlation[n] /= max_value;
-        }
-      }
-
-      std::reverse(correlation.begin(), correlation.end());
 
       auto s = add_series_to_chart(chart, dates, correlation, table->name);
 
@@ -145,6 +152,8 @@ void FundCorrelation::process_tables() {
               [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
     }
   }
+
+  chart->axes(Qt::Vertical)[0]->setRange(-1.0, 1.0);
 }
 
 void FundCorrelation::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
