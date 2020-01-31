@@ -74,13 +74,7 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_be
 
   query.prepare("select distinct date,value from " + table_name + " where date >= ? order by date");
 
-  auto qdt = QDateTime();
-
-  qdt.setSecsSinceEpoch(oldest_date);
-
-  qdt = QDateTime::fromString(qdt.toString("MM/yyyy"), "MM/yyyy");
-
-  query.addBindValue(qdt.toSecsSinceEpoch());
+  query.addBindValue(oldest_date);
 
   if (query.exec()) {
     while (query.next()) {
@@ -121,9 +115,7 @@ void TableFund::calculate() {
 
   QString oldest_investment_date = model->record(model->rowCount() - 1).value("date").toString();
 
-  auto date_month = QDate::fromString(oldest_investment_date, "dd/MM/yyyy").toString("MM/yyyy");
-
-  auto qdt = QDateTime::fromString(date_month, "MM/yyyy");
+  auto qdt = QDateTime::fromString(oldest_investment_date, "MM/yyyy");
 
   auto [inflation_dates, inflation_values, inflation_accumulated] =
       process_benchmark("inflation", qdt.toSecsSinceEpoch());
@@ -156,13 +148,12 @@ void TableFund::calculate() {
 
     double net_return_perc = 100 * net_return / (starting_balance + deposit - withdrawal);
 
-    auto date_month = QDate::fromString(date, "dd/MM/yyyy").toString("MM/yyyy");
     double real_return_perc = net_return_perc;
 
     for (int i = 0; i < inflation_dates.size(); i++) {
       qdt.setSecsSinceEpoch(inflation_dates[i]);
 
-      if (qdt.toString("MM/yyyy") == date_month) {
+      if (qdt.toString("MM/yyyy") == date) {
         real_return_perc = 100.0 * (net_return_perc - inflation_values[i]) / (100.0 + inflation_values[i]);
 
         break;

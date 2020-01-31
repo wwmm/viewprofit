@@ -466,10 +466,10 @@ void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callou
 
     if (radio_net_return_perc->isChecked() || radio_accumulated_net_return_perc->isChecked()) {
       c->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")
-                     .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+                     .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
     } else if (radio_net_return_volatility->isChecked()) {
       c->setText(QString("Fund: %1\nDate: %2\nValue: %3%")
-                     .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+                     .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
     }
 
     c->setAnchor(point);

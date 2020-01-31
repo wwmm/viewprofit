@@ -206,7 +206,7 @@ void TableBase::on_chart_mouse_hover(const QPointF& point, bool state, Callout* 
     qdt.setMSecsSinceEpoch(point.x());
 
     c->setText(QString("Curve: %1\nDate: %2\nReturn: %3")
-                   .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+                   .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
 
     c->setAnchor(point);
 

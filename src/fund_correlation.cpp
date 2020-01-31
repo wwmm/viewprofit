@@ -168,7 +168,7 @@ void FundCorrelation::on_chart_mouse_hover(const QPointF& point, bool state, Cal
     qdt.setMSecsSinceEpoch(point.x());
 
     c->setText(QString("Fund: %1\nDate: %2\nCorrelation: %3")
-                   .arg(name, qdt.toString("dd/MM/yyyy"), QString::number(point.y(), 'f', 2)));
+                   .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
 
     c->setAnchor(point);
 

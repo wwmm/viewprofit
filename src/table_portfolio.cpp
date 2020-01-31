@@ -94,7 +94,7 @@ void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
       for (int n = 0; n < table->model->rowCount(); n++) {
         QString tdate = table->model->record(n).value("date").toString();
 
-        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
+        if (date_month == tdate) {
           deposit += table->model->record(n).value("deposit").toDouble();
           withdrawal += table->model->record(n).value("withdrawal").toDouble();
           starting_balance += table->model->record(n).value("starting_balance").toDouble();
@@ -325,13 +325,7 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TablePortfolio::proce
 
   query.prepare("select distinct date,value from " + table_name + " where date >= ? order by date");
 
-  auto qdt = QDateTime();
-
-  qdt.setSecsSinceEpoch(oldest_date);
-
-  qdt = QDateTime::fromString(qdt.toString("MM/yyyy"), "MM/yyyy");
-
-  query.addBindValue(qdt.toSecsSinceEpoch());
+  query.addBindValue(oldest_date);
 
   if (query.exec()) {
     while (query.next()) {

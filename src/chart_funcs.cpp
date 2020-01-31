@@ -42,7 +42,7 @@ QLineSeries* add_series_to_chart(QChart* chart,
   double vmax = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
 
   for (int n = 0; n < tmodel->rowCount(); n++) {
-    auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "dd/MM/yyyy");
+    auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "MM/yyyy");
 
     auto epoch_in_ms = qdt.toMSecsSinceEpoch();
 
@@ -143,7 +143,7 @@ std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barser
       for (int n = tables[m]->model->rowCount() - 1; n >= 0; n--) {
         QString tdate = tables[m]->model->record(n).value("date").toString();
 
-        if (date_month == QDate::fromString(tdate, "dd/MM/yyyy").toString("MM/yyyy")) {
+        if (date_month == tdate) {
           double v = tables[m]->model->record(n).value(column_name).toDouble();
 
           barsets[m]->append(v);
@@ -246,13 +246,7 @@ QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
 
     if (query.exec()) {
       while (query.next() && set.size() < last_n_months) {
-        qdt.setSecsSinceEpoch(query.value(0).toInt());
-
-        QString tstring = qdt.toString("MM/yyyy");
-
-        qdt = QDateTime::fromString(tstring, "MM/yyyy");
-
-        set.insert(qdt.toSecsSinceEpoch());
+        set.insert(query.value(0).toInt());
       }
     } else {
       qDebug(table->model->lastError().text().toUtf8());

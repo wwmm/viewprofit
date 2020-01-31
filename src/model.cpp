@@ -26,7 +26,7 @@ QVariant Model::data(const QModelIndex& index, int role) const {
       if (v.userType() == QMetaType::LongLong || v.userType() == QMetaType::Int) {
         auto qdt = QDateTime::fromSecsSinceEpoch(v.toInt());
 
-        return qdt.toString("dd/MM/yyyy");
+        return qdt.toString("MM/yyyy");
       } else {
         return v;
       }
@@ -51,7 +51,7 @@ bool Model::setData(const QModelIndex& index, const QVariant& value, int role) {
 
   if (column == 1) {
     if (value.type() == QVariant::String) {
-      auto qdt = QDateTime::fromString(value.toString(), "dd/MM/yyyy");
+      auto qdt = QDateTime::fromString(value.toString(), "MM/yyyy");
 
       return QSqlTableModel::setData(index, qdt.toSecsSinceEpoch(), role);
     } else if (value.type() == QVariant::Int) {
