@@ -104,7 +104,11 @@ bool TableBase::eventFilter(QObject* object, QEvent* event) {
           QString row_value;
 
           for (int j = selection_range.left(); j <= selection_range.right(); j++) {
-            row_value += s_model->model()->index(i, j).data().toString() + "\t";
+            if (j < selection_range.right()) {
+              row_value += s_model->model()->index(i, j).data().toString() + "\t";
+            } else {
+              row_value += s_model->model()->index(i, j).data().toString();
+            }
           }
 
           table_str += row_value + "\n";
