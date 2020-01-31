@@ -370,7 +370,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
 }
 
 void CompareFunds::make_chart_barseries(const QString& series_name, const QString& column_name) {
-  auto list_dates = get_unique_dates_from_db(db, tables, spinbox_months->value());
+  auto list_dates = get_unique_months_from_db(db, tables, spinbox_months->value());
 
   if (list_dates.size() == 0) {
     return;

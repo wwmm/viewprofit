@@ -25,13 +25,9 @@ QLineSeries* add_series_to_chart(QChart* chart,
 std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barseries_to_chart(
     QChart* chart,
     const QVector<TableFund*>& tables,
-    const QList<int>& list_dates,
+    const QVector<int>& list_dates,
     const QString& series_name,
     const QString& column_name);
-
-QList<int> get_unique_dates_from_db(const QSqlDatabase& db,
-                                    const QVector<TableFund*>& tables,
-                                    const int& last_n_months);
 
 QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
                                        const QVector<TableFund*>& tables,
