@@ -21,8 +21,8 @@ class TableFund : public TableBase {
 
   int perc_chart_oldest_date = 0;
 
-  std::tuple<QVector<int>, QVector<double>, QVector<double>> process_benchmark(const QString& table_name,
-                                                                               const int& oldest_date) const;
+  [[nodiscard]] auto process_benchmark(const QString& table_name, const int& oldest_date) const
+      -> std::tuple<QVector<int>, QVector<double>, QVector<double>>;
   void make_chart1();
   void make_chart2();
 };

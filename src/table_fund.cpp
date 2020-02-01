@@ -65,10 +65,11 @@ void TableFund::init_model() {
   qsettings.endGroup();
 }
 
-std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_benchmark(const QString& table_name,
-                                                                                        const int& oldest_date) const {
+auto TableFund::process_benchmark(const QString& table_name, const int& oldest_date) const
+    -> std::tuple<QVector<int>, QVector<double>, QVector<double>> {
   QVector<int> dates;
-  QVector<double> values, accu;
+  QVector<double> values;
+  QVector<double> accu;
 
   auto query = QSqlQuery(db);
 
@@ -93,7 +94,7 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TableFund::process_be
 
   accu.resize(values.size());
 
-  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<>());
 
   for (auto& v : accu) {
     v = (v - 1.0) * 100;
@@ -212,7 +213,10 @@ void TableFund::make_chart2() {
   add_axes_to_chart(chart2, "%");
 
   QVector<int> dates;
-  QVector<double> net_return, real_return, accumulated_net_return, accumulated_real_return;
+  QVector<double> net_return;
+  QVector<double> real_return;
+  QVector<double> accumulated_net_return;
+  QVector<double> accumulated_real_return;
 
   auto query = QSqlQuery(db);
 
@@ -226,7 +230,7 @@ void TableFund::make_chart2() {
     }
   }
 
-  if (dates.size() == 0) {
+  if (dates.empty()) {
     return;
   }
 
@@ -246,8 +250,8 @@ void TableFund::make_chart2() {
   accumulated_net_return.resize(net_return.size());
   accumulated_real_return.resize(real_return.size());
 
-  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<double>());
-  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<double>());
+  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<>());
+  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<>());
 
   for (int n = 0; n < dates.size(); n++) {
     accumulated_net_return[n] = (accumulated_net_return[n] - 1.0) * 100;
@@ -272,7 +276,7 @@ void TableFund::make_chart2() {
 void TableFund::show_benchmark(const TableBase* btable) {
   auto [dates, values, accumulated] = process_benchmark(btable->name, perc_chart_oldest_date);
 
-  if (chart2->axes().size() == 0) {
+  if (chart2->axes().empty()) {
     return;
   }
 
@@ -283,8 +287,8 @@ void TableFund::show_benchmark(const TableBase* btable) {
   connect(series, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, series->name()); });
 
-  double vmin = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
-  double vmax = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();
+  double vmin = dynamic_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
+  double vmax = dynamic_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();
 
   for (int n = 0; n < dates.size(); n++) {
     auto qdt = QDateTime::fromSecsSinceEpoch(dates[n]);
@@ -293,7 +297,7 @@ void TableFund::show_benchmark(const TableBase* btable) {
 
     double v = accumulated[n];
 
-    if (chart2->series().size() > 0) {
+    if (!chart2->series().empty()) {
       vmin = std::min(vmin, v);
       vmax = std::max(vmax, v);
     } else {

@@ -27,13 +27,14 @@ void TableBenchmarks::init_model() {
 }
 
 void TableBenchmarks::calculate() {
-  QVector<double> list_values, accu;
+  QVector<double> list_values;
+  QVector<double> accu;
 
   for (int n = 0; n < model->rowCount(); n++) {
     list_values.append(model->record(n).value("value").toDouble());
   }
 
-  if (list_values.size() > 0) {
+  if (!list_values.empty()) {
     std::reverse(list_values.begin(), list_values.end());
 
     for (auto& value : list_values) {
@@ -44,7 +45,7 @@ void TableBenchmarks::calculate() {
 
     accu.resize(list_values.size());
 
-    std::partial_sum(list_values.begin(), list_values.end(), accu.begin(), std::multiplies<double>());
+    std::partial_sum(list_values.begin(), list_values.end(), accu.begin(), std::multiplies<>());
 
     for (auto& value : accu) {
       value = (value - 1.0) * 100;
@@ -83,7 +84,8 @@ void TableBenchmarks::show_chart() {
   model->submitAll();
 
   QVector<int> dates;
-  QVector<double> values, accu;
+  QVector<double> values;
+  QVector<double> accu;
 
   auto query = QSqlQuery(db);
 
@@ -98,7 +100,7 @@ void TableBenchmarks::show_chart() {
     qDebug("Failed to get inflation table values!");
   }
 
-  if (dates.size() == 0) {
+  if (dates.empty()) {
     qDebug("oi");
     return;
   }
@@ -114,7 +116,7 @@ void TableBenchmarks::show_chart() {
 
   accu.resize(values.size());
 
-  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<>());
 
   for (auto& v : accu) {
     v = (v - 1.0) * 100;

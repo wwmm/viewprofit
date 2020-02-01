@@ -60,7 +60,7 @@ void FundPCA::process_tables() {
       }
     }
 
-    if (values.size() == 0) {
+    if (values.empty()) {
       break;
     }
 
@@ -142,7 +142,10 @@ void FundPCA::process_tables() {
   chart->addAxis(axis_x, Qt::AlignBottom);
   chart->addAxis(axis_y, Qt::AlignLeft);
 
-  double xmin = 0.0, xmax = 0.0, ymin = 0.0, ymax = 0.0;
+  double xmin = 0.0;
+  double xmax = 0.0;
+  double ymin = 0.0;
+  double ymax = 0.0;
 
   for (int n = 0; n < pdata.rows(); n++) {
     double x = pdata(n, 0);
