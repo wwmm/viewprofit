@@ -30,16 +30,14 @@ void add_axes_to_chart(QChart* chart, const QString& ytitle) {
   chart->addAxis(axis_y, Qt::AlignLeft);
 }
 
-QLineSeries* add_series_to_chart(QChart* chart,
-                                 const Model* tmodel,
-                                 const QString& series_name,
-                                 const QString& column_name) {
+auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& series_name, const QString& column_name)
+    -> QLineSeries* {
   auto series = new QLineSeries();
 
   series->setName(series_name.toLower());
 
-  double vmin = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
-  double vmax = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+  double vmin = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
+  double vmax = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
 
   for (int n = 0; n < tmodel->rowCount(); n++) {
     auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "MM/yyyy");
@@ -48,7 +46,7 @@ QLineSeries* add_series_to_chart(QChart* chart,
 
     double v = tmodel->record(n).value(column_name).toDouble();
 
-    if (chart->series().size() > 0) {
+    if (!chart->series().empty()) {
       vmin = std::min(vmin, v);
       vmax = std::max(vmax, v);
     } else {
@@ -74,21 +72,21 @@ QLineSeries* add_series_to_chart(QChart* chart,
   return series;
 }
 
-QLineSeries* add_series_to_chart(QChart* chart,
-                                 const QVector<int>& dates,
-                                 const QVector<double>& values,
-                                 const QString& series_name) {
+auto add_series_to_chart(QChart* chart,
+                         const QVector<int>& dates,
+                         const QVector<double>& values,
+                         const QString& series_name) -> QLineSeries* {
   auto series = new QLineSeries();
 
   series->setName(series_name.toLower());
 
-  double vmin = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
-  double vmax = static_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+  double vmin = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
+  double vmax = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
 
   for (int n = 0; n < dates.size(); n++) {
     double v = values[n];
 
-    if (chart->series().size() > 0) {
+    if (!chart->series().empty()) {
       vmin = std::min(vmin, v);
       vmax = std::max(vmax, v);
     } else {
@@ -114,12 +112,12 @@ QLineSeries* add_series_to_chart(QChart* chart,
   return series;
 }
 
-std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barseries_to_chart(
-    QChart* chart,
-    const QVector<TableFund*>& tables,
-    const QVector<int>& list_dates,
-    const QString& series_name,
-    const QString& column_name) {
+auto add_tables_barseries_to_chart(QChart* chart,
+                                   const QVector<TableFund*>& tables,
+                                   const QVector<int>& list_dates,
+                                   const QString& series_name,
+                                   const QString& column_name)
+    -> std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> {
   QVector<QBarSet*> barsets;
 
   for (auto& table : tables) {
@@ -195,9 +193,8 @@ std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barser
   return {series, barsets, categories};
 }
 
-QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
-                                       const QVector<TableFund*>& tables,
-                                       const int& last_n_months) {
+auto get_unique_months_from_db(const QSqlDatabase& db, const QVector<TableFund*>& tables, const int& last_n_months)
+    -> QVector<int> {
   QSet<int> set;
   auto qdt = QDateTime();
 
@@ -219,7 +216,7 @@ QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
         set.insert(query.value(0).toInt());
       }
     } else {
-      qDebug(table->model->lastError().text().toUtf8());
+      qDebug() << table->model->lastError().text().toUtf8();
     }
   }
 

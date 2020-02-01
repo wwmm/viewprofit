@@ -58,7 +58,7 @@ void CompareFunds::make_chart_net_balance_pie() {
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
-    deque.push_back(QPair(table->name, table->model->record(0).value("net_balance").toDouble()));
+    deque.emplace_back(table->name, table->model->record(0).value("net_balance").toDouble());
   }
 
   std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
@@ -70,7 +70,7 @@ void CompareFunds::make_chart_net_balance_pie() {
   bool pop_front = true;
   QVector<QString> names_added;
 
-  while (deque.size() > 0) {
+  while (!deque.empty()) {
     double d;
     QString name;
 
@@ -123,7 +123,7 @@ void CompareFunds::make_chart_net_return_pie() {
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
-    deque.push_back(QPair(table->name, table->model->record(0).value("net_return").toDouble()));
+    deque.emplace_back(table->name, table->model->record(0).value("net_return").toDouble());
   }
 
   std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
@@ -135,7 +135,7 @@ void CompareFunds::make_chart_net_return_pie() {
   bool pop_front = true;
   QVector<QString> names_added;
 
-  while (deque.size() > 0) {
+  while (!deque.empty()) {
     double d;
     QString name;
 
@@ -204,7 +204,9 @@ void CompareFunds::make_chart_net_return_volatility() {
 
   for (auto& name : names) {
     QVector<int> dates;
-    QVector<double> values, accu, stddev;
+    QVector<double> values;
+    QVector<double> accu;
+    QVector<double> stddev;
 
     auto query = QSqlQuery(db);
 
@@ -217,7 +219,7 @@ void CompareFunds::make_chart_net_return_volatility() {
       }
     }
 
-    if (dates.size() == 0) {
+    if (dates.empty()) {
       break;
     }
 
@@ -266,7 +268,7 @@ void CompareFunds::make_chart_accumulated_net_return_pie() {
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
-    deque.push_back(QPair(table->name, table->model->record(0).value("accumulated_net_return").toDouble()));
+    deque.emplace_back(table->name, table->model->record(0).value("accumulated_net_return").toDouble());
   }
 
   std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
@@ -278,7 +280,7 @@ void CompareFunds::make_chart_accumulated_net_return_pie() {
   bool pop_front = true;
   QVector<QString> names_added;
 
-  while (deque.size() > 0) {
+  while (!deque.empty()) {
     double d;
     QString name;
 
@@ -328,7 +330,8 @@ void CompareFunds::make_chart_accumulated_net_return() {
 
   for (auto& table : tables) {
     QVector<int> dates;
-    QVector<double> values, accu;
+    QVector<double> values;
+    QVector<double> accu;
 
     auto query = QSqlQuery(db);
 
@@ -341,7 +344,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
       }
     }
 
-    if (dates.size() == 0) {
+    if (dates.empty()) {
       break;
     }
 
@@ -356,7 +359,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
 
     accu.resize(values.size());
 
-    std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+    std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<>());
 
     for (auto& v : accu) {
       v = (v - 1.0) * 100;
@@ -372,7 +375,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
 void CompareFunds::make_chart_barseries(const QString& series_name, const QString& column_name) {
   auto list_dates = get_unique_months_from_db(db, tables, spinbox_months->value());
 
-  if (list_dates.size() == 0) {
+  if (list_dates.empty()) {
     return;
   }
 

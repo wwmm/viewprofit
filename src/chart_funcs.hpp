@@ -12,25 +12,22 @@ void clear_chart(QChart* chart);
 
 void add_axes_to_chart(QChart* chart, const QString& ytitle);
 
-QLineSeries* add_series_to_chart(QChart* chart,
-                                 const Model* tmodel,
-                                 const QString& series_name,
-                                 const QString& column_name);
+auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& series_name, const QString& column_name)
+    -> QLineSeries*;
 
-QLineSeries* add_series_to_chart(QChart* chart,
-                                 const QVector<int>& dates,
-                                 const QVector<double>& values,
-                                 const QString& series_name);
+auto add_series_to_chart(QChart* chart,
+                         const QVector<int>& dates,
+                         const QVector<double>& values,
+                         const QString& series_name) -> QLineSeries*;
 
-std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList> add_tables_barseries_to_chart(
-    QChart* chart,
-    const QVector<TableFund*>& tables,
-    const QVector<int>& list_dates,
-    const QString& series_name,
-    const QString& column_name);
+auto add_tables_barseries_to_chart(QChart* chart,
+                                   const QVector<TableFund*>& tables,
+                                   const QVector<int>& list_dates,
+                                   const QString& series_name,
+                                   const QString& column_name)
+    -> std::tuple<QStackedBarSeries*, QVector<QBarSet*>, QStringList>;
 
-QVector<int> get_unique_months_from_db(const QSqlDatabase& db,
-                                       const QVector<TableFund*>& tables,
-                                       const int& last_n_months);
+auto get_unique_months_from_db(const QSqlDatabase& db, const QVector<TableFund*>& tables, const int& last_n_months)
+    -> QVector<int>;
 
 #endif

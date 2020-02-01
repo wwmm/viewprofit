@@ -6,7 +6,7 @@
 
 Callout::Callout(QChart* parent) : QGraphicsItem(parent), chart(parent) {}
 
-QRectF Callout::boundingRect() const {
+auto Callout::boundingRect() const -> QRectF {
   QPointF a = mapFromParent(chart->mapToPosition(anchor));
   QRectF r;
 
@@ -29,7 +29,8 @@ void Callout::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
   QPointF a = mapFromParent(chart->mapToPosition(anchor));
 
   if (!rect.contains(a)) {
-    QPointF point1, point2;
+    QPointF point1;
+    QPointF point2;
 
     // establish the position of the anchor point in relation to rect
 
@@ -45,20 +46,28 @@ void Callout::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 
     // get the nearest rect corner.
 
-    qreal x = (onRight + rightOfCenter) * rect.width();
-    qreal y = (below + belowCenter) * rect.height();
+    qreal x = (static_cast<int>(onRight) + static_cast<int>(rightOfCenter)) * rect.width();
+    qreal y = (static_cast<int>(below) + static_cast<int>(belowCenter)) * rect.height();
     bool cornerCase = (above && onLeft) || (above && onRight) || (below && onLeft) || (below && onRight);
     bool vertical = qAbs(a.x() - x) > qAbs(a.y() - y);
 
-    qreal x1 = x + leftOfCenter * 10 - rightOfCenter * 20 + cornerCase * !vertical * (onLeft * 10 - onRight * 20);
-    qreal y1 = y + aboveCenter * 10 - belowCenter * 20 + cornerCase * vertical * (above * 10 - below * 20);
+    qreal x1 = x + static_cast<int>(leftOfCenter) * 10 - static_cast<int>(rightOfCenter) * 20 +
+               static_cast<int>(cornerCase) * static_cast<int>(!vertical) *
+                   (static_cast<int>(onLeft) * 10 - static_cast<int>(onRight) * 20);
+    qreal y1 = y + static_cast<int>(aboveCenter) * 10 - static_cast<int>(belowCenter) * 20 +
+               static_cast<int>(cornerCase) * static_cast<int>(vertical) *
+                   (static_cast<int>(above) * 10 - static_cast<int>(below) * 20);
 
     point1.setX(x1);
     point1.setY(y1);
 
-    qreal x2 = x + leftOfCenter * 20 - rightOfCenter * 10 + cornerCase * !vertical * (onLeft * 20 - onRight * 10);
+    qreal x2 = x + static_cast<int>(leftOfCenter) * 20 - static_cast<int>(rightOfCenter) * 10 +
+               static_cast<int>(cornerCase) * static_cast<int>(!vertical) *
+                   (static_cast<int>(onLeft) * 20 - static_cast<int>(onRight) * 10);
 
-    qreal y2 = y + aboveCenter * 20 - belowCenter * 10 + cornerCase * vertical * (above * 20 - below * 10);
+    qreal y2 = y + static_cast<int>(aboveCenter) * 20 - static_cast<int>(belowCenter) * 10 +
+               static_cast<int>(cornerCase) * static_cast<int>(vertical) *
+                   (static_cast<int>(above) * 20 - static_cast<int>(below) * 10);
 
     point2.setX(x2);
     point2.setY(y2);

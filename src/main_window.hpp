@@ -21,18 +21,19 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
 
   QSqlDatabase db;
 
-  TablePortfolio* load_portfolio_table();
+  auto load_portfolio_table() -> TablePortfolio*;
   void load_inflation_table();
-  CompareFunds* load_compare_funds();
-  FundCorrelation* load_fund_correlation();
-  FundPCA* load_fund_pca();
+  auto load_compare_funds() -> CompareFunds*;
+  auto load_fund_correlation() -> FundCorrelation*;
+  auto load_fund_pca() -> FundPCA*;
 
   void add_benchmark_table();
   void add_fund_table();
   void load_saved_tables();
-  void save_table(const QStackedWidget* sw);
   void clear_table(const QStackedWidget* sw);
   void remove_table(QListWidget* lw, QStackedWidget* sw);
+
+  static void save_table(const QStackedWidget* sw);
 
   void on_save_table_fund();
   void on_clear_table_fund();
@@ -49,7 +50,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
   void on_listwidget_item_changed(QListWidgetItem* item, QListWidget* lw, QStackedWidget* sw);
 
   template <class T>
-  T* load_table(const QString& name, QStackedWidget* sw, QListWidget* lw) {
+  auto load_table(const QString& name, QStackedWidget* sw, QListWidget* lw) -> T* {
     auto table = new T();
 
     table->set_database(db);

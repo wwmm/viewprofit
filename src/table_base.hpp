@@ -37,13 +37,13 @@ class TableBase : public QWidget, protected Ui::TableBase {
 
   Callout *callout1, *callout2;
 
-  bool eventFilter(QObject* object, QEvent* event);
+  auto eventFilter(QObject* object, QEvent* event) -> bool override;
   void remove_selected_rows();
   void reset_zoom();
   void calculate_accumulated_sum(const QString& column_name);
   void calculate_accumulated_product(const QString& column_name);
 
-  void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
+  static void on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name);
   void on_chart_selection(const bool& state);
 
  private:

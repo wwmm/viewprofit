@@ -51,7 +51,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   connect(button_save_table_benchmark, &QPushButton::clicked, this, &MainWindow::on_save_table_benchmark);
   connect(button_calculate_table_benchmark, &QPushButton::clicked, this, [&]() {
     auto table =
-        static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(stackedwidget_benchmarks->currentIndex()));
+        dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(stackedwidget_benchmarks->currentIndex()));
 
     table->calculate();
   });
@@ -61,7 +61,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   connect(button_clear_table_fund, &QPushButton::clicked, this, &MainWindow::on_clear_table_fund);
   connect(button_save_table_fund, &QPushButton::clicked, this, &MainWindow::on_save_table_fund);
   connect(button_calculate_table_fund, &QPushButton::clicked, this, [&]() {
-    auto table = static_cast<TableFund*>(stackedwidget_funds->widget(stackedwidget_funds->currentIndex()));
+    auto table = dynamic_cast<TableFund*>(stackedwidget_funds->widget(stackedwidget_funds->currentIndex()));
 
     table->calculate();
   });
@@ -113,7 +113,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
     path += "/viewprofit.sqlite";
 
-    qDebug("Database file: " + path.toLatin1());
+    qDebug() << "Database file: " + path.toLatin1();
 
     db.setDatabaseName(path);
 
@@ -127,7 +127,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       auto fund_tables = QVector<TableFund*>();
 
       for (int n = 0; n < stackedwidget_funds->count(); n++) {
-        fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
+        fund_tables.append(dynamic_cast<TableFund*>(stackedwidget_funds->widget(n)));
       }
 
       auto portfolio_table = load_portfolio_table();
@@ -149,7 +149,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
   show();
 }
 
-TablePortfolio* MainWindow::load_portfolio_table() {
+auto MainWindow::load_portfolio_table() -> TablePortfolio* {
   auto query = QSqlQuery(db);
 
   query.prepare(
@@ -173,7 +173,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
 
   connect(table, &TablePortfolio::getBenchmarkTables, this, [=]() {
     for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-      auto btable = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+      auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
       table->show_benchmark(btable);
     }
@@ -187,7 +187,7 @@ TablePortfolio* MainWindow::load_portfolio_table() {
   return table;
 }
 
-CompareFunds* MainWindow::load_compare_funds() {
+auto MainWindow::load_compare_funds() -> CompareFunds* {
   auto cf = new CompareFunds(db);
 
   stackedwidget_portfolio->addWidget(cf);
@@ -197,7 +197,7 @@ CompareFunds* MainWindow::load_compare_funds() {
   return cf;
 }
 
-FundCorrelation* MainWindow::load_fund_correlation() {
+auto MainWindow::load_fund_correlation() -> FundCorrelation* {
   auto fc = new FundCorrelation(db);
 
   stackedwidget_portfolio->addWidget(fc);
@@ -207,7 +207,7 @@ FundCorrelation* MainWindow::load_fund_correlation() {
   return fc;
 }
 
-FundPCA* MainWindow::load_fund_pca() {
+auto MainWindow::load_fund_pca() -> FundPCA* {
   auto fpca = new FundPCA(db);
 
   stackedwidget_portfolio->addWidget(fpca);
@@ -225,7 +225,7 @@ void MainWindow::load_inflation_table() {
       " date int default (cast(strftime('%s','now') as int)),value real default 0.0,accumulated real default 0.0)");
 
   if (query.exec()) {
-    auto table = new TableBenchmarks();
+    auto* table = new TableBenchmarks();
 
     table->set_database(db);
     table->name = "inflation";
@@ -257,7 +257,7 @@ void MainWindow::add_benchmark_table() {
 
     listwidget_tables_benchmarks->setCurrentRow(listwidget_tables_benchmarks->count() - 1);
   } else {
-    qDebug("Failed to create table " + name.toUtf8() + ". Maybe it already exists.");
+    qDebug() << "Failed to create table " + name.toUtf8() + ". Maybe it already exists.";
   }
 }
 
@@ -284,13 +284,13 @@ void MainWindow::add_fund_table() {
 
     connect(table, &TableFund::getBenchmarkTables, this, [=]() {
       for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-        auto btable = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+        auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
         table->show_benchmark(btable);
       }
     });
   } else {
-    qDebug("Failed to create table " + name.toUtf8() + ". Maybe it already exists.");
+    qDebug() << "Failed to create table " + name.toUtf8() + ". Maybe it already exists.";
   }
 }
 
@@ -316,7 +316,7 @@ void MainWindow::load_saved_tables() {
     auto investments = QVector<QString>();
 
     for (auto& name : names) {
-      qInfo("Found table: " + name.toUtf8());
+      qInfo() << "Found table: " + name.toUtf8();
 
       auto query = QSqlQuery(db);
 
@@ -338,7 +338,7 @@ void MainWindow::load_saved_tables() {
 
       connect(table, &TableFund::getBenchmarkTables, this, [=]() {
         for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-          auto btable = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+          auto btable = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
           table->show_benchmark(btable);
         }
@@ -350,13 +350,13 @@ void MainWindow::load_saved_tables() {
     }
 
     for (int n = 0; n < stackedwidget_benchmarks->count(); n++) {
-      auto table = static_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
+      auto table = dynamic_cast<TableBenchmarks*>(stackedwidget_benchmarks->widget(n));
 
       table->calculate();
     }
 
     for (int n = 0; n < stackedwidget_funds->count(); n++) {
-      auto table = static_cast<TableFund*>(stackedwidget_funds->widget(n));
+      auto table = dynamic_cast<TableFund*>(stackedwidget_funds->widget(n));
 
       table->calculate();
     }
@@ -397,7 +397,7 @@ void MainWindow::on_listwidget_item_changed(QListWidgetItem* item, QListWidget* 
       table->set_chart1_title(new_name);
       table->set_chart2_title(new_name);
     } else {
-      qDebug("failed to rename table " + table->name.toUtf8());
+      qDebug() << "failed to rename table " + table->name.toUtf8();
     }
   }
 }
@@ -423,9 +423,7 @@ void MainWindow::remove_table(QListWidget* lw, QStackedWidget* sw) {
 
     auto it = lw->takeItem(lw->currentRow());
 
-    if (it != nullptr) {
-      delete it;
-    }
+    delete it;
 
     qsettings.beginGroup(table->name);
 
@@ -438,7 +436,7 @@ void MainWindow::remove_table(QListWidget* lw, QStackedWidget* sw) {
     query.prepare("drop table if exists " + table->name);
 
     if (!query.exec()) {
-      qDebug("Failed remove table " + table->name.toUtf8() + ". Maybe has already been removed.");
+      qDebug() << "Failed remove table " + table->name.toUtf8() + ". Maybe has already been removed.";
     }
   }
 }
@@ -476,7 +474,7 @@ void MainWindow::clear_table(const QStackedWidget* sw) {
 
       table->clear_charts();
     } else {
-      qDebug(table->model->lastError().text().toUtf8());
+      qDebug() << table->model->lastError().text().toUtf8();
     }
   }
 }
@@ -510,7 +508,7 @@ void MainWindow::on_clear_table_portfolio() {
 
       table->clear_charts();
     } else {
-      qDebug(table->model->lastError().text().toUtf8());
+      qDebug() << table->model->lastError().text().toUtf8();
     }
   }
 }
@@ -519,9 +517,9 @@ void MainWindow::on_save_table_portfolio() {
   auto table = dynamic_cast<TableBase*>(stackedwidget_portfolio->widget(0));
 
   if (!table->model->submitAll()) {
-    qDebug("failed to save table " + table->name.toUtf8() + " to the database");
+    qDebug() << "failed to save table " + table->name.toUtf8() + " to the database";
 
-    qDebug(table->model->lastError().text().toUtf8());
+    qDebug() << table->model->lastError().text().toUtf8();
   }
 }
 
@@ -529,9 +527,9 @@ void MainWindow::save_table(const QStackedWidget* sw) {
   auto table = dynamic_cast<TableBase*>(sw->widget(sw->currentIndex()));
 
   if (!table->model->submitAll()) {
-    qDebug("failed to save table " + table->name.toUtf8() + " to the database");
+    qDebug() << "failed to save table " + table->name.toUtf8() + " to the database";
 
-    qDebug(table->model->lastError().text().toUtf8());
+    qDebug() << table->model->lastError().text().toUtf8();
   }
 }
 
@@ -547,22 +545,22 @@ void MainWindow::on_calculate_portfolio() {
   auto fund_tables = QVector<TableFund*>();
 
   for (int n = 0; n < stackedwidget_funds->count(); n++) {
-    fund_tables.append(static_cast<TableFund*>(stackedwidget_funds->widget(n)));
+    fund_tables.append(dynamic_cast<TableFund*>(stackedwidget_funds->widget(n)));
   }
 
-  auto portfolio_table = static_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
+  auto portfolio_table = dynamic_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));
 
   portfolio_table->process_fund_tables(fund_tables);
 
-  auto cf = static_cast<CompareFunds*>(stackedwidget_portfolio->widget(1));
+  auto cf = dynamic_cast<CompareFunds*>(stackedwidget_portfolio->widget(1));
 
   cf->process(fund_tables);
 
-  auto fc = static_cast<FundCorrelation*>(stackedwidget_portfolio->widget(2));
+  auto fc = dynamic_cast<FundCorrelation*>(stackedwidget_portfolio->widget(2));
 
   fc->process(fund_tables);
 
-  auto fpca = static_cast<FundPCA*>(stackedwidget_portfolio->widget(3));
+  auto fpca = dynamic_cast<FundPCA*>(stackedwidget_portfolio->widget(3));
 
   fpca->process(fund_tables);
 }

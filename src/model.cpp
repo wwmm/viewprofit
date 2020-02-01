@@ -2,13 +2,13 @@
 #include <QColor>
 #include <QDateTime>
 
-Model::Model(QSqlDatabase db, QObject* parent) : QSqlTableModel(parent, db) {}
+Model::Model(const QSqlDatabase& db, QObject* parent) : QSqlTableModel(parent, db) {}
 
-Qt::ItemFlags Model::flags(const QModelIndex& index) {
+auto Model::flags(const QModelIndex& index) -> Qt::ItemFlags {
   return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
-QVariant Model::data(const QModelIndex& index, int role) const {
+auto Model::data(const QModelIndex& index, int role) const -> QVariant {
   if (role == Qt::BackgroundRole) {
     return QColor(Qt::white);
   }
@@ -27,18 +27,18 @@ QVariant Model::data(const QModelIndex& index, int role) const {
         auto qdt = QDateTime::fromSecsSinceEpoch(v.toInt());
 
         return qdt.toString("MM/yyyy");
-      } else {
-        return v;
       }
-    } else {
-      return QSqlTableModel::data(index, role);
+
+      return v;
     }
+
+    return QSqlTableModel::data(index, role);
   }
 
   return QSqlTableModel::data(index, role);
 }
 
-bool Model::setData(const QModelIndex& index, const QVariant& value, int role) {
+auto Model::setData(const QModelIndex& index, const QVariant& value, int role) -> bool {
   if (role != Qt::EditRole) {
     return false;
   }
@@ -54,12 +54,14 @@ bool Model::setData(const QModelIndex& index, const QVariant& value, int role) {
       auto qdt = QDateTime::fromString(value.toString(), "MM/yyyy");
 
       return QSqlTableModel::setData(index, qdt.toSecsSinceEpoch(), role);
-    } else if (value.type() == QVariant::Int) {
-      return QSqlTableModel::setData(index, value, role);
-    } else {
-      return false;
     }
-  } else {
-    return QSqlTableModel::setData(index, value, role);
+
+    if (value.type() == QVariant::Int) {
+      return QSqlTableModel::setData(index, value, role);
+    }
+
+    return false;
   }
+
+  return QSqlTableModel::setData(index, value, role);
 }

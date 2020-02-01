@@ -16,8 +16,8 @@ class Callout : public QGraphicsItem {
   void setAnchor(QPointF point);
   void updateGeometry();
 
-  QRectF boundingRect() const;
-  void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+  [[nodiscard]] auto boundingRect() const -> QRectF override;
+  void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
  private:
   QChart* chart;

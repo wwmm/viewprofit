@@ -4,9 +4,13 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include "effects.hpp"
+#include "qdatetime.h"
+#include "table_type.hpp"
 
 TableBase::TableBase(QWidget* parent)
     : QWidget(parent),
+      type(TableType::Investment),
+      model(nullptr),
       chart1(new QChart()),
       chart2(new QChart()),
       callout1(new Callout(chart1)),
@@ -82,15 +86,17 @@ void TableBase::set_chart2_title(const QString& title) {
   chart2->setTitle(title);
 }
 
-bool TableBase::eventFilter(QObject* object, QEvent* event) {
+auto TableBase::eventFilter(QObject* object, QEvent* event) -> bool {
   if (event->type() == QEvent::KeyPress) {
-    QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+    auto* keyEvent = dynamic_cast<QKeyEvent*>(event);
 
     if (keyEvent->key() == Qt::Key_Delete) {
       remove_selected_rows();
 
       return true;
-    } else if (keyEvent->matches(QKeySequence::Copy)) {
+    }
+
+    if (keyEvent->matches(QKeySequence::Copy)) {
       auto s_model = table_view->selectionModel();
 
       if (s_model->hasSelection()) {
@@ -118,7 +124,9 @@ bool TableBase::eventFilter(QObject* object, QEvent* event) {
       }
 
       return true;
-    } else if (keyEvent->matches(QKeySequence::Paste)) {
+    }
+
+    if (keyEvent->matches(QKeySequence::Paste)) {
       auto s_model = table_view->selectionModel();
 
       if (s_model->hasSelection()) {
@@ -150,12 +158,12 @@ bool TableBase::eventFilter(QObject* object, QEvent* event) {
       }
 
       return true;
-    } else {
-      return QObject::eventFilter(object, event);
     }
-  } else {
+
     return QObject::eventFilter(object, event);
   }
+
+  return QObject::eventFilter(object, event);
 }
 
 void TableBase::remove_selected_rows() {
@@ -164,7 +172,8 @@ void TableBase::remove_selected_rows() {
   if (s_model->hasSelection()) {
     auto index_list = s_model->selectedIndexes();
 
-    QSet<int> row_set, column_set;
+    QSet<int> row_set;
+    QSet<int> column_set;
 
     for (auto& index : index_list) {
       row_set.insert(index.row());
@@ -179,7 +188,7 @@ void TableBase::remove_selected_rows() {
 
     QList<int> row_list = row_set.values();
 
-    if (row_list.size() > 0) {
+    if (!row_list.empty()) {
       std::sort(row_list.begin(), row_list.end());
       std::reverse(row_list.begin(), row_list.end());
 
@@ -255,7 +264,7 @@ void TableBase::on_add_row() {
 
   rec.setGenerated("id", false);
 
-  rec.setValue("date", int(QDateTime().currentSecsSinceEpoch()));
+  rec.setValue("date", int(QDateTime::currentSecsSinceEpoch()));
 
   // table benchmark
   rec.setGenerated("value", true);
@@ -296,20 +305,21 @@ void TableBase::on_add_row() {
   rec.setValue("accumulated_real_return_perc", 0.0);
 
   if (!model->insertRecord(0, rec)) {
-    qDebug("failed to add row to table " + name.toUtf8());
+    qDebug() << "failed to add row to table " + name.toUtf8();
 
-    qDebug(model->lastError().text().toUtf8());
+    qDebug() << model->lastError().text().toUtf8();
   }
 }
 
 void TableBase::calculate_accumulated_sum(const QString& column_name) {
-  QVector<double> list_values, accu;
+  QVector<double> list_values;
+  QVector<double> accu;
 
   for (int n = 0; n < model->rowCount(); n++) {
     list_values.append(model->record(n).value(column_name).toDouble());
   }
 
-  if (list_values.size() > 0) {
+  if (!list_values.empty()) {
     std::reverse(list_values.begin(), list_values.end());
 
     // cumulative sum
@@ -333,13 +343,14 @@ void TableBase::calculate_accumulated_sum(const QString& column_name) {
 }
 
 void TableBase::calculate_accumulated_product(const QString& column_name) {
-  QVector<double> list_values, accu;
+  QVector<double> list_values;
+  QVector<double> accu;
 
   for (int n = 0; n < model->rowCount(); n++) {
     list_values.append(model->record(n).value(column_name).toDouble());
   }
 
-  if (list_values.size() > 0) {
+  if (!list_values.empty()) {
     std::reverse(list_values.begin(), list_values.end());
 
     for (auto& value : list_values) {
@@ -350,7 +361,7 @@ void TableBase::calculate_accumulated_product(const QString& column_name) {
 
     accu.resize(list_values.size());
 
-    std::partial_sum(list_values.begin(), list_values.end(), accu.begin(), std::multiplies<double>());
+    std::partial_sum(list_values.begin(), list_values.end(), accu.begin(), std::multiplies<>());
 
     for (auto& value : accu) {
       value = (value - 1.0) * 100;
