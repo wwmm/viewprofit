@@ -3,7 +3,7 @@
 
 #include <QGraphicsDropShadowEffect>
 
-QGraphicsDropShadowEffect* button_shadow();
-QGraphicsDropShadowEffect* card_shadow();
+auto button_shadow() -> QGraphicsDropShadowEffect*;
+auto card_shadow() -> QGraphicsDropShadowEffect*;
 
 #endif

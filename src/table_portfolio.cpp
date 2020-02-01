@@ -65,11 +65,11 @@ void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
         list_set.insert(query.value(0).toInt());
       }
     } else {
-      qDebug(table->model->lastError().text().toUtf8());
+      qDebug() << table->model->lastError().text().toUtf8();
     }
   }
 
-  if (list_set.size() == 0) {
+  if (list_set.empty()) {
     return;
   }
 
@@ -82,9 +82,16 @@ void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
   auto qdt = QDateTime();
 
   for (auto& date : list_dates) {
-    double deposit = 0.0, withdrawal = 0.0, starting_balance = 0.0, ending_balance = 0.0, accumulated_deposit = 0.0,
-           accumulated_withdrawal = 0.0, net_deposit = 0.0, net_balance = 0.0, net_return = 0.0,
-           accumulated_net_return = 0.0;
+    double deposit = 0.0;
+    double withdrawal = 0.0;
+    double starting_balance = 0.0;
+    double ending_balance = 0.0;
+    double accumulated_deposit = 0.0;
+    double accumulated_withdrawal = 0.0;
+    double net_deposit = 0.0;
+    double net_balance = 0.0;
+    double net_return = 0.0;
+    double accumulated_net_return = 0.0;
 
     qdt.setSecsSinceEpoch(date);
 
@@ -118,7 +125,8 @@ void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
     // get inflation values so we can update real_return_perc
 
     QVector<int> inflation_dates;
-    QVector<double> inflation_values, inflation_accumulated;
+    QVector<double> inflation_values;
+    QVector<double> inflation_accumulated;
 
     auto query = QSqlQuery(db);
 
@@ -144,7 +152,8 @@ void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
       }
     }
 
-    double accumulated_net_return_perc = 0, accumulated_real_return_perc = 0;
+    double accumulated_net_return_perc = 0;
+    double accumulated_real_return_perc = 0;
 
     query = QSqlQuery(db);
 
@@ -169,7 +178,7 @@ void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
     query.addBindValue(accumulated_real_return_perc);
 
     if (!query.exec()) {
-      qDebug(model->lastError().text().toUtf8());
+      qDebug() << model->lastError().text().toUtf8();
     }
   }
 
@@ -210,7 +219,10 @@ void TablePortfolio::make_chart2() {
   add_axes_to_chart(chart2, "%");
 
   QVector<int> dates;
-  QVector<double> net_return, real_return, accumulated_net_return, accumulated_real_return;
+  QVector<double> net_return;
+  QVector<double> real_return;
+  QVector<double> accumulated_net_return;
+  QVector<double> accumulated_real_return;
 
   auto query = QSqlQuery(db);
 
@@ -224,7 +236,7 @@ void TablePortfolio::make_chart2() {
     }
   }
 
-  if (dates.size() == 0) {
+  if (dates.empty()) {
     return;
   }
 
@@ -244,8 +256,8 @@ void TablePortfolio::make_chart2() {
   accumulated_net_return.resize(net_return.size());
   accumulated_real_return.resize(real_return.size());
 
-  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<double>());
-  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<double>());
+  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<>());
+  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<>());
 
   for (int n = 0; n < dates.size(); n++) {
     accumulated_net_return[n] = (accumulated_net_return[n] - 1.0) * 100;
@@ -270,7 +282,7 @@ void TablePortfolio::make_chart2() {
 void TablePortfolio::show_benchmark(const TableBenchmarks* btable) {
   auto [dates, values, accumulated] = process_benchmark(btable->name, perc_chart_oldest_date);
 
-  if (chart2->axes().size() == 0) {
+  if (chart2->axes().empty()) {
     return;
   }
 
@@ -281,8 +293,8 @@ void TablePortfolio::show_benchmark(const TableBenchmarks* btable) {
   connect(series, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout2, series->name()); });
 
-  double vmin = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
-  double vmax = static_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();
+  double vmin = dynamic_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->min();
+  double vmax = dynamic_cast<QValueAxis*>(chart2->axes(Qt::Vertical)[0])->max();
 
   for (int n = 0; n < dates.size(); n++) {
     auto qdt = QDateTime::fromSecsSinceEpoch(dates[n]);
@@ -291,7 +303,7 @@ void TablePortfolio::show_benchmark(const TableBenchmarks* btable) {
 
     double v = accumulated[n];
 
-    if (chart2->series().size() > 0) {
+    if (!chart2->series().empty()) {
       vmin = std::min(vmin, v);
       vmax = std::max(vmax, v);
     } else {
@@ -315,11 +327,11 @@ void TablePortfolio::show_benchmark(const TableBenchmarks* btable) {
   chart2->axes(Qt::Vertical)[0]->setRange(vmin - 0.05 * fabs(vmin), vmax + 0.05 * fabs(vmax));
 }
 
-std::tuple<QVector<int>, QVector<double>, QVector<double>> TablePortfolio::process_benchmark(
-    const QString& table_name,
-    const int& oldest_date) const {
+auto TablePortfolio::process_benchmark(const QString& table_name, const int& oldest_date) const
+    -> std::tuple<QVector<int>, QVector<double>, QVector<double>> {
   QVector<int> dates;
-  QVector<double> values, accu;
+  QVector<double> values;
+  QVector<double> accu;
 
   auto query = QSqlQuery(db);
 
@@ -344,7 +356,7 @@ std::tuple<QVector<int>, QVector<double>, QVector<double>> TablePortfolio::proce
 
   accu.resize(values.size());
 
-  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<double>());
+  std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<>());
 
   for (auto& v : accu) {
     v = (v - 1.0) * 100;

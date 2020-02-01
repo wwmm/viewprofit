@@ -64,7 +64,7 @@ void FundCorrelation::process_tables() {
 
   auto dates = get_unique_months_from_db(db, tables, spinbox_months->value());
 
-  if (dates.size() == 0) {
+  if (dates.empty()) {
     return;
   }
 
@@ -122,7 +122,8 @@ void FundCorrelation::process_tables() {
       // calculating the Pearson correlation coefficient https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
       for (int n = 0; n < correlation.size(); n++) {
-        double avg = 0.0, tavg = 0.0;
+        double avg = 0.0;
+        double tavg = 0.0;
 
         for (int m = 0; m <= n; m++) {
           avg += values[m];
@@ -132,7 +133,8 @@ void FundCorrelation::process_tables() {
         avg /= (n + 1);
         tavg /= (n + 1);
 
-        double variance = 0.0, tvariance = 0.0;
+        double variance = 0.0;
+        double tvariance = 0.0;
 
         for (int m = 0; m <= n; m++) {
           variance += (values[m] - avg) * (values[m] - avg);

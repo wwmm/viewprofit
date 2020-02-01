@@ -1,6 +1,6 @@
 #include "effects.hpp"
 
-QGraphicsDropShadowEffect* button_shadow() {
+auto button_shadow() -> QGraphicsDropShadowEffect* {
   auto effect = new QGraphicsDropShadowEffect();
 
   effect->setColor(QColor(0, 0, 0, 100));
@@ -11,7 +11,7 @@ QGraphicsDropShadowEffect* button_shadow() {
   return effect;
 }
 
-QGraphicsDropShadowEffect* card_shadow() {
+auto card_shadow() -> QGraphicsDropShadowEffect* {
   auto effect = new QGraphicsDropShadowEffect();
 
   effect->setColor(QColor(0, 0, 0, 100));
