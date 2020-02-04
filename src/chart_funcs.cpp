@@ -1,6 +1,9 @@
 #include "chart_funcs.hpp"
 #include <QSqlError>
 #include <QSqlQuery>
+#include "qdatetime.h"
+#include "qdatetimeaxis.h"
+#include "qnamespace.h"
 
 void clear_chart(QChart* chart) {
   chart->removeAllSeries();
@@ -36,8 +39,10 @@ auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& seri
 
   series->setName(series_name.toLower());
 
-  double vmin = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
-  double vmax = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+  double ymin = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
+  double ymax = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+  qint64 xmin = dynamic_cast<QDateTimeAxis*>(chart->axes(Qt::Horizontal)[0])->min().toMSecsSinceEpoch();
+  qint64 xmax = dynamic_cast<QDateTimeAxis*>(chart->axes(Qt::Horizontal)[0])->max().toMSecsSinceEpoch();
 
   for (int n = 0; n < tmodel->rowCount(); n++) {
     auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "MM/yyyy");
@@ -47,15 +52,21 @@ auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& seri
     double v = tmodel->record(n).value(column_name).toDouble();
 
     if (!chart->series().empty()) {
-      vmin = std::min(vmin, v);
-      vmax = std::max(vmax, v);
+      ymin = std::min(ymin, v);
+      ymax = std::max(ymax, v);
+      xmin = std::min(xmin, epoch_in_ms);
+      xmax = std::max(xmax, epoch_in_ms);
     } else {
       if (n == 0) {
-        vmin = v;
-        vmax = v;
+        ymin = v;
+        ymax = v;
+        xmin = epoch_in_ms;
+        xmax = epoch_in_ms;
       } else {
-        vmin = std::min(vmin, v);
-        vmax = std::max(vmax, v);
+        ymin = std::min(ymin, v);
+        ymax = std::max(ymax, v);
+        xmin = std::min(xmin, epoch_in_ms);
+        xmax = std::max(xmax, epoch_in_ms);
       }
     }
 
@@ -67,7 +78,8 @@ auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& seri
   series->attachAxis(chart->axes(Qt::Horizontal)[0]);
   series->attachAxis(chart->axes(Qt::Vertical)[0]);
 
-  chart->axes(Qt::Vertical)[0]->setRange(vmin - 0.05 * fabs(vmin), vmax + 0.05 * fabs(vmax));
+  chart->axes(Qt::Vertical)[0]->setRange(ymin - 0.05 * fabs(ymin), ymax + 0.05 * fabs(ymax));
+  chart->axes(Qt::Horizontal)[0]->setRange(QDateTime::fromMSecsSinceEpoch(xmin), QDateTime::fromMSecsSinceEpoch(xmax));
 
   return series;
 }
@@ -80,26 +92,35 @@ auto add_series_to_chart(QChart* chart,
 
   series->setName(series_name.toLower());
 
-  double vmin = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
-  double vmax = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+  double ymin = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->min();
+  double ymax = dynamic_cast<QValueAxis*>(chart->axes(Qt::Vertical)[0])->max();
+  qint64 xmin = dynamic_cast<QDateTimeAxis*>(chart->axes(Qt::Horizontal)[0])->min().toMSecsSinceEpoch();
+  qint64 xmax = dynamic_cast<QDateTimeAxis*>(chart->axes(Qt::Horizontal)[0])->max().toMSecsSinceEpoch();
 
   for (int n = 0; n < dates.size(); n++) {
     double v = values[n];
+    qint64 d = static_cast<qint64>(dates[n]) * 1000;
 
     if (!chart->series().empty()) {
-      vmin = std::min(vmin, v);
-      vmax = std::max(vmax, v);
+      ymin = std::min(ymin, v);
+      ymax = std::max(ymax, v);
+      xmin = std::min(xmin, d);
+      xmax = std::max(xmax, d);
     } else {
       if (n == 0) {
-        vmin = v;
-        vmax = v;
+        ymin = v;
+        ymax = v;
+        xmin = d;
+        xmax = d;
       } else {
-        vmin = std::min(vmin, v);
-        vmax = std::max(vmax, v);
+        ymin = std::min(ymin, v);
+        ymax = std::max(ymax, v);
+        xmin = std::min(xmin, d);
+        xmax = std::max(xmax, d);
       }
     }
 
-    series->append((long long)(dates[n]) * 1000, v);
+    series->append(d, v);
   }
 
   chart->addSeries(series);
@@ -107,7 +128,8 @@ auto add_series_to_chart(QChart* chart,
   series->attachAxis(chart->axes(Qt::Horizontal)[0]);
   series->attachAxis(chart->axes(Qt::Vertical)[0]);
 
-  chart->axes(Qt::Vertical)[0]->setRange(vmin - 0.05 * fabs(vmin), vmax + 0.05 * fabs(vmax));
+  chart->axes(Qt::Vertical)[0]->setRange(ymin - 0.05 * fabs(ymin), ymax + 0.05 * fabs(ymax));
+  chart->axes(Qt::Horizontal)[0]->setRange(QDateTime::fromMSecsSinceEpoch(xmin), QDateTime::fromMSecsSinceEpoch(xmax));
 
   return series;
 }
