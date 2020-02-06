@@ -213,21 +213,15 @@ void TableFund::make_chart2() {
   add_axes_to_chart(chart2, "%");
 
   QVector<int> dates;
-  QVector<double> net_return;
-  QVector<double> real_return;
   QVector<double> accumulated_net_return;
   QVector<double> accumulated_real_return;
 
-  auto query = QSqlQuery(db);
+  for (int n = 0; n < model->rowCount() && dates.size() < spinbox_months->value(); n++) {
+    auto qdt = QDateTime::fromString(model->record(n).value("date").toString(), "MM/yyyy");
 
-  query.prepare("select distinct date,net_return_perc,real_return_perc from " + name + " order by date desc");
-
-  if (query.exec()) {
-    while (query.next() && dates.size() < spinbox_months->value()) {
-      dates.append(query.value(0).toInt());
-      net_return.append(query.value(1).toDouble());
-      real_return.append(query.value(2).toDouble());
-    }
+    dates.append(qdt.toSecsSinceEpoch());
+    accumulated_net_return.append(model->record(n).value("accumulated_net_return_perc").toDouble());
+    accumulated_real_return.append(model->record(n).value("accumulated_real_return_perc").toDouble());
   }
 
   if (dates.empty()) {
@@ -235,28 +229,6 @@ void TableFund::make_chart2() {
   }
 
   perc_chart_oldest_date = dates[dates.size() - 1];
-
-  std::reverse(dates.begin(), dates.end());
-  std::reverse(net_return.begin(), net_return.end());
-  std::reverse(real_return.begin(), real_return.end());
-
-  for (int n = 0; n < dates.size(); n++) {
-    net_return[n] = net_return[n] * 0.01 + 1.0;
-    real_return[n] = real_return[n] * 0.01 + 1.0;
-  }
-
-  // cumulative product
-
-  accumulated_net_return.resize(net_return.size());
-  accumulated_real_return.resize(real_return.size());
-
-  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<>());
-  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<>());
-
-  for (int n = 0; n < dates.size(); n++) {
-    accumulated_net_return[n] = (accumulated_net_return[n] - 1.0) * 100;
-    accumulated_real_return[n] = (accumulated_real_return[n] - 1.0) * 100;
-  }
 
   auto s1 = add_series_to_chart(chart2, dates, accumulated_net_return, "Net Return");
 

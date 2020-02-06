@@ -23,6 +23,7 @@ class TableFund : public TableBase {
 
   [[nodiscard]] auto process_benchmark(const QString& table_name, const int& oldest_date) const
       -> std::tuple<QVector<int>, QVector<double>, QVector<double>>;
+
   void make_chart1();
   void make_chart2();
 };
