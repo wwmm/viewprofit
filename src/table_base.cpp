@@ -1,10 +1,5 @@
 #include "table_base.hpp"
-#include <QGuiApplication>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QSqlRecord>
 #include "effects.hpp"
-#include "qdatetime.h"
 #include "table_type.hpp"
 
 TableBase::TableBase(QWidget* parent)
@@ -306,8 +301,6 @@ void TableBase::on_add_row() {
 
   if (!model->insertRecord(0, rec)) {
     qDebug() << "failed to add row to table " + name.toUtf8();
-
-    qDebug() << model->lastError().text().toUtf8();
   }
 }
 
