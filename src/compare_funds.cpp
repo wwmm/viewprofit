@@ -384,7 +384,11 @@ void CompareFunds::make_chart_barseries(const QString& series_name, const QStrin
       for (int n = 1; n < barsets.size(); n++) {
         if (barsets[n] == barset) {
           for (int m = 0; m < n; m++) {
-            v += barsets[m]->at(index);
+            auto bv = barsets[m]->at(index);
+
+            if (v * bv > 0) {
+              v += bv;
+            }
           }
 
           break;
