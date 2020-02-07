@@ -17,9 +17,9 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  private:
   QSqlDatabase db;
 
-  QChart* chart;
+  QChart* const chart;
 
-  Callout* callout;
+  Callout* const callout;
 
   QVector<TableFund const*> tables;
 

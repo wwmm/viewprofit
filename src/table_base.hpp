@@ -33,9 +33,12 @@ class TableBase : public QWidget, protected Ui::TableBase {
 
  protected:
   QSqlDatabase db;
-  QChart *chart1, *chart2;
 
-  Callout *callout1, *callout2;
+  QChart* const chart1;
+  QChart* const chart2;
+
+  Callout* const callout1;
+  Callout* const callout2;
 
   auto eventFilter(QObject* object, QEvent* event) -> bool override;
   void remove_selected_rows();

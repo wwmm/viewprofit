@@ -16,9 +16,9 @@ class FundCorrelation : public QWidget, protected Ui::FundCorrelation {
  private:
   QSqlDatabase db;
 
-  QChart* chart;
+  QChart* const chart;
 
-  Callout* callout;
+  Callout* const callout;
 
   QVector<TableFund const*> tables;
 
