@@ -166,42 +166,20 @@ void CompareFunds::make_chart_accumulated_net_return() {
 
   for (auto& table : tables) {
     QVector<int> dates;
-    QVector<double> values;
-    QVector<double> accu;
+    QVector<double> accumulated_net_return;
 
-    auto query = QSqlQuery(db);
+    for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
+      auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
 
-    query.prepare("select distinct date,net_return_perc from " + table->name + " order by date desc");
-
-    if (query.exec()) {
-      while (query.next() && dates.size() < spinbox_months->value()) {
-        dates.append(query.value(0).toInt());
-        values.append(query.value(1).toDouble());
-      }
+      dates.append(qdt.toSecsSinceEpoch());
+      accumulated_net_return.append(table->model->record(n).value("accumulated_net_return_perc").toDouble());
     }
 
-    if (dates.empty()) {
+    if (dates.size() < 2) {  // We need at least 2 points to show a line chart
       continue;
     }
 
-    std::reverse(dates.begin(), dates.end());
-    std::reverse(values.begin(), values.end());
-
-    for (auto& v : values) {
-      v = v * 0.01 + 1.0;
-    }
-
-    // cumulative product
-
-    accu.resize(values.size());
-
-    std::partial_sum(values.begin(), values.end(), accu.begin(), std::multiplies<>());
-
-    for (auto& v : accu) {
-      v = (v - 1.0) * 100;
-    }
-
-    auto s = add_series_to_chart(chart, dates, accu, table->name.toUpper());
+    auto s = add_series_to_chart(chart, dates, accumulated_net_return, table->name.toUpper());
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
