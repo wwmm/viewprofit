@@ -79,16 +79,14 @@ void CompareFunds::make_chart_net_balance_pie() {
       d = deque[0].second;
 
       deque.pop_front();
-
-      pop_front = false;
     } else {
       name = deque[deque.size() - 1].first;
       d = deque[deque.size() - 1].second;
 
       deque.pop_back();
-
-      pop_front = true;
     }
+
+    pop_front = !pop_front;
 
     series->append(name, d);
   }
@@ -104,10 +102,9 @@ void CompareFunds::make_chart_net_balance_pie() {
 
     if (explode) {
       slice->setExploded(true);
-      explode = false;
-    } else {
-      explode = true;
     }
+
+    explode = !explode;
   }
 
   chart->addSeries(series);
