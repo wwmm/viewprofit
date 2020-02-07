@@ -44,6 +44,8 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   connect(radio_accumulated_net_return_pie, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
   connect(radio_accumulated_net_return_perc, &QRadioButton::toggled, this, &CompareFunds::on_chart_selection);
+  connect(radio_accumulated_net_return_second_derivative, &QRadioButton::toggled, this,
+          &CompareFunds::on_chart_selection);
 
   connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { process_tables(); });
 }
@@ -212,7 +214,7 @@ void CompareFunds::make_chart_net_return_volatility() {
     }
 
     if (dates.empty()) {
-      break;
+      continue;
     }
 
     std::reverse(dates.begin(), dates.end());
@@ -334,7 +336,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
     }
 
     if (dates.empty()) {
-      break;
+      continue;
     }
 
     std::reverse(dates.begin(), dates.end());
@@ -355,6 +357,53 @@ void CompareFunds::make_chart_accumulated_net_return() {
     }
 
     auto s = add_series_to_chart(chart, dates, accu, table->name.toUpper());
+
+    connect(s, &QLineSeries::hovered, this,
+            [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
+  }
+}
+
+void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
+  chart->setTitle("Accumulated Net Return Second Derivative");
+
+  add_axes_to_chart(chart, "");
+
+  for (auto& table : tables) {
+    QVector<int> dates;
+    QVector<double> accumulated_net_return;
+    QVector<double> second_derivative;
+
+    for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
+      auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
+
+      dates.append(qdt.toSecsSinceEpoch());
+      accumulated_net_return.append(table->model->record(n).value("accumulated_net_return_perc").toDouble());
+    }
+
+    if (dates.size() < 3) {  // We need at least 3 points to calculate the second derivative
+      continue;
+    }
+
+    std::reverse(dates.begin(), dates.end());
+    std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
+
+    second_derivative.resize(dates.size());
+
+    // https://en.wikipedia.org/wiki/Finite_difference
+
+    for (int n = 0; n < accumulated_net_return.size(); n++) {
+      if (n == 0) {  // second order forward using dt = 1 month
+        second_derivative[n] = accumulated_net_return[2] - 2 * accumulated_net_return[1] + accumulated_net_return[0];
+      } else if (n == accumulated_net_return.size() - 1) {  // second order backward
+        second_derivative[n] =
+            accumulated_net_return[n] - 2 * accumulated_net_return[n - 1] + accumulated_net_return[n - 2];
+      } else {  // second order central
+        second_derivative[n] =
+            accumulated_net_return[n + 1] - 2 * accumulated_net_return[n] + accumulated_net_return[n - 1];
+      }
+    }
+
+    auto s = add_series_to_chart(chart, dates, second_derivative, table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -438,6 +487,8 @@ void CompareFunds::process_tables() {
     make_chart_barseries("Acumulated Net Return", "accumulated_net_return");
   } else if (radio_accumulated_net_return_perc->isChecked()) {
     make_chart_accumulated_net_return();
+  } else if (radio_accumulated_net_return_second_derivative->isChecked()) {
+    make_chart_accumulated_net_return_second_derivative();
   }
 }
 
@@ -465,6 +516,9 @@ void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callou
                      .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
     } else if (radio_net_return_volatility->isChecked()) {
       c->setText(QString("Fund: %1\nDate: %2\nValue: %3%")
+                     .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
+    } else if (radio_accumulated_net_return_second_derivative->isChecked()) {
+      c->setText(QString("Fund: %1\nDate: %2\nValue: %3")
                      .arg(name, qdt.toString("MM/yyyy"), QString::number(point.y(), 'f', 2)));
     }
 

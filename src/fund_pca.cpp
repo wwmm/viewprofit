@@ -61,7 +61,7 @@ void FundPCA::process_tables() {
     }
 
     if (values.empty()) {
-      break;
+      continue;
     }
 
     for (int n = 0; n < values.size(); n++) {

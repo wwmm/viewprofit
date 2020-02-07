@@ -30,6 +30,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
   void make_chart_net_return_volatility();
   void make_chart_accumulated_net_return_pie();
   void make_chart_accumulated_net_return();
+  void make_chart_accumulated_net_return_second_derivative();
   void make_chart_barseries(const QString& series_name, const QString& column_name);
 
   void on_chart_selection(const bool& state);
