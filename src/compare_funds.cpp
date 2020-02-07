@@ -188,6 +188,30 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
   }
+
+  // portfolio
+
+  QVector<int> dates;
+  QVector<double> accumulated_net_return;
+
+  for (int n = 0; n < portfolio->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
+    auto qdt = QDateTime::fromString(portfolio->model->record(n).value("date").toString(), "MM/yyyy");
+
+    dates.append(qdt.toSecsSinceEpoch());
+    accumulated_net_return.append(portfolio->model->record(n).value("accumulated_net_return_perc").toDouble());
+  }
+
+  if (dates.size() < 3) {  // We need at least 3 points to calculate the second derivative
+    return;
+  }
+
+  std::reverse(dates.begin(), dates.end());
+  std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
+
+  auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), portfolio->name);
+
+  connect(s, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
 }
 
 void CompareFunds::make_chart_barseries(const QString& series_name, const QString& column_name) {
@@ -296,8 +320,9 @@ void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
   chart->addSeries(series);
 }
 
-void CompareFunds::process(const QVector<TableFund const*>& tables) {
+void CompareFunds::process(const QVector<TableFund const*>& tables, TablePortfolio const* portfolio) {
   this->tables = tables;
+  this->portfolio = portfolio;
 
   process_tables();
 }

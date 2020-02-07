@@ -138,7 +138,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
       // This has to be done after loading the other tables
 
       portfolio_table->process_fund_tables(fund_tables);
-      cf->process(fund_tables);
+      cf->process(fund_tables, portfolio_table);
       fc->process(fund_tables);
       fpca->process(fund_tables);
     } else {
@@ -554,7 +554,7 @@ void MainWindow::on_calculate_portfolio() {
 
   auto cf = dynamic_cast<CompareFunds*>(stackedwidget_portfolio->widget(1));
 
-  cf->process(fund_tables);
+  cf->process(fund_tables, portfolio_table);
 
   auto fc = dynamic_cast<FundCorrelation*>(stackedwidget_portfolio->widget(2));
 

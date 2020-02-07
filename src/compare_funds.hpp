@@ -5,6 +5,7 @@
 #include <deque>
 #include "callout.hpp"
 #include "table_fund.hpp"
+#include "table_portfolio.hpp"
 #include "ui_compare_funds.h"
 
 class CompareFunds : public QWidget, protected Ui::CompareFunds {
@@ -12,7 +13,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  public:
   explicit CompareFunds(const QSqlDatabase& database, QWidget* parent = nullptr);
 
-  void process(const QVector<TableFund const*>& tables);
+  void process(const QVector<TableFund const*>& tables, TablePortfolio const* portfolio);
 
  private:
   QSqlDatabase db;
@@ -22,6 +23,8 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
   Callout* const callout;
 
   QVector<TableFund const*> tables;
+
+  TablePortfolio const* portfolio;
 
   void process_tables();
 
