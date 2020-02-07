@@ -1,7 +1,6 @@
 #include "compare_funds.hpp"
 #include <QSqlError>
 #include <QSqlQuery>
-#include <deque>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -51,125 +50,23 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
 }
 
 void CompareFunds::make_chart_net_balance_pie() {
-  chart->setTitle("");
-
-  auto series = new QPieSeries();
-
-  series->setPieSize(0.6);
-
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
     deque.emplace_back(table->name, table->model->record(0).value("net_balance").toDouble());
   }
 
-  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
-
-  /*
-    Now we alternate the slices. This will help to avoid label overlap.
-  */
-
-  bool pop_front = true;
-  QVector<QString> names_added;
-
-  while (!deque.empty()) {
-    double d;
-    QString name;
-
-    if (pop_front) {
-      name = deque[0].first;
-      d = deque[0].second;
-
-      deque.pop_front();
-    } else {
-      name = deque[deque.size() - 1].first;
-      d = deque[deque.size() - 1].second;
-
-      deque.pop_back();
-    }
-
-    pop_front = !pop_front;
-
-    series->append(name, d);
-  }
-
-  bool explode = true;
-
-  for (auto& slice : series->slices()) {
-    slice->setLabelVisible(true);
-
-    auto label = slice->label();
-
-    slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
-
-    if (explode) {
-      slice->setExploded(true);
-    }
-
-    explode = !explode;
-  }
-
-  chart->addSeries(series);
+  make_pie(deque);
 }
 
 void CompareFunds::make_chart_net_return_pie() {
-  chart->setTitle("");
-
-  auto series = new QPieSeries();
-
-  series->setPieSize(0.6);
-
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
     deque.emplace_back(table->name, table->model->record(0).value("net_return").toDouble());
   }
 
-  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
-
-  /*
-    Now we alternate the slices. This will help to avoid label overlap.
-  */
-
-  bool pop_front = true;
-  QVector<QString> names_added;
-
-  while (!deque.empty()) {
-    double d;
-    QString name;
-
-    if (pop_front) {
-      name = deque[0].first;
-      d = deque[0].second;
-
-      deque.pop_front();
-    } else {
-      name = deque[deque.size() - 1].first;
-      d = deque[deque.size() - 1].second;
-
-      deque.pop_back();
-    }
-
-    pop_front = !pop_front;
-
-    series->append(name, d);
-  }
-
-  bool explode = true;
-
-  for (auto& slice : series->slices()) {
-    slice->setLabelVisible(true);
-
-    auto label = slice->label();
-
-    slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
-
-    slice->setExploded(explode);
-
-    explode = !explode;
-  }
-
-  chart->addSeries(series);
+  make_pie(deque);
 }
 
 void CompareFunds::make_chart_net_return() {
@@ -213,7 +110,7 @@ void CompareFunds::make_chart_net_return_volatility() {
       }
     }
 
-    if (dates.empty()) {
+    if (dates.size() < 2) {
       continue;
     }
 
@@ -253,65 +150,13 @@ void CompareFunds::make_chart_net_return_volatility() {
 }
 
 void CompareFunds::make_chart_accumulated_net_return_pie() {
-  chart->setTitle("");
-
-  auto series = new QPieSeries();
-
-  series->setPieSize(0.6);
-
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
     deque.emplace_back(table->name, table->model->record(0).value("accumulated_net_return").toDouble());
   }
 
-  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
-
-  /*
-    Now we alternate the slices. This will help to avoid label overlap.
-  */
-
-  bool pop_front = true;
-  QVector<QString> names_added;
-
-  while (!deque.empty()) {
-    double d;
-    QString name;
-
-    if (pop_front) {
-      name = deque[0].first;
-      d = deque[0].second;
-
-      deque.pop_front();
-    } else {
-      name = deque[deque.size() - 1].first;
-      d = deque[deque.size() - 1].second;
-
-      deque.pop_back();
-    }
-
-    pop_front = !pop_front;
-
-    series->append(name, d);
-  }
-
-  bool explode = true;
-
-  for (auto& slice : series->slices()) {
-    slice->setLabelVisible(true);
-
-    auto label = slice->label();
-
-    slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
-
-    if (explode) {
-      slice->setExploded(true);
-    }
-
-    explode = !explode;
-  }
-
-  chart->addSeries(series);
+  make_pie(deque);
 }
 
 void CompareFunds::make_chart_accumulated_net_return() {
@@ -458,6 +303,62 @@ void CompareFunds::make_chart_barseries(const QString& series_name, const QStrin
       callout->hide();
     }
   });
+}
+
+void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
+  chart->setTitle("");
+
+  auto series = new QPieSeries();
+
+  series->setPieSize(0.6);
+
+  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
+
+  /*
+    Now we alternate the slices. This will help to avoid label overlap.
+  */
+
+  bool pop_front = true;
+  QVector<QString> names_added;
+
+  while (!deque.empty()) {
+    double d;
+    QString name;
+
+    if (pop_front) {
+      name = deque[0].first;
+      d = deque[0].second;
+
+      deque.pop_front();
+    } else {
+      name = deque[deque.size() - 1].first;
+      d = deque[deque.size() - 1].second;
+
+      deque.pop_back();
+    }
+
+    pop_front = !pop_front;
+
+    series->append(name, d);
+  }
+
+  bool explode = true;
+
+  for (auto& slice : series->slices()) {
+    slice->setLabelVisible(true);
+
+    auto label = slice->label();
+
+    slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
+
+    if (explode) {
+      slice->setExploded(true);
+    }
+
+    explode = !explode;
+  }
+
+  chart->addSeries(series);
 }
 
 void CompareFunds::process(const QVector<TableFund*>& tables) {
