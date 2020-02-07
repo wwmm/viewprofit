@@ -20,7 +20,7 @@ class Callout : public QGraphicsItem {
   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
  private:
-  QChart* chart;
+  QChart* const chart;
 
   QPointF anchor;
   QRectF rect;

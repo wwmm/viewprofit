@@ -1,8 +1,6 @@
 #ifndef CHART_FUNCS_HPP
 #define CHART_FUNCS_HPP
 
-#include <QSqlDatabase>
-#include <QSqlRecord>
 #include <QtCharts>
 #include <tuple>
 #include "model.hpp"

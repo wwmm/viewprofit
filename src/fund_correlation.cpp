@@ -36,7 +36,7 @@ FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
 void FundCorrelation::process(const QVector<TableFund const*>& tables) {
   this->tables = tables;
 
-  auto current_text = combo_fund->currentText();
+  const auto current_text = combo_fund->currentText();
 
   combo_fund->disconnect();
   combo_fund->clear();
@@ -62,7 +62,7 @@ void FundCorrelation::process(const QVector<TableFund const*>& tables) {
 void FundCorrelation::process_tables() {
   clear_chart(chart);
 
-  auto dates = get_unique_months_from_db(db, tables, spinbox_months->value());
+  const auto dates = get_unique_months_from_db(db, tables, spinbox_months->value());
 
   if (dates.empty()) {
     return;
@@ -81,7 +81,7 @@ void FundCorrelation::process_tables() {
     query.prepare("select net_return_perc from " + combo_fund->currentText() +
                   " where strftime('%m/%Y', \"date\",'unixepoch')=?");
 
-    auto qdt = QDateTime::fromSecsSinceEpoch(date);
+    const auto qdt = QDateTime::fromSecsSinceEpoch(date);
 
     query.addBindValue(qdt.toString("MM/yyyy"));
 
@@ -106,7 +106,7 @@ void FundCorrelation::process_tables() {
         query.prepare("select net_return_perc from " + table->name +
                       " where strftime('%m/%Y', \"date\",'unixepoch')=?");
 
-        auto qdt = QDateTime::fromSecsSinceEpoch(date);
+        const auto qdt = QDateTime::fromSecsSinceEpoch(date);
 
         query.addBindValue(qdt.toString("MM/yyyy"));
 

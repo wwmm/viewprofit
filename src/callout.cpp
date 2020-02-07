@@ -7,7 +7,7 @@
 Callout::Callout(QChart* parent) : QGraphicsItem(parent), chart(parent) {}
 
 auto Callout::boundingRect() const -> QRectF {
-  QPointF a = mapFromParent(chart->mapToPosition(anchor));
+  const QPointF a = mapFromParent(chart->mapToPosition(anchor));
   QRectF r;
 
   r.setLeft(qMin(rect.left(), a.x()));
@@ -26,7 +26,7 @@ void Callout::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 
   path.addRoundedRect(rect, 5, 5);
 
-  QPointF a = mapFromParent(chart->mapToPosition(anchor));
+  const QPointF a = mapFromParent(chart->mapToPosition(anchor));
 
   if (!rect.contains(a)) {
     QPointF point1;
@@ -34,40 +34,42 @@ void Callout::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 
     // establish the position of the anchor point in relation to rect
 
-    bool above = a.y() <= rect.top();
-    bool aboveCenter = a.y() > rect.top() && a.y() <= rect.center().y();
-    bool belowCenter = a.y() > rect.center().y() && a.y() <= rect.bottom();
-    bool below = a.y() > rect.bottom();
+    const bool above = a.y() <= rect.top();
+    const bool aboveCenter = a.y() > rect.top() && a.y() <= rect.center().y();
+    const bool belowCenter = a.y() > rect.center().y() && a.y() <= rect.bottom();
+    const bool below = a.y() > rect.bottom();
 
-    bool onLeft = a.x() <= rect.left();
-    bool leftOfCenter = a.x() > rect.left() && a.x() <= rect.center().x();
-    bool rightOfCenter = a.x() > rect.center().x() && a.x() <= rect.right();
-    bool onRight = a.x() > rect.right();
+    const bool onLeft = a.x() <= rect.left();
+    const bool leftOfCenter = a.x() > rect.left() && a.x() <= rect.center().x();
+    const bool rightOfCenter = a.x() > rect.center().x() && a.x() <= rect.right();
+    const bool onRight = a.x() > rect.right();
 
     // get the nearest rect corner.
 
-    qreal x = (static_cast<int>(onRight) + static_cast<int>(rightOfCenter)) * rect.width();
-    qreal y = (static_cast<int>(below) + static_cast<int>(belowCenter)) * rect.height();
-    bool cornerCase = (above && onLeft) || (above && onRight) || (below && onLeft) || (below && onRight);
-    bool vertical = qAbs(a.x() - x) > qAbs(a.y() - y);
+    const qreal x = (static_cast<int>(onRight) + static_cast<int>(rightOfCenter)) * rect.width();
+    const qreal y = (static_cast<int>(below) + static_cast<int>(belowCenter)) * rect.height();
 
-    qreal x1 = x + static_cast<int>(leftOfCenter) * 10 - static_cast<int>(rightOfCenter) * 20 +
-               static_cast<int>(cornerCase) * static_cast<int>(!vertical) *
-                   (static_cast<int>(onLeft) * 10 - static_cast<int>(onRight) * 20);
-    qreal y1 = y + static_cast<int>(aboveCenter) * 10 - static_cast<int>(belowCenter) * 20 +
-               static_cast<int>(cornerCase) * static_cast<int>(vertical) *
-                   (static_cast<int>(above) * 10 - static_cast<int>(below) * 20);
+    const bool cornerCase = (above && onLeft) || (above && onRight) || (below && onLeft) || (below && onRight);
+    const bool vertical = qAbs(a.x() - x) > qAbs(a.y() - y);
+
+    const qreal x1 = x + static_cast<int>(leftOfCenter) * 10 - static_cast<int>(rightOfCenter) * 20 +
+                     static_cast<int>(cornerCase) * static_cast<int>(!vertical) *
+                         (static_cast<int>(onLeft) * 10 - static_cast<int>(onRight) * 20);
+
+    const qreal y1 = y + static_cast<int>(aboveCenter) * 10 - static_cast<int>(belowCenter) * 20 +
+                     static_cast<int>(cornerCase) * static_cast<int>(vertical) *
+                         (static_cast<int>(above) * 10 - static_cast<int>(below) * 20);
 
     point1.setX(x1);
     point1.setY(y1);
 
-    qreal x2 = x + static_cast<int>(leftOfCenter) * 20 - static_cast<int>(rightOfCenter) * 10 +
-               static_cast<int>(cornerCase) * static_cast<int>(!vertical) *
-                   (static_cast<int>(onLeft) * 20 - static_cast<int>(onRight) * 10);
+    const qreal x2 = x + static_cast<int>(leftOfCenter) * 20 - static_cast<int>(rightOfCenter) * 10 +
+                     static_cast<int>(cornerCase) * static_cast<int>(!vertical) *
+                         (static_cast<int>(onLeft) * 20 - static_cast<int>(onRight) * 10);
 
-    qreal y2 = y + static_cast<int>(aboveCenter) * 20 - static_cast<int>(belowCenter) * 10 +
-               static_cast<int>(cornerCase) * static_cast<int>(vertical) *
-                   (static_cast<int>(above) * 20 - static_cast<int>(below) * 10);
+    const qreal y2 = y + static_cast<int>(aboveCenter) * 20 - static_cast<int>(belowCenter) * 10 +
+                     static_cast<int>(cornerCase) * static_cast<int>(vertical) *
+                         (static_cast<int>(above) * 20 - static_cast<int>(below) * 10);
 
     point2.setX(x2);
     point2.setY(y2);
