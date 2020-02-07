@@ -144,16 +144,14 @@ void CompareFunds::make_chart_net_return_pie() {
       d = deque[0].second;
 
       deque.pop_front();
-
-      pop_front = false;
     } else {
       name = deque[deque.size() - 1].first;
       d = deque[deque.size() - 1].second;
 
       deque.pop_back();
-
-      pop_front = true;
     }
+
+    pop_front = !pop_front;
 
     series->append(name, d);
   }
@@ -167,12 +165,9 @@ void CompareFunds::make_chart_net_return_pie() {
 
     slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
 
-    if (explode) {
-      slice->setExploded(true);
-      explode = false;
-    } else {
-      explode = true;
-    }
+    slice->setExploded(explode);
+
+    explode = !explode;
   }
 
   chart->addSeries(series);
@@ -289,16 +284,14 @@ void CompareFunds::make_chart_accumulated_net_return_pie() {
       d = deque[0].second;
 
       deque.pop_front();
-
-      pop_front = false;
     } else {
       name = deque[deque.size() - 1].first;
       d = deque[deque.size() - 1].second;
 
       deque.pop_back();
-
-      pop_front = true;
     }
+
+    pop_front = !pop_front;
 
     series->append(name, d);
   }
@@ -314,10 +307,9 @@ void CompareFunds::make_chart_accumulated_net_return_pie() {
 
     if (explode) {
       slice->setExploded(true);
-      explode = false;
-    } else {
-      explode = true;
     }
+
+    explode = !explode;
   }
 
   chart->addSeries(series);

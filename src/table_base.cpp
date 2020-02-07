@@ -1,5 +1,6 @@
 #include "table_base.hpp"
 #include "effects.hpp"
+#include "qpushbutton.h"
 #include "table_type.hpp"
 
 TableBase::TableBase(QWidget* parent)
@@ -300,7 +301,7 @@ void TableBase::on_add_row() {
   rec.setValue("accumulated_real_return_perc", 0.0);
 
   if (!model->insertRecord(0, rec)) {
-    qDebug() << "failed to add row to table " + name.toUtf8();
+    qDebug() << "failed to add row to table " + name;
   }
 }
 
