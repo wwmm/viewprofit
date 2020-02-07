@@ -363,9 +363,7 @@ void CompareFunds::on_chart_selection(const bool& state) {
 
 void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {
   if (state) {
-    auto qdt = QDateTime();
-
-    qdt.setMSecsSinceEpoch(point.x());
+    const auto qdt = QDateTime::fromMSecsSinceEpoch(point.x());
 
     if (radio_net_return_perc->isChecked() || radio_accumulated_net_return_perc->isChecked()) {
       c->setText(QString("Fund: %1\nDate: %2\nReturn: %3%")

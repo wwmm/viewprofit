@@ -88,7 +88,7 @@ auto add_series_to_chart(QChart* chart,
                          const QVector<int>& dates,
                          const QVector<double>& values,
                          const QString& series_name) -> QLineSeries* {
-  auto series = new QLineSeries();
+  const auto series = new QLineSeries();
 
   series->setName(series_name.toLower());
 
@@ -98,8 +98,8 @@ auto add_series_to_chart(QChart* chart,
   qint64 xmax = dynamic_cast<QDateTimeAxis*>(chart->axes(Qt::Horizontal)[0])->max().toMSecsSinceEpoch();
 
   for (int n = 0; n < dates.size(); n++) {
-    double v = values[n];
-    qint64 d = static_cast<qint64>(dates[n]) * 1000;
+    const double v = values[n];
+    const qint64 d = static_cast<qint64>(dates[n]) * 1000;
 
     if (!chart->series().empty()) {
       ymin = std::min(ymin, v);
@@ -146,14 +146,12 @@ auto add_tables_barseries_to_chart(QChart* chart,
     barsets.append(new QBarSet(table->name));
   }
 
-  auto qdt = QDateTime();
-
   QStringList categories;
 
   for (auto& date : list_dates) {
-    qdt.setSecsSinceEpoch(date);
+    const auto qdt = QDateTime::fromSecsSinceEpoch(date);
 
-    QString date_month = qdt.toString("MM/yyyy");
+    const QString date_month = qdt.toString("MM/yyyy");
 
     categories.append(date_month);
 
@@ -161,12 +159,10 @@ auto add_tables_barseries_to_chart(QChart* chart,
       bool has_date = false;
 
       for (int n = tables[m]->model->rowCount() - 1; n >= 0; n--) {
-        QString tdate = tables[m]->model->record(n).value("date").toString();
+        const QString tdate = tables[m]->model->record(n).value("date").toString();
 
         if (date_month == tdate) {
-          double v = tables[m]->model->record(n).value(column_name).toDouble();
-
-          barsets[m]->append(v);
+          barsets[m]->append(tables[m]->model->record(n).value(column_name).toDouble());
 
           has_date = true;
 
@@ -180,13 +176,13 @@ auto add_tables_barseries_to_chart(QChart* chart,
     }
   }
 
-  auto series = new QStackedBarSeries();
+  const auto series = new QStackedBarSeries();
 
   for (auto& bs : barsets) {
     series->append(bs);
   }
 
-  QFont serif_font("Sans");
+  const QFont serif_font("Sans");
 
   chart->setTitle(series_name);
   chart->legend()->setAlignment(Qt::AlignRight);
@@ -194,7 +190,7 @@ auto add_tables_barseries_to_chart(QChart* chart,
 
   chart->addSeries(series);
 
-  auto axis_x = new QBarCategoryAxis();
+  const auto axis_x = new QBarCategoryAxis();
 
   axis_x->append(categories);
 
@@ -202,7 +198,7 @@ auto add_tables_barseries_to_chart(QChart* chart,
 
   series->attachAxis(axis_x);
 
-  auto axis_y = new QValueAxis();
+  const auto axis_y = new QValueAxis();
 
   axis_y->setTitleText(QLocale().currencySymbol());
   axis_y->setTitleFont(serif_font);
@@ -219,7 +215,6 @@ auto get_unique_months_from_db(const QSqlDatabase& db,
                                const QVector<TableFund const*>& tables,
                                const int& last_n_months) -> QVector<int> {
   QSet<int> set;
-  auto qdt = QDateTime();
 
   for (auto& table : tables) {
     if (set.size() == last_n_months) {
