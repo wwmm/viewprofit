@@ -3,6 +3,7 @@
 #include <QSqlQuery>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
+#include "math.hpp"
 
 CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
     : db(database), chart(new QChart()), callout(new Callout(chart)) {
@@ -194,7 +195,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
   for (auto& table : tables) {
     QVector<int> dates;
     QVector<double> accumulated_net_return;
-    QVector<double> second_derivative;
+    // QVector<double> second_derivative;
 
     for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
       auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
@@ -210,23 +211,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
-    second_derivative.resize(dates.size());
-
-    // https://en.wikipedia.org/wiki/Finite_difference
-
-    for (int n = 0; n < accumulated_net_return.size(); n++) {
-      if (n == 0) {  // second order forward using dt = 1 month
-        second_derivative[n] = accumulated_net_return[2] - 2 * accumulated_net_return[1] + accumulated_net_return[0];
-      } else if (n == accumulated_net_return.size() - 1) {  // second order backward
-        second_derivative[n] =
-            accumulated_net_return[n] - 2 * accumulated_net_return[n - 1] + accumulated_net_return[n - 2];
-      } else {  // second order central
-        second_derivative[n] =
-            accumulated_net_return[n + 1] - 2 * accumulated_net_return[n] + accumulated_net_return[n - 1];
-      }
-    }
-
-    auto s = add_series_to_chart(chart, dates, second_derivative, table->name);
+    auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
