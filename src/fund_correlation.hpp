@@ -11,7 +11,7 @@ class FundCorrelation : public QWidget, protected Ui::FundCorrelation {
  public:
   explicit FundCorrelation(const QSqlDatabase& database, QWidget* parent = nullptr);
 
-  void process(const QVector<TableFund*>& tables);
+  void process(const QVector<TableFund const*>& tables);
 
  private:
   QSqlDatabase db;
@@ -20,7 +20,7 @@ class FundCorrelation : public QWidget, protected Ui::FundCorrelation {
 
   Callout* callout;
 
-  QVector<TableFund*> tables;
+  QVector<TableFund const*> tables;
 
   void process_tables();
 

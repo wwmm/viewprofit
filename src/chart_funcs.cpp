@@ -135,7 +135,7 @@ auto add_series_to_chart(QChart* chart,
 }
 
 auto add_tables_barseries_to_chart(QChart* chart,
-                                   const QVector<TableFund*>& tables,
+                                   const QVector<TableFund const*>& tables,
                                    const QVector<int>& list_dates,
                                    const QString& series_name,
                                    const QString& column_name)
@@ -215,8 +215,9 @@ auto add_tables_barseries_to_chart(QChart* chart,
   return {series, barsets, categories};
 }
 
-auto get_unique_months_from_db(const QSqlDatabase& db, const QVector<TableFund*>& tables, const int& last_n_months)
-    -> QVector<int> {
+auto get_unique_months_from_db(const QSqlDatabase& db,
+                               const QVector<TableFund const*>& tables,
+                               const int& last_n_months) -> QVector<int> {
   QSet<int> set;
   auto qdt = QDateTime();
 

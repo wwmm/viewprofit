@@ -33,7 +33,7 @@ FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
   connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { process_tables(); });
 }
 
-void FundCorrelation::process(const QVector<TableFund*>& tables) {
+void FundCorrelation::process(const QVector<TableFund const*>& tables) {
   this->tables = tables;
 
   auto current_text = combo_fund->currentText();

@@ -124,10 +124,10 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
       load_saved_tables();
 
-      auto fund_tables = QVector<TableFund*>();
+      auto fund_tables = QVector<TableFund const*>();
 
       for (int n = 0; n < stackedwidget_funds->count(); n++) {
-        fund_tables.append(dynamic_cast<TableFund*>(stackedwidget_funds->widget(n)));
+        fund_tables.append(dynamic_cast<TableFund const*>(stackedwidget_funds->widget(n)));
       }
 
       auto portfolio_table = load_portfolio_table();
@@ -542,10 +542,10 @@ void MainWindow::on_save_table_benchmark() {
 }
 
 void MainWindow::on_calculate_portfolio() {
-  auto fund_tables = QVector<TableFund*>();
+  auto fund_tables = QVector<TableFund const*>();
 
   for (int n = 0; n < stackedwidget_funds->count(); n++) {
-    fund_tables.append(dynamic_cast<TableFund*>(stackedwidget_funds->widget(n)));
+    fund_tables.append(dynamic_cast<TableFund const*>(stackedwidget_funds->widget(n)));
   }
 
   auto portfolio_table = dynamic_cast<TablePortfolio*>(stackedwidget_portfolio->widget(0));

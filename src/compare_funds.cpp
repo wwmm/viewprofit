@@ -361,7 +361,7 @@ void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
   chart->addSeries(series);
 }
 
-void CompareFunds::process(const QVector<TableFund*>& tables) {
+void CompareFunds::process(const QVector<TableFund const*>& tables) {
   this->tables = tables;
 
   process_tables();

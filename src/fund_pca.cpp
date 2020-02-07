@@ -35,7 +35,7 @@ FundPCA::FundPCA(const QSqlDatabase& database, QWidget* parent)
   connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) { process_tables(); });
 }
 
-void FundPCA::process(const QVector<TableFund*>& tables) {
+void FundPCA::process(const QVector<TableFund const*>& tables) {
   this->tables = tables;
 
   process_tables();

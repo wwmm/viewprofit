@@ -12,7 +12,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
  public:
   explicit CompareFunds(const QSqlDatabase& database, QWidget* parent = nullptr);
 
-  void process(const QVector<TableFund*>& tables);
+  void process(const QVector<TableFund const*>& tables);
 
  private:
   QSqlDatabase db;
@@ -21,7 +21,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   Callout* callout;
 
-  QVector<TableFund*> tables;
+  QVector<TableFund const*> tables;
 
   void process_tables();
 

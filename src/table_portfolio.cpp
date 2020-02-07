@@ -46,7 +46,7 @@ void TablePortfolio::init_model() {
   table_view->setColumnHidden(0, true);
 }
 
-void TablePortfolio::process_fund_tables(const QVector<TableFund*>& tables) {
+void TablePortfolio::process_fund_tables(const QVector<TableFund const*>& tables) {
   // get date values in each investment tables
 
   QSet<int> list_set;
