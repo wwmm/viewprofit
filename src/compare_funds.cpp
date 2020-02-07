@@ -76,7 +76,7 @@ void CompareFunds::make_chart_net_return() {
   add_axes_to_chart(chart, "%");
 
   for (auto& table : tables) {
-    auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
+    const auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -116,7 +116,7 @@ void CompareFunds::make_chart_net_return_volatility() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(values.begin(), values.end());
 
-    auto s = add_series_to_chart(chart, dates, standard_deviation(values), name);
+    const auto s = add_series_to_chart(chart, dates, standard_deviation(values), name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -143,7 +143,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
     QVector<double> accumulated_net_return;
 
     for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
-      auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
+      const auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
 
       dates.append(qdt.toSecsSinceEpoch());
       accumulated_net_return.append(table->model->record(n).value("accumulated_net_return_perc").toDouble());
@@ -153,7 +153,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
       continue;
     }
 
-    auto s = add_series_to_chart(chart, dates, accumulated_net_return, table->name.toUpper());
+    const auto s = add_series_to_chart(chart, dates, accumulated_net_return, table->name.toUpper());
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -170,7 +170,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
     QVector<double> accumulated_net_return;
 
     for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
-      auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
+      const auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
 
       dates.append(qdt.toSecsSinceEpoch());
       accumulated_net_return.append(table->model->record(n).value("accumulated_net_return_perc").toDouble());
@@ -183,7 +183,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
-    auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), table->name);
+    const auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -195,7 +195,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
   QVector<double> accumulated_net_return;
 
   for (int n = 0; n < portfolio->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
-    auto qdt = QDateTime::fromString(portfolio->model->record(n).value("date").toString(), "MM/yyyy");
+    const auto qdt = QDateTime::fromString(portfolio->model->record(n).value("date").toString(), "MM/yyyy");
 
     dates.append(qdt.toSecsSinceEpoch());
     accumulated_net_return.append(portfolio->model->record(n).value("accumulated_net_return_perc").toDouble());
@@ -208,14 +208,14 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
   std::reverse(dates.begin(), dates.end());
   std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
-  auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), portfolio->name);
+  const auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), portfolio->name);
 
   connect(s, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
 }
 
 void CompareFunds::make_chart_barseries(const QString& series_name, const QString& column_name) {
-  auto list_dates = get_unique_months_from_db(db, tables, spinbox_months->value());
+  const auto list_dates = get_unique_months_from_db(db, tables, spinbox_months->value());
 
   if (list_dates.empty()) {
     return;
@@ -265,11 +265,13 @@ void CompareFunds::make_chart_barseries(const QString& series_name, const QStrin
 }
 
 void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
+  const double pie_chart_size = 0.6;
+
   chart->setTitle("");
 
-  auto series = new QPieSeries();
+  const auto series = new QPieSeries();
 
-  series->setPieSize(0.6);
+  series->setPieSize(pie_chart_size);
 
   std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
 
@@ -281,24 +283,17 @@ void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
   QVector<QString> names_added;
 
   while (!deque.empty()) {
-    double d;
-    QString name;
-
     if (pop_front) {
-      name = deque[0].first;
-      d = deque[0].second;
+      series->append(deque[0].first, deque[0].second);
 
       deque.pop_front();
     } else {
-      name = deque[deque.size() - 1].first;
-      d = deque[deque.size() - 1].second;
+      series->append(deque[deque.size() - 1].first, deque[deque.size() - 1].second);
 
       deque.pop_back();
     }
 
     pop_front = !pop_front;
-
-    series->append(name, d);
   }
 
   bool explode = true;
@@ -306,13 +301,11 @@ void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
   for (auto& slice : series->slices()) {
     slice->setLabelVisible(true);
 
-    auto label = slice->label();
+    const auto label = slice->label();
 
     slice->setLabel(QString("%1 %2%").arg(label, QString::number(100 * slice->percentage(), 'f', 2)));
 
-    if (explode) {
-      slice->setExploded(true);
-    }
+    slice->setExploded(explode);
 
     explode = !explode;
   }
