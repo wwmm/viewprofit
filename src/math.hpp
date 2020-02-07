@@ -2,6 +2,7 @@
 #define MATH_HPP
 
 #include <QVector>
+#include <cmath>
 
 template <class T>
 auto second_derivative(const QVector<T>& input) -> QVector<T> {
@@ -17,6 +18,33 @@ auto second_derivative(const QVector<T>& input) -> QVector<T> {
     } else {  // second order central
       output[n] = input[n + 1] - 2 * input[n] + input[n - 1];
     }
+  }
+
+  return output;
+}
+
+template <class T>
+auto standard_deviation(const QVector<T>& input) -> QVector<T> {
+  QVector<T> output(input.size(), 0.0);
+
+  // Calculating the standard deviation https://en.wikipedia.org/wiki/Standard_deviation
+
+  double accumulated = 0.0;
+
+  for (int n = 0; n < input.size(); n++) {
+    accumulated += input[n];
+
+    double avg = accumulated / (n + 1);
+
+    double sum = 0.0;
+
+    for (int m = 0; m < n; m++) {
+      sum += (input[m] - avg) * (input[m] - avg);
+    }
+
+    sum = (n > 0) ? sum / n : sum;
+
+    output[n] = std::sqrt(sum);
   }
 
   return output;

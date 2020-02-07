@@ -97,8 +97,6 @@ void CompareFunds::make_chart_net_return_volatility() {
   for (auto& name : names) {
     QVector<int> dates;
     QVector<double> values;
-    QVector<double> accu;
-    QVector<double> stddev;
 
     auto query = QSqlQuery(db);
 
@@ -118,32 +116,7 @@ void CompareFunds::make_chart_net_return_volatility() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(values.begin(), values.end());
 
-    // cumulative sum
-
-    accu.resize(values.size());
-
-    std::partial_sum(values.begin(), values.end(), accu.begin());
-
-    stddev.resize(values.size());
-
-    /*
-      Calculating the standard deviation https://en.wikipedia.org/wiki/Standard_deviation
-    */
-
-    for (int n = 0; n < stddev.size(); n++) {
-      double sum = 0.0;
-      double avg = accu[n] / (n + 1);
-
-      for (int m = 0; m < n; m++) {
-        sum += (values[m] - avg) * (values[m] - avg);
-      }
-
-      sum = (n > 0) ? sum / n : sum;
-
-      stddev[n] = std::sqrt(sum);
-    }
-
-    auto s = add_series_to_chart(chart, dates, stddev, name);
+    auto s = add_series_to_chart(chart, dates, standard_deviation(values), name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -195,7 +168,6 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
   for (auto& table : tables) {
     QVector<int> dates;
     QVector<double> accumulated_net_return;
-    // QVector<double> second_derivative;
 
     for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
       auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
