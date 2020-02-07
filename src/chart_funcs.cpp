@@ -14,16 +14,16 @@ void clear_chart(QChart* chart) {
 }
 
 void add_axes_to_chart(QChart* chart, const QString& ytitle) {
-  auto axis_x = new QDateTimeAxis();
+  const auto axis_x = new QDateTimeAxis();
 
-  QFont serif_font("Sans");
+  const QFont serif_font("Sans");
 
   axis_x->setTitleText("Date");
   axis_x->setFormat("MM/yyyy");
   axis_x->setLabelsAngle(-10);
   axis_x->setTitleFont(serif_font);
 
-  auto axis_y = new QValueAxis();
+  const auto axis_y = new QValueAxis();
 
   axis_y->setTitleText(ytitle);
   axis_y->setLabelFormat("%.2f");
@@ -35,7 +35,7 @@ void add_axes_to_chart(QChart* chart, const QString& ytitle) {
 
 auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& series_name, const QString& column_name)
     -> QLineSeries* {
-  auto series = new QLineSeries();
+  const auto series = new QLineSeries();
 
   series->setName(series_name.toLower());
 
@@ -45,11 +45,11 @@ auto add_series_to_chart(QChart* chart, const Model* tmodel, const QString& seri
   qint64 xmax = dynamic_cast<QDateTimeAxis*>(chart->axes(Qt::Horizontal)[0])->max().toMSecsSinceEpoch();
 
   for (int n = 0; n < tmodel->rowCount(); n++) {
-    auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "MM/yyyy");
+    const auto qdt = QDateTime::fromString(tmodel->record(n).value("date").toString(), "MM/yyyy");
 
-    auto epoch_in_ms = qdt.toMSecsSinceEpoch();
+    const auto epoch_in_ms = qdt.toMSecsSinceEpoch();
 
-    double v = tmodel->record(n).value(column_name).toDouble();
+    const double v = tmodel->record(n).value(column_name).toDouble();
 
     if (!chart->series().empty()) {
       ymin = std::min(ymin, v);

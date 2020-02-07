@@ -347,16 +347,18 @@ void CompareFunds::process_tables() {
 }
 
 void CompareFunds::on_chart_selection(const bool& state) {
-  if (state) {
-    if (radio_net_balance_pie->isChecked() || radio_net_return_pie->isChecked() ||
-        radio_accumulated_net_return_pie->isChecked()) {
-      spinbox_months->setDisabled(true);
-    } else {
-      spinbox_months->setDisabled(false);
-    }
-
-    process_tables();
+  if (!state) {
+    return;
   }
+
+  if (radio_net_balance_pie->isChecked() || radio_net_return_pie->isChecked() ||
+      radio_accumulated_net_return_pie->isChecked()) {
+    spinbox_months->setDisabled(true);
+  } else {
+    spinbox_months->setDisabled(false);
+  }
+
+  process_tables();
 }
 
 void CompareFunds::on_chart_mouse_hover(const QPointF& point, bool state, Callout* c, const QString& name) {

@@ -24,7 +24,7 @@ class CompareFunds : public QWidget, protected Ui::CompareFunds {
 
   QVector<TableFund const*> tables;
 
-  TablePortfolio const* portfolio;
+  TablePortfolio const* portfolio = nullptr;
 
   void process_tables();
 
