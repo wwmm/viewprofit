@@ -3,6 +3,7 @@
 #include <QSqlQuery>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
+#include "math.hpp"
 
 FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
     : db(database), chart(new QChart()), callout(new Callout(chart)) {
@@ -119,41 +120,7 @@ void FundCorrelation::process_tables() {
         count++;
       }
 
-      // calculating the Pearson correlation coefficient https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
-
-      for (int n = 0; n < correlation.size(); n++) {
-        double avg = 0.0;
-        double tavg = 0.0;
-
-        for (int m = 0; m <= n; m++) {
-          avg += values[m];
-          tavg += tvalues[m];
-        }
-
-        avg /= (n + 1);
-        tavg /= (n + 1);
-
-        double variance = 0.0;
-        double tvariance = 0.0;
-
-        for (int m = 0; m <= n; m++) {
-          variance += (values[m] - avg) * (values[m] - avg);
-          tvariance += (tvalues[m] - tavg) * (tvalues[m] - tavg);
-        }
-
-        double stddev = std::sqrt(variance);
-        double tstddev = std::sqrt(tvariance);
-
-        for (int m = 0; m <= n; m++) {
-          correlation[n] += (values[m] - avg) * (tvalues[m] - tavg);
-        }
-
-        if (stddev > 0.001 && tstddev > 0.001) {
-          correlation[n] /= (stddev * tstddev);
-        }
-      }
-
-      auto s = add_series_to_chart(chart, dates, correlation, table->name);
+      auto s = add_series_to_chart(chart, dates, correlation_coefficient(values, tvalues), table->name);
 
       connect(s, &QLineSeries::hovered, this,
               [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });

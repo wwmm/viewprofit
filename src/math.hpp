@@ -6,7 +6,7 @@
 
 template <class T>
 auto second_derivative(const QVector<T>& input) -> QVector<T> {
-  QVector<T> output(input.size(), 0.0);
+  QVector<T> output(input.size(), 0);
 
   // https://en.wikipedia.org/wiki/Finite_difference
 
@@ -25,18 +25,18 @@ auto second_derivative(const QVector<T>& input) -> QVector<T> {
 
 template <class T>
 auto standard_deviation(const QVector<T>& input) -> QVector<T> {
-  QVector<T> output(input.size(), 0.0);
+  QVector<T> output(input.size(), 0);
 
   // Calculating the standard deviation https://en.wikipedia.org/wiki/Standard_deviation
 
-  double accumulated = 0.0;
+  T accumulated = 0.0;
 
   for (int n = 0; n < input.size(); n++) {
     accumulated += input[n];
 
-    double avg = accumulated / (n + 1);
+    T avg = accumulated / (n + 1);
 
-    double sum = 0.0;
+    T sum = 0.0;
 
     for (int m = 0; m < n; m++) {
       sum += (input[m] - avg) * (input[m] - avg);
@@ -45,6 +45,46 @@ auto standard_deviation(const QVector<T>& input) -> QVector<T> {
     sum = (n > 0) ? sum / n : sum;
 
     output[n] = std::sqrt(sum);
+  }
+
+  return output;
+}
+
+template <class T>
+auto correlation_coefficient(const QVector<T>& a, const QVector<T>& b) -> QVector<T> {
+  QVector<T> output(a.size(), 0);
+  T sum_a = 0;
+  T sum_b = 0;
+
+  // calculating the Pearson correlation coefficient https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+
+  for (int n = 0; n < a.size(); n++) {
+    sum_a += a[n];
+    sum_b += b[n];
+
+    T avg_a = sum_a / (n + 1);
+    T avg_b = sum_b / (n + 1);
+
+    T variance_a = 0;
+    T variance_b = 0;
+
+    for (int m = 0; m <= n; m++) {
+      variance_a += (a[m] - avg_a) * (a[m] - avg_a);
+      variance_b += (b[m] - avg_b) * (b[m] - avg_b);
+    }
+
+    T stddev = std::sqrt(variance_a);
+    T tstddev = std::sqrt(variance_b);
+
+    for (int m = 0; m <= n; m++) {
+      output[n] += (a[m] - avg_a) * (b[m] - avg_b);
+    }
+
+    const float tol = 0.001F;
+
+    if (stddev > tol && tstddev > tol) {
+      output[n] /= (stddev * tstddev);
+    }
   }
 
   return output;
