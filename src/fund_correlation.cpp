@@ -1,6 +1,4 @@
 #include "fund_correlation.hpp"
-#include <QSqlError>
-#include <QSqlQuery>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 #include "math.hpp"
@@ -105,18 +103,13 @@ void FundCorrelation::process_tables() {
       int count = 0;
 
       for (auto& date : dates) {
-        auto query = QSqlQuery(db);
+        for (int n = 0; n < table->model->rowCount(); n++) {
+          QString tdate = table->model->record(n).value("date").toString();
 
-        query.prepare("select net_return_perc from " + table->name +
-                      " where strftime('%m/%Y', \"date\",'unixepoch')=?");
+          auto qdt = QDateTime::fromString(tdate, "MM/yyyy");
 
-        const auto qdt = QDateTime::fromSecsSinceEpoch(date);
-
-        query.addBindValue(qdt.toString("MM/yyyy"));
-
-        if (query.exec()) {
-          if (query.next()) {
-            tvalues[count] = query.value(0).toDouble();
+          if (qdt.toSecsSinceEpoch() == date) {
+            tvalues[count] = table->model->record(n).value("net_return_perc").toDouble();
           }
         }
 
