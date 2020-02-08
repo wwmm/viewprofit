@@ -47,14 +47,8 @@ void FundPCA::process_tables() {
   Eigen::MatrixXd data = Eigen::MatrixXd::Zero(tables.size(), spinbox_months->value());
 
   for (int k = 0; k < tables.size(); k++) {
-    QVector<double> values;
-
-    for (int n = 0; n < tables[k]->model->rowCount() && values.size() < spinbox_months->value(); n++) {
-      values.append(tables[k]->model->record(n).value("net_return_perc").toDouble());
-    }
-
-    for (int n = 0; n < values.size(); n++) {
-      data(k, n) = values[n];
+    for (int n = 0; n < tables[k]->model->rowCount() && n < spinbox_months->value(); n++) {
+      data(k, n) = tables[k]->model->record(n).value("net_return_perc").toDouble();
     }
   }
 
