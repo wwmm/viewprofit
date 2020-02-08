@@ -26,6 +26,7 @@ CompareFunds::CompareFunds(const QSqlDatabase& database, QWidget* parent)
   chart->setTheme(QChart::ChartThemeLight);
   chart->setAcceptHoverEvents(true);
   chart->legend()->setAlignment(Qt::AlignRight);
+  chart->legend()->setShowToolTips(true);
 
   chart_view->setChart(chart);
   chart_view->setRenderHint(QPainter::Antialiasing);
@@ -322,7 +323,7 @@ void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
 
   series->setPieSize(pie_chart_size);
 
-  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return a.second < b.second; });
+  std::sort(deque.begin(), deque.end(), [](auto a, auto b) { return std::fabs(a.second) < std::fabs(b.second); });
 
   /*
     Now we alternate the slices. This will help to avoid label overlap.

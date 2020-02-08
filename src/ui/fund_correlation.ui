@@ -134,7 +134,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Fund</string>
+            <string>Table</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>

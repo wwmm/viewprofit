@@ -139,7 +139,7 @@ MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSe
 
       portfolio_table->process_fund_tables(fund_tables);
       cf->process(fund_tables, portfolio_table);
-      fc->process(fund_tables);
+      fc->process(fund_tables, portfolio_table);
       fpca->process(fund_tables);
     } else {
       qCritical("Failed to open the database file!");
@@ -558,7 +558,7 @@ void MainWindow::on_calculate_portfolio() {
 
   auto fc = dynamic_cast<FundCorrelation*>(stackedwidget_portfolio->widget(2));
 
-  fc->process(fund_tables);
+  fc->process(fund_tables, portfolio_table);
 
   auto fpca = dynamic_cast<FundPCA*>(stackedwidget_portfolio->widget(3));
 
