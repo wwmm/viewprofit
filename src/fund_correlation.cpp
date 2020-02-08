@@ -2,7 +2,6 @@
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 #include "math.hpp"
-#include "qdatetime.h"
 
 FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
     : db(database), chart(new QChart()), callout(new Callout(chart)) {

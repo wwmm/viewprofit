@@ -1,8 +1,6 @@
 #include "fund_pca.hpp"
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#include <QSqlError>
-#include <QSqlQuery>
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
@@ -49,19 +47,10 @@ void FundPCA::process_tables() {
   Eigen::MatrixXd data = Eigen::MatrixXd::Zero(tables.size(), spinbox_months->value());
 
   for (int k = 0; k < tables.size(); k++) {
-    auto query = QSqlQuery(db);
     QVector<double> values;
 
-    query.prepare("select net_return_perc from " + tables[k]->name + " order by date desc");
-
-    if (query.exec()) {
-      while (query.next() && values.size() < spinbox_months->value()) {
-        values.append(query.value(0).toDouble());
-      }
-    }
-
-    if (values.empty()) {
-      continue;
+    for (int n = 0; n < tables[k]->model->rowCount() && values.size() < spinbox_months->value(); n++) {
+      values.append(tables[k]->model->record(n).value("net_return_perc").toDouble());
     }
 
     for (int n = 0; n < values.size(); n++) {
