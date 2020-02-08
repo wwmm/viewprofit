@@ -76,11 +76,46 @@ void CompareFunds::make_chart_net_return() {
   add_axes_to_chart(chart, "%");
 
   for (auto& table : tables) {
-    const auto s = add_series_to_chart(chart, table->model, table->name.toUpper(), "net_return_perc");
+    QVector<int> dates;
+    QVector<double> values;
+
+    for (int n = 0; n < table->model->rowCount() && n < spinbox_months->value(); n++) {
+      auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
+
+      dates.append(qdt.toSecsSinceEpoch());
+      values.append(table->model->record(n).value("net_return_perc").toDouble());
+    }
+
+    if (dates.size() < 2) {
+      continue;
+    }
+
+    const auto s = add_series_to_chart(chart, dates, values, table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
   }
+
+  // portfolio
+
+  QVector<int> dates;
+  QVector<double> values;
+
+  for (int n = 0; n < portfolio->model->rowCount() && n < spinbox_months->value(); n++) {
+    auto qdt = QDateTime::fromString(portfolio->model->record(n).value("date").toString(), "MM/yyyy");
+
+    dates.append(qdt.toSecsSinceEpoch());
+    values.append(portfolio->model->record(n).value("net_return_perc").toDouble());
+  }
+
+  if (dates.size() < 2) {
+    return;
+  }
+
+  const auto s = add_series_to_chart(chart, dates, values, portfolio->name);
+
+  connect(s, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
 }
 
 void CompareFunds::make_chart_net_return_volatility() {
