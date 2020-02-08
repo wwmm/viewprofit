@@ -46,4 +46,6 @@ deps = [
     dependency('openmp')
 ]
 
-executable(meson.project_name(), mysources,  dependencies : deps)
+compilar_args = ['-msse2', '-mfpmath=sse', '-ftree-vectorize']
+
+executable(meson.project_name(), mysources,  dependencies : deps, cpp_args:compilar_args)

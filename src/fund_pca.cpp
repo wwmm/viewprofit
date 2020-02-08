@@ -60,9 +60,10 @@ void FundPCA::process_tables() {
 
   for (int n = 0; n < data.cols(); n++) {
     double std = stddev(n);
+    const double tol = 0.0001;
 
     for (int m = 0; m < data.rows(); m++) {
-      if (std > 0.0001) {
+      if (std > tol) {
         data(m, n) /= std;
       }
     }
