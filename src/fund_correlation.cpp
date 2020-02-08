@@ -4,6 +4,7 @@
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 #include "math.hpp"
+#include "qdatetime.h"
 
 FundCorrelation::FundCorrelation(const QSqlDatabase& database, QWidget* parent)
     : db(database), chart(new QChart()), callout(new Callout(chart)) {
@@ -74,25 +75,27 @@ void FundCorrelation::process_tables() {
   add_axes_to_chart(chart, "");
 
   QVector<double> values(dates.size(), 0.0);
-  int count = 0;
 
-  for (auto& date : dates) {
-    auto query = QSqlQuery(db);
+  for (auto& table : tables) {
+    if (table->name == combo_fund->currentText()) {
+      int count = 0;
 
-    query.prepare("select net_return_perc from " + combo_fund->currentText() +
-                  " where strftime('%m/%Y', \"date\",'unixepoch')=?");
+      for (auto& date : dates) {
+        for (int n = 0; n < table->model->rowCount(); n++) {
+          QString tdate = table->model->record(n).value("date").toString();
 
-    const auto qdt = QDateTime::fromSecsSinceEpoch(date);
+          auto qdt = QDateTime::fromString(tdate, "MM/yyyy");
 
-    query.addBindValue(qdt.toString("MM/yyyy"));
+          if (qdt.toSecsSinceEpoch() == date) {
+            values[count] = table->model->record(n).value("net_return_perc").toDouble();
+          }
+        }
 
-    if (query.exec()) {
-      if (query.next()) {
-        values[count] = query.value(0).toDouble();
+        count++;
       }
-    }
 
-    count++;
+      break;
+    }
   }
 
   for (auto& table : tables) {
