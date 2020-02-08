@@ -88,25 +88,15 @@ void CompareFunds::make_chart_net_return_volatility() {
 
   add_axes_to_chart(chart, "%");
 
-  QVector<QString> names{"portfolio"};
-
   for (auto& table : tables) {
-    names.push_back(table->name);
-  }
-
-  for (auto& name : names) {
     QVector<int> dates;
     QVector<double> values;
 
-    auto query = QSqlQuery(db);
+    for (int n = 0; n < table->model->rowCount() && n < spinbox_months->value(); n++) {
+      auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
 
-    query.prepare("select distinct date,net_return_perc from " + name + " order by date desc");
-
-    if (query.exec()) {
-      while (query.next() && dates.size() < spinbox_months->value()) {
-        dates.append(query.value(0).toInt());
-        values.append(query.value(1).toDouble());
-      }
+      dates.append(qdt.toSecsSinceEpoch());
+      values.append(table->model->record(n).value("net_return_perc").toDouble());
     }
 
     if (dates.size() < 2) {
@@ -116,11 +106,35 @@ void CompareFunds::make_chart_net_return_volatility() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(values.begin(), values.end());
 
-    const auto s = add_series_to_chart(chart, dates, standard_deviation(values), name);
+    const auto s = add_series_to_chart(chart, dates, standard_deviation(values), table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
   }
+
+  // portfolio
+
+  QVector<int> dates;
+  QVector<double> values;
+
+  for (int n = 0; n < portfolio->model->rowCount() && n < spinbox_months->value(); n++) {
+    auto qdt = QDateTime::fromString(portfolio->model->record(n).value("date").toString(), "MM/yyyy");
+
+    dates.append(qdt.toSecsSinceEpoch());
+    values.append(portfolio->model->record(n).value("net_return_perc").toDouble());
+  }
+
+  if (dates.size() < 2) {
+    return;
+  }
+
+  std::reverse(dates.begin(), dates.end());
+  std::reverse(values.begin(), values.end());
+
+  const auto s = add_series_to_chart(chart, dates, standard_deviation(values), portfolio->name);
+
+  connect(s, &QLineSeries::hovered, this,
+          [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
 }
 
 void CompareFunds::make_chart_accumulated_net_return_pie() {
