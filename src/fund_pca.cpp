@@ -44,6 +44,10 @@ void FundPCA::process_tables() {
 
   chart->setTitle("Net Return Pricipal Component Analysis");
 
+  if (tables.size() < 2) {
+    return;
+  }
+
   Eigen::MatrixXd data = Eigen::MatrixXd::Zero(tables.size(), spinbox_months->value());
 
   for (int k = 0; k < tables.size(); k++) {
