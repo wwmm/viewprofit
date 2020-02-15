@@ -50,18 +50,26 @@ auto Model::setData(const QModelIndex& index, const QVariant& value, int role) -
   }
 
   if (column == 1) {
-    if (value.type() == QVariant::String) {
+    if (value.userType() == QMetaType::QString) {
       auto qdt = QDateTime::fromString(value.toString(), "MM/yyyy");
 
       return QSqlTableModel::setData(index, qdt.toSecsSinceEpoch(), role);
     }
 
-    if (value.type() == QVariant::Int) {
+    if (value.userType() == QMetaType::Int) {
       return QSqlTableModel::setData(index, value, role);
     }
 
     return false;
   }
 
-  return QSqlTableModel::setData(index, value, role);
+  if (value.userType() == QMetaType::Double) {
+    return QSqlTableModel::setData(index, value, role);
+  }
+
+  if (value.userType() == QMetaType::QString) {
+    return QSqlTableModel::setData(index, locale.toDouble(value.toString()), role);
+  }
+
+  return false;
 }

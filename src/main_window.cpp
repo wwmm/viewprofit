@@ -8,10 +8,7 @@
 #include "table_benchmarks.hpp"
 #include "table_fund.hpp"
 
-MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent), qsettings(QSettings()) {
-  QCoreApplication::setOrganizationName("wwmm");
-  QCoreApplication::setApplicationName("ViewProfit");
-
+MainWindow::MainWindow(QMainWindow* parent) : QMainWindow(parent) {
   setupUi(this);
 
   tab_widget->setCurrentIndex(0);

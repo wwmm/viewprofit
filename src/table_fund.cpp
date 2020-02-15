@@ -3,7 +3,7 @@
 #include "chart_funcs.hpp"
 #include "effects.hpp"
 
-TableFund::TableFund(QWidget* parent) : TableBase(parent), qsettings(QSettings()) {
+TableFund::TableFund(QWidget* parent) : TableBase(parent) {
   type = TableType::Investment;
 
   // shadow effects
@@ -11,16 +11,6 @@ TableFund::TableFund(QWidget* parent) : TableBase(parent), qsettings(QSettings()
   fund_cfg_frame->setGraphicsEffect(card_shadow());
 
   // signals
-
-  connect(doublespinbox_income_tax, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
-    qsettings.beginGroup(name);
-
-    qsettings.setValue("income_tax", value);
-
-    qsettings.endGroup();
-
-    qsettings.sync();
-  });
 
   connect(spinbox_months, QOverload<int>::of(&QSpinBox::valueChanged), [&](int value) {
     clear_chart(chart2);
@@ -58,11 +48,23 @@ void TableFund::init_model() {
 
   // initializing widgets with qsettings values
 
+  doublespinbox_income_tax->disconnect();
+
   qsettings.beginGroup(name);
 
   doublespinbox_income_tax->setValue(qsettings.value("income_tax", 0.0).toDouble());
 
   qsettings.endGroup();
+
+  connect(doublespinbox_income_tax, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [&](double value) {
+    qsettings.beginGroup(name);
+
+    qsettings.setValue("income_tax", value);
+
+    qsettings.endGroup();
+
+    qsettings.sync();
+  });
 }
 
 auto TableFund::process_benchmark(const QString& table_name, const int& oldest_date) const

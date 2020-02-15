@@ -1,6 +1,7 @@
 #ifndef TABLE_BASE_HPP
 #define TABLE_BASE_HPP
 
+#include <QLocale>
 #include <QSqlDatabase>
 #include <QSqlRecord>
 #include <QSqlTableModel>
@@ -50,6 +51,8 @@ class TableBase : public QWidget, protected Ui::TableBase {
   void on_chart_selection(const bool& state);
 
  private:
+  QLocale locale;
+
   void on_add_row();
 };
 

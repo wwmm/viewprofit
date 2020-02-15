@@ -107,9 +107,17 @@ auto TableBase::eventFilter(QObject* object, QEvent* event) -> bool {
 
           for (int j = selection_range.left(); j <= selection_range.right(); j++) {
             if (j < selection_range.right()) {
-              row_value += s_model->model()->index(i, j).data().toString() + "\t";
+              if (j > 1) {
+                row_value += locale.toString(s_model->model()->index(i, j).data().toDouble()) + "\t";
+              } else {
+                row_value += s_model->model()->index(i, j).data().toString() + "\t";
+              }
             } else {
-              row_value += s_model->model()->index(i, j).data().toString();
+              if (j > 1) {
+                row_value += locale.toString(s_model->model()->index(i, j).data().toDouble());
+              } else {
+                row_value += s_model->model()->index(i, j).data().toString();
+              }
             }
           }
 
