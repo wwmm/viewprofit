@@ -189,7 +189,7 @@ auto MainWindow::load_compare_funds() -> CompareFunds* {
 
   stackedwidget_portfolio->addWidget(cf);
 
-  listwidget_portfolio->addItem("Compare Funds");
+  listwidget_portfolio->addItem("Compare Investments");
 
   return cf;
 }
@@ -199,7 +199,7 @@ auto MainWindow::load_fund_correlation() -> FundCorrelation* {
 
   stackedwidget_portfolio->addWidget(fc);
 
-  listwidget_portfolio->addItem("Fund Correlation");
+  listwidget_portfolio->addItem("Investments Correlation");
 
   return fc;
 }
@@ -209,7 +209,7 @@ auto MainWindow::load_fund_pca() -> FundPCA* {
 
   stackedwidget_portfolio->addWidget(fpca);
 
-  listwidget_portfolio->addItem("Fund PCA");
+  listwidget_portfolio->addItem("Investments PCA");
 
   return fpca;
 }
@@ -400,10 +400,6 @@ void MainWindow::on_listwidget_item_changed(QListWidgetItem* item, QListWidget* 
 }
 
 void MainWindow::remove_table(QListWidget* lw, QStackedWidget* sw) {
-  if (lw->currentRow() < 1) {
-    return;
-  }
-
   auto box = QMessageBox(this);
 
   box.setText("Remove the selected table from the database?");
