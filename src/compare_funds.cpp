@@ -190,18 +190,35 @@ void CompareFunds::make_chart_accumulated_net_return() {
 
   for (auto& table : tables) {
     QVector<int> dates;
+    QVector<double> net_return;
     QVector<double> accumulated_net_return;
 
     for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
       const auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
 
       dates.append(qdt.toSecsSinceEpoch());
-      accumulated_net_return.append(table->model->record(n).value("accumulated_net_return_perc").toDouble());
+      net_return.append(table->model->record(n).value("net_return_perc").toDouble());
     }
 
     if (dates.size() < 2) {  // We need at least 2 points to show a line chart
       continue;
     }
+
+    std::reverse(net_return.begin(), net_return.end());
+
+    for (auto& value : net_return) {
+      value = value * 0.01 + 1.0;
+    }
+
+    accumulated_net_return.resize(net_return.size());
+
+    std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<>());
+
+    for (auto& value : accumulated_net_return) {
+      value = (value - 1.0) * 100;
+    }
+
+    std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
     const auto s = add_series_to_chart(chart, dates, accumulated_net_return, table->name.toUpper());
 
@@ -217,17 +234,32 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
 
   for (auto& table : tables) {
     QVector<int> dates;
+    QVector<double> net_return;
     QVector<double> accumulated_net_return;
 
     for (int n = 0; n < table->model->rowCount() && dates.size() < spinbox_months->value(); n++) {
       const auto qdt = QDateTime::fromString(table->model->record(n).value("date").toString(), "MM/yyyy");
 
       dates.append(qdt.toSecsSinceEpoch());
-      accumulated_net_return.append(table->model->record(n).value("accumulated_net_return_perc").toDouble());
+      net_return.append(table->model->record(n).value("net_return_perc").toDouble());
     }
 
     if (dates.size() < 3) {  // We need at least 3 points to calculate the second derivative
       continue;
+    }
+
+    std::reverse(net_return.begin(), net_return.end());
+
+    for (auto& value : net_return) {
+      value = value * 0.01 + 1.0;
+    }
+
+    accumulated_net_return.resize(net_return.size());
+
+    std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<>());
+
+    for (auto& value : accumulated_net_return) {
+      value = (value - 1.0) * 100;
     }
 
     std::reverse(dates.begin(), dates.end());
