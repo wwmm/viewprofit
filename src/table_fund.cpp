@@ -215,6 +215,8 @@ void TableFund::make_chart2() {
   add_axes_to_chart(chart2, "%");
 
   QVector<int> dates;
+  QVector<double> net_return;
+  QVector<double> real_return;
   QVector<double> accumulated_net_return;
   QVector<double> accumulated_real_return;
 
@@ -222,13 +224,41 @@ void TableFund::make_chart2() {
     auto qdt = QDateTime::fromString(model->record(n).value("date").toString(), "MM/yyyy");
 
     dates.append(qdt.toSecsSinceEpoch());
-    accumulated_net_return.append(model->record(n).value("accumulated_net_return_perc").toDouble());
-    accumulated_real_return.append(model->record(n).value("accumulated_real_return_perc").toDouble());
+    net_return.append(model->record(n).value("net_return_perc").toDouble());
+    real_return.append(model->record(n).value("real_return_perc").toDouble());
   }
 
   if (dates.empty()) {
     return;
   }
+
+  std::reverse(net_return.begin(), net_return.end());
+  std::reverse(real_return.begin(), real_return.end());
+
+  for (auto& value : net_return) {
+    value = value * 0.01 + 1.0;
+  }
+
+  for (auto& value : real_return) {
+    value = value * 0.01 + 1.0;
+  }
+
+  accumulated_net_return.resize(net_return.size());
+  accumulated_real_return.resize(real_return.size());
+
+  std::partial_sum(net_return.begin(), net_return.end(), accumulated_net_return.begin(), std::multiplies<>());
+  std::partial_sum(real_return.begin(), real_return.end(), accumulated_real_return.begin(), std::multiplies<>());
+
+  for (auto& value : accumulated_net_return) {
+    value = (value - 1.0) * 100;
+  }
+
+  for (auto& value : accumulated_real_return) {
+    value = (value - 1.0) * 100;
+  }
+
+  std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
+  std::reverse(accumulated_real_return.begin(), accumulated_real_return.end());
 
   perc_chart_oldest_date = dates[dates.size() - 1];
 
