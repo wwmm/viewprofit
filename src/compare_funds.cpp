@@ -65,7 +65,11 @@ void CompareFunds::make_chart_net_return_pie() {
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
-    deque.emplace_back(table->name, table->model->record(0).value("net_return").toDouble());
+    double value = table->model->record(0).value("net_return").toDouble();
+
+    if (value > 0) {
+      deque.emplace_back(table->name, value);
+    }
   }
 
   make_pie(deque);
@@ -91,7 +95,7 @@ void CompareFunds::make_chart_net_return() {
       continue;
     }
 
-    const auto s = add_series_to_chart(chart, dates, values, table->name);
+    auto* const s = add_series_to_chart(chart, dates, values, table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -113,7 +117,7 @@ void CompareFunds::make_chart_net_return() {
     return;
   }
 
-  const auto s = add_series_to_chart(chart, dates, values, portfolio->name);
+  auto* const s = add_series_to_chart(chart, dates, values, portfolio->name);
 
   connect(s, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -142,7 +146,7 @@ void CompareFunds::make_chart_net_return_volatility() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(values.begin(), values.end());
 
-    const auto s = add_series_to_chart(chart, dates, standard_deviation(values), table->name);
+    auto* const s = add_series_to_chart(chart, dates, standard_deviation(values), table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -167,7 +171,7 @@ void CompareFunds::make_chart_net_return_volatility() {
   std::reverse(dates.begin(), dates.end());
   std::reverse(values.begin(), values.end());
 
-  const auto s = add_series_to_chart(chart, dates, standard_deviation(values), portfolio->name);
+  auto* const s = add_series_to_chart(chart, dates, standard_deviation(values), portfolio->name);
 
   connect(s, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -177,7 +181,11 @@ void CompareFunds::make_chart_accumulated_net_return_pie() {
   std::deque<QPair<QString, double>> deque;
 
   for (auto& table : tables) {
-    deque.emplace_back(table->name, table->model->record(0).value("accumulated_net_return").toDouble());
+    double value = table->model->record(0).value("accumulated_net_return").toDouble();
+
+    if (value > 0) {
+      deque.emplace_back(table->name, value);
+    }
   }
 
   make_pie(deque);
@@ -220,7 +228,7 @@ void CompareFunds::make_chart_accumulated_net_return() {
 
     std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
-    const auto s = add_series_to_chart(chart, dates, accumulated_net_return, table->name.toUpper());
+    auto* const s = add_series_to_chart(chart, dates, accumulated_net_return, table->name.toUpper());
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -265,7 +273,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
     std::reverse(dates.begin(), dates.end());
     std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
-    const auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), table->name);
+    auto* const s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), table->name);
 
     connect(s, &QLineSeries::hovered, this,
             [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -290,7 +298,7 @@ void CompareFunds::make_chart_accumulated_net_return_second_derivative() {
   std::reverse(dates.begin(), dates.end());
   std::reverse(accumulated_net_return.begin(), accumulated_net_return.end());
 
-  const auto s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), portfolio->name);
+  auto* const s = add_series_to_chart(chart, dates, second_derivative(accumulated_net_return), portfolio->name);
 
   connect(s, &QLineSeries::hovered, this,
           [=](const QPointF& point, bool state) { on_chart_mouse_hover(point, state, callout, s->name()); });
@@ -305,7 +313,7 @@ void CompareFunds::make_chart_barseries(const QString& series_name, const QStrin
 
   // initialize the barsets
 
-  QStackedBarSeries* series;
+  QStackedBarSeries* series = nullptr;
   QVector<QBarSet*> barsets;
   QStringList categories;
 
@@ -351,7 +359,7 @@ void CompareFunds::make_pie(std::deque<QPair<QString, double>>& deque) {
 
   chart->setTitle("");
 
-  const auto series = new QPieSeries();
+  auto* const series = new QPieSeries();
 
   series->setPieSize(pie_chart_size);
 
